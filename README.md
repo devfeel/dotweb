@@ -1,2 +1,2 @@
 # dotweb
-微型Web框架
+基于go语言开发的web framework
