@@ -13,7 +13,7 @@ func StartServer() error {
 	dotserver.HttpServer.GET("/index", func(ctx *dotweb.HttpContext) {
 		ctx.WriteString("welcome to my first web!")
 	})
-	// 开始服务
+	//开始服务
 	err := dotweb.StartServer(80)
 	return err
 }
