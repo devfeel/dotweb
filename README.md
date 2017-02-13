@@ -1,6 +1,13 @@
 # dotweb
 基于go语言开发的web framework
 
+安装：
+
+```
+go get -u github.com/devfeel/dotweb
+
+```
+
 快速开始：
 
 ```golang
