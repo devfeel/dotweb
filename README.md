@@ -14,7 +14,7 @@ func StartServer() error {
 		ctx.WriteString("welcome to my first web!")
 	})
 	//开始服务
-	err := dotweb.StartServer(80)
+	err := dotserver.StartServer(80)
 	return err
 }
 
