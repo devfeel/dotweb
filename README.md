@@ -1,8 +1,9 @@
 # dotweb
 基于go语言开发的web framework
 
-func StartServer() error {
-
+启动代码：
+    
+    func StartServer() error {
 	//初始化DotServer
 	dotweb := dotweb.New()
 
@@ -21,5 +22,5 @@ func StartServer() error {
 	innerLogger.Debug("dotweb.StartServer => " + strconv.Itoa(port))
 	err := dotweb.StartServer(port)
 	return err
-}
+    }
 
