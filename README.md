@@ -28,6 +28,7 @@ func StartServer() error {
 
 ### 路由规则
 目前支持GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE 这几类请求方法
+
 另外也支持HiJack\WebSocket\ServerFile三类特殊应用
 ```go
 1、HttpServer.GET(path string, handle HttpHandle)
