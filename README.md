@@ -1,26 +1,22 @@
 # dotweb
 基于go语言开发的web framework
 
-启动代码：
-    
-    func StartServer() error {
+快速开始：
+
+```golang
+func StartServer() error {
 	//初始化DotServer
-	dotweb := dotweb.New()
-
+	dotserver := dotweb.New()
 	//设置dotserver日志目录
-	dotweb.SetLogPath("/home/logs/wwwroot/")
-
+	dotserver.SetLogPath("/home/logs/wwwroot/")
 	//设置路由
-	InitRoute(dotweb)
-
-	//启动监控服务
-	pprofport := config.CurrentConfig.HttpServer.PProfPort
-	go dotweb.StartPProfServer(pprofport)
-
+	dotserver.HttpServer.GET("/index", func(ctx *dotweb.HttpContext) {
+		ctx.WriteString("welcome to my first web!")
+	})
 	// 开始服务
-	port := config.CurrentConfig.HttpServer.HttpPort
-	innerLogger.Debug("dotweb.StartServer => " + strconv.Itoa(port))
-	err := dotweb.StartServer(port)
+	err := dotweb.StartServer(80)
 	return err
-    }
+}
+
+```
 
