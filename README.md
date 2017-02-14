@@ -32,6 +32,7 @@ func StartServer() error {
 * 支持JSON/JSONP/HTML格式输出
 * 统一的HTTP错误处理
 * 统一的日志处理
+* 支持Hijack与websocket
 
 ### 路由
 #### 常规路由
