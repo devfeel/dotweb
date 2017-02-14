@@ -12,11 +12,13 @@ import (
 )
 
 type Dotweb struct {
-	HttpServer      *HttpServer
-	Modules         []*HttpModule
-	logpath         string
-	ExceptionHandle func(*HttpContext, interface{})
+	HttpServer       *HttpServer
+	Modules          []*HttpModule
+	logpath          string
+	ExceptionHandler func(*HttpContext, interface{})
 }
+
+type ExceptionHandle func(*HttpContext, interface{})
 
 /*
 * 创建DotServer实例，返回指针
@@ -36,6 +38,13 @@ func New() *Dotweb {
  */
 func (ds *Dotweb) RegisterModule(module *HttpModule) {
 	ds.Modules = append(ds.Modules, module)
+}
+
+/*
+* 设置异常处理函数
+ */
+func (ds *Dotweb) SetExceptionHandle(handler *ExceptionHandle) {
+	ds.ExceptionHandler = handler
 }
 
 /*

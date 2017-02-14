@@ -1,13 +1,13 @@
-## DotWeb
+# DotWeb
 简约大方的go Web微型框架
 
-### 安装：
+## 安装：
 
 ```
 go get -u github.com/devfeel/dotweb
 ```
 
-### 快速开始：
+## 快速开始：
 
 ```go
 func StartServer() error {
@@ -25,7 +25,7 @@ func StartServer() error {
 }
 
 ```
-### 特性
+## 特性
 * 支持静态路由、参数路由
 * 路由支持文件/目录服务
 * 中间件支持
@@ -34,7 +34,7 @@ func StartServer() error {
 * 统一的日志处理
 * 支持Hijack与websocket
 
-### 路由
+## 路由
 #### 常规路由
 目前支持GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE 这几类请求方法
 另外也支持HiJack\WebSocket\ServerFile三类特殊应用
@@ -94,3 +94,11 @@ func main() {
 测试：
 <br>curl http://127.0.0.1/hello/devfeel
 <br>curl http://127.0.0.1/hello/category1/1
+
+##异常
+####500错误
+* 默认设置下，当发生未处理异常时，会向页面输出具体异常信息，并返回 500 错误头
+* 也可通过SetExceptionHandle实现自定义异常处理逻辑，该方法接受一个ExceptionHandle类型。
+```
+type ExceptionHandle func(*HttpContext, interface{})
+```
