@@ -97,8 +97,8 @@ func main() {
 
 ##异常
 ####500错误
-* 默认设置下，当发生未处理异常时，会向页面输出具体异常信息，并返回 500 错误头
-* 也可通过SetExceptionHandle实现自定义异常处理逻辑，该方法接受一个ExceptionHandle类型。
+* 默认设置: 当发生未处理异常时，会向页面输出具体异常信息，并返回 500 错误头
+* 自定义: 通过DotServer.SetExceptionHandle(handler *ExceptionHandle)实现自定义异常处理逻辑
 ```
 type ExceptionHandle func(*HttpContext, interface{})
 ```
