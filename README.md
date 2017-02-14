@@ -83,11 +83,13 @@ func main() {
         ctx.WriteString("hello " + ctx.GetRouterName("name"))
     })
     dotserver.Get("/news/:category/:newsid", func(ctx *dotweb.HttpContext) {
-        ctx.WriteString("news info: category=" + ctx.GetRouterName("category") + " newsid=" + ctx.GetRouterName("newsid"))
+    	category := ctx.GetRouterName("category")
+	newsid := ctx.GetRouterName("newsid")
+        ctx.WriteString("news info: category=" + category + " newsid=" + newsid)
     })
     dotserver.StartServer(80)
 }
 ```
 测试：
-curl http://127.0.0.1/hello/devfeel
-curl http://127.0.0.1/hello/category1/1
+<br>curl http://127.0.0.1/hello/devfeel
+<br>curl http://127.0.0.1/hello/category1/1
