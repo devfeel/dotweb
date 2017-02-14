@@ -1,5 +1,5 @@
 ### dotweb
-基于go语言开发的web framework
+基于go语言开发的微Web框架
 
 ### 安装：
 
