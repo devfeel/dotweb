@@ -1,5 +1,5 @@
 ### dotweb
-基于go语言开发的微Web框架
+简约大方的go Web微型框架
 
 ### 安装：
 
@@ -25,10 +25,17 @@ func StartServer() error {
 }
 
 ```
+### 特性
+* 支持静态路由、参数路由、组路由（前缀路由/命名空间）和路由命名
+* 路由支持文件/目录服务
+* 中间件支持
+* 支持JSON/JSONP/HTML格式输出
+* 统一的HTTP错误处理
+* 统一的日志处理
 
-### 路由规则
+### 路由
+#### 常规路由
 目前支持GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE 这几类请求方法
-
 另外也支持HiJack\WebSocket\ServerFile三类特殊应用
 ```go
 1、HttpServer.GET(path string, handle HttpHandle)
@@ -41,3 +48,23 @@ func StartServer() error {
 8、HttpServer.HiJack(path string, handle HttpHandle)
 9、HttpServer.WebSocket(path string, handle HttpHandle)
 ```
+接受两个参数，一个是URI路径，另一个是 HttpHandle 类型，设定匹配到该路径时执行的方法；
+#### 静态路由
+静态路由语法就是没有任何参数变量，pattern是一个固定的字符串。
+```
+package main
+
+import (
+    "github.com/devfeel/dotweb"
+)
+
+func main() {
+    dotserver := dotweb.New()
+    dotserver.Get("/hello", func(ctx *dotweb.HttpContext) {
+        ctx.WriteString("hello world!")
+    })
+    dotserver.StartServer(80)
+}
+```
+测试：
+curl http://127.0.0.1/hello
