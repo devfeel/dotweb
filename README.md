@@ -1,4 +1,4 @@
-### dotweb
+## DotWeb
 简约大方的go Web微型框架
 
 ### 安装：
