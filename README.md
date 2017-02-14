@@ -51,7 +51,7 @@ func StartServer() error {
 接受两个参数，一个是URI路径，另一个是 HttpHandle 类型，设定匹配到该路径时执行的方法；
 #### 静态路由
 静态路由语法就是没有任何参数变量，pattern是一个固定的字符串。
-```
+```go
 package main
 
 import (
@@ -68,3 +68,26 @@ func main() {
 ```
 测试：
 curl http://127.0.0.1/hello
+#### 参数路由
+参数路由以冒号 : 后面跟一个字符串作为参数名称，可以通过 HttpContext的 GetRouterName 方法获取路由参数的值。
+```go
+package main
+
+import (
+    "github.com/devfeel/dotweb"
+)
+
+func main() {
+    dotserver := dotweb.New()
+    dotserver.Get("/hello/:name", func(ctx *dotweb.HttpContext) {
+        ctx.WriteString("hello " + ctx.GetRouterName("name"))
+    })
+    dotserver.Get("/news/:category/:newsid", func(ctx *dotweb.HttpContext) {
+        ctx.WriteString("news info: category=" + ctx.GetRouterName("category") + " newsid=" + ctx.GetRouterName("newsid"))
+    })
+    dotserver.StartServer(80)
+}
+```
+测试：
+curl http://127.0.0.1/hello/devfeel
+curl http://127.0.0.1/hello/category1/1
