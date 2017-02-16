@@ -15,7 +15,7 @@ type Dotweb struct {
 	HttpServer       *HttpServer
 	Modules          []*HttpModule
 	logpath          string
-	ExceptionHandler func(*HttpContext, interface{})
+	ExceptionHandler ExceptionHandle
 }
 
 type ExceptionHandle func(*HttpContext, interface{})
@@ -43,7 +43,7 @@ func (ds *Dotweb) RegisterModule(module *HttpModule) {
 /*
 * 设置异常处理函数
  */
-func (ds *Dotweb) SetExceptionHandle(handler *ExceptionHandle) {
+func (ds *Dotweb) SetExceptionHandle(handler ExceptionHandle) {
 	ds.ExceptionHandler = handler
 }
 

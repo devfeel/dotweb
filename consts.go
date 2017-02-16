@@ -54,6 +54,7 @@ const (
 	HeaderUpgrade                       = "Upgrade"
 	HeaderVary                          = "Vary"
 	HeaderWWWAuthenticate               = "WWW-Authenticate"
+	HeaderXRequestedWith                = "X-Requested-With"
 	HeaderXForwardedProto               = "X-Forwarded-Proto"
 	HeaderXHTTPMethodOverride           = "X-HTTP-Method-Override"
 	HeaderXForwardedFor                 = "X-Forwarded-For"

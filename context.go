@@ -107,6 +107,11 @@ func (ctx *HttpContext) Server() string {
 	return ctx.QueryHeader(HeaderServer)
 }
 
+// IsAJAX returns if it is a ajax request
+func (ctx *HttpContext) IsAJAX() bool {
+	return ctx.Request.Header.Get(HeaderXRequestedWith) == "XMLHttpRequest"
+}
+
 func (ctx *HttpContext) Proto() string {
 	return ctx.Request.Proto
 }
