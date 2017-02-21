@@ -5,7 +5,7 @@ import (
 	"os"
 	"runtime"
 
-	"devfeel/dotweb/framework/log"
+	"github.com/devfeel/dotweb/framework/log"
 )
 
 const logLevel_Error = "error"

@@ -1,11 +1,11 @@
 package dotweb
 
 import (
-	"devfeel/dotweb/framework/convert"
-	"devfeel/dotweb/framework/exception"
-	"devfeel/dotweb/framework/json"
-	"devfeel/dotweb/framework/log"
 	"fmt"
+	"github.com/devfeel/dotweb/framework/convert"
+	"github.com/devfeel/dotweb/framework/exception"
+	"github.com/devfeel/dotweb/framework/json"
+	"github.com/devfeel/dotweb/framework/log"
 	"io"
 	"net/http"
 	"strings"

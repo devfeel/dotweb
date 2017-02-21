@@ -1,8 +1,8 @@
 package dotweb
 
 import (
-	"devfeel/dotweb/framework/json"
-	"devfeel/dotweb/framework/log"
+	"github.com/devfeel/dotweb/framework/json"
+	"github.com/devfeel/dotweb/framework/log"
 	"net/http"
 	_ "net/http/pprof"
 	"runtime"
