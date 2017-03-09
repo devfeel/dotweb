@@ -18,8 +18,8 @@ func main() {
 	InitRoute(dotserver)
 
 	//启动监控服务
-	pprofport := 8081
-	go dotserver.StartPProfServer(pprofport)
+	//pprofport := 8081
+	//go dotserver.StartPProfServer(pprofport)
 
 	// 开始服务
 	port := 8080
