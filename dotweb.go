@@ -17,6 +17,7 @@ type Dotweb struct {
 	Modules          []*HttpModule
 	logpath          string
 	ExceptionHandler ExceptionHandle
+	DebugMode        bool
 }
 
 type ExceptionHandle func(*HttpContext, interface{})
@@ -28,6 +29,7 @@ func New() *Dotweb {
 	dotweb := &Dotweb{
 		HttpServer: NewHttpServer(),
 		Modules:    make([]*HttpModule, 0, 10),
+		DebugMode:  false,
 	}
 	dotweb.HttpServer.setDotweb(dotweb)
 
@@ -39,6 +41,13 @@ func New() *Dotweb {
  */
 func (ds *Dotweb) RegisterModule(module *HttpModule) {
 	ds.Modules = append(ds.Modules, module)
+}
+
+/*
+设置Debug模式，默认为false
+*/
+func (ds *Dotweb) SetDebugMode(isDebug bool) {
+	ds.DebugMode = isDebug
 }
 
 /*
@@ -80,13 +89,25 @@ func (ds *Dotweb) StartServer(httpport int) error {
 	ds.HttpServer.GET("/dotweb/query/:key", showQuery)
 
 	if ds.ExceptionHandler == nil {
-		ds.SetExceptionHandle(DefaultHTTPErrorHandler)
+		ds.SetExceptionHandle(ds.DefaultHTTPErrorHandler)
 	}
 
 	port := ":" + strconv.Itoa(httpport)
 	logger.Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
 	err := http.ListenAndServe(port, ds.HttpServer)
 	return err
+}
+
+//默认异常处理
+func (ds *Dotweb) DefaultHTTPErrorHandler(ctx *HttpContext, errinfo interface{}) {
+	//输出内容
+	ctx.Response.WriteHeader(http.StatusInternalServerError)
+	ctx.Response.Header().Set(HeaderContentType, CharsetUTF8)
+	if ds.DebugMode {
+		ctx.WriteString(fmt.Sprintln(errinfo))
+	} else {
+		ctx.WriteString("Internal Server Error")
+	}
 }
 
 //query pprof debug info
@@ -117,12 +138,4 @@ func showQuery(ctx *HttpContext) {
 	default:
 		ctx.WriteString("not support key => " + querykey)
 	}
-}
-
-//默认异常处理
-func DefaultHTTPErrorHandler(ctx *HttpContext, errinfo interface{}) {
-	//输出内容
-	ctx.Response.WriteHeader(http.StatusInternalServerError)
-	ctx.Response.Header().Set(HeaderContentType, CharsetUTF8)
-	ctx.WriteString(fmt.Sprintln(errinfo))
 }

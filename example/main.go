@@ -14,6 +14,9 @@ func main() {
 	//设置dotserver日志目录
 	dotserver.SetLogPath(file.GetCurrentDirectory())
 
+	//设置Debug模式
+	dotserver.SetDebugMode(true)
+
 	//设置路由
 	InitRoute(dotserver)
 
@@ -39,7 +42,7 @@ func IndexReg(ctx *dotweb.HttpContext) {
 }
 
 func DefaultError(ctx *dotweb.HttpContext) {
-	panic("DefaultError")
+	panic("my panic error!")
 }
 
 func InitRoute(dotserver *dotweb.Dotweb) {
