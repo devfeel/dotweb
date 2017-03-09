@@ -96,6 +96,11 @@ func main() {
 <br>curl http://127.0.0.1/hello/devfeel
 <br>curl http://127.0.0.1/hello/category1/1
 
+##中间件(拦截器)
+####RegisterModule
+* 支持OnBeginRequest、OnEndRequest两类中间件
+* 通过实现HttpModule.OnBeginRequest、HttpModule.OnEndRequest接口实现自定义中间件
+
 ##异常
 ####500错误
 * 默认设置: 当发生未处理异常时，会根据DebugMode向页面输出默认错误信息或者具体异常信息，并返回 500 错误头
