@@ -242,6 +242,10 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) htt
 
 		//处理用户handle
 		handle(httpCtx)
+		if httpCtx.isEnd {
+			//if current module set HttpContext.End,stop this request
+			return
+		}
 
 		//处理后置Module集合
 		for _, module := range server.dotweb.Modules {
