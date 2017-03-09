@@ -48,6 +48,7 @@ func StartServer() error {
 7、HttpServer.DELETE(path string, handle HttpHandle)
 8、HttpServer.HiJack(path string, handle HttpHandle)
 9、HttpServer.WebSocket(path string, handle HttpHandle)
+10、HttpServer.RegisterRoute(routeMethod string, path string, handle HttpHandle)
 ```
 接受两个参数，一个是URI路径，另一个是 HttpHandle 类型，设定匹配到该路径时执行的方法；
 #### 静态路由
