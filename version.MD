@@ -1,5 +1,10 @@
 ##dotweb版本记录：
 
+
+####Version 0.3.1
+* 新增HttpServer.RegisterRoute函数，新增example目录
+* 2017-0-09 10:00
+
 ####Version 0.3
 * 新增Hijack支持
 * 2017-01-10 16:00

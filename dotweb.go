@@ -70,8 +70,6 @@ func (ds *Dotweb) SetLogPath(path string) {
 func (ds *Dotweb) StartServer(httpport int) error {
 	//启动内部日志
 	logger.StartLogHandler(ds.logpath)
-	port := ":" + strconv.Itoa(httpport)
-	logger.Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
 
 	//添加框架默认路由规则
 	//默认支持pprof信息查看
@@ -80,6 +78,8 @@ func (ds *Dotweb) StartServer(httpport int) error {
 	ds.HttpServer.GET("/dotweb/state", showServerState)
 	ds.HttpServer.GET("/dotweb/query/:key", showQuery)
 
+	port := ":" + strconv.Itoa(httpport)
+	logger.Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
 	err := http.ListenAndServe(port, ds.HttpServer)
 	return err
 }

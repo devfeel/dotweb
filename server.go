@@ -16,6 +16,18 @@ import (
 	"golang.org/x/net/websocket"
 )
 
+const (
+	RouteMethod_GET       = "GET"
+	RouteMethod_HEAD      = "HEAD"
+	RouteMethod_OPTIONS   = "OPTIONS"
+	RouteMethod_POST      = "POST"
+	RouteMethod_PUT       = "PUT"
+	RouteMethod_PATCH     = "PATCH"
+	RouteMethod_DELETE    = "DELETE"
+	RouteMethod_HiJack    = "HiJack"
+	RouteMethod_WebSocket = "WebSocket"
+)
+
 type (
 	//HttpModule定义
 	HttpModule struct {
@@ -84,42 +96,64 @@ func (server *HttpServer) setDotweb(dotweb *Dotweb) {
 
 // GET is a shortcut for router.Handle("GET", path, handle)
 func (server *HttpServer) GET(path string, handle HttpHandle) {
-	server.router.Handle("GET", path, server.wrapRouterHandle(handle, false))
+	server.RegisterRoute(RouteMethod_GET, path, handle)
 }
 
 // HEAD is a shortcut for router.Handle("HEAD", path, handle)
 func (server *HttpServer) HEAD(path string, handle HttpHandle) {
-	server.router.Handle("HEAD", path, server.wrapRouterHandle(handle, false))
+	server.RegisterRoute(RouteMethod_HEAD, path, handle)
 }
 
 // OPTIONS is a shortcut for router.Handle("OPTIONS", path, handle)
 func (server *HttpServer) OPTIONS(path string, handle HttpHandle) {
-	server.router.Handle("OPTIONS", path, server.wrapRouterHandle(handle, false))
+	server.RegisterRoute(RouteMethod_OPTIONS, path, handle)
 }
 
 // POST is a shortcut for router.Handle("POST", path, handle)
 func (server *HttpServer) POST(path string, handle HttpHandle) {
-	server.router.Handle("POST", path, server.wrapRouterHandle(handle, false))
+	server.RegisterRoute(RouteMethod_POST, path, handle)
 }
 
 // PUT is a shortcut for router.Handle("PUT", path, handle)
 func (server *HttpServer) PUT(path string, handle HttpHandle) {
-	server.router.Handle("PUT", path, server.wrapRouterHandle(handle, false))
+	server.RegisterRoute(RouteMethod_PUT, path, handle)
 }
 
 // PATCH is a shortcut for router.Handle("PATCH", path, handle)
 func (server *HttpServer) PATCH(path string, handle HttpHandle) {
-	server.router.Handle("PATCH", path, server.wrapRouterHandle(handle, false))
+	server.RegisterRoute(RouteMethod_PATCH, path, handle)
 }
 
 // DELETE is a shortcut for router.Handle("DELETE", path, handle)
 func (server *HttpServer) DELETE(path string, handle HttpHandle) {
-	server.router.Handle("DELETE", path, server.wrapRouterHandle(handle, false))
+	server.RegisterRoute(RouteMethod_DELETE, path, handle)
 }
 
 // DELETE is a shortcut for router.Handle("DELETE", path, handle)
 func (server *HttpServer) HiJack(path string, handle HttpHandle) {
-	server.router.Handle("GET", path, server.wrapRouterHandle(handle, true))
+	server.RegisterRoute(RouteMethod_GET, path, handle)
+}
+
+// shortcut for router.Handle(httpmethod, path, handle)
+// support GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS\HiJack\WebSocket
+func (server *HttpServer) RegisterRoute(routeMethod string, path string, handle HttpHandle) {
+
+	logger.Log("Dotweb:RegisterRoute ["+routeMethod+"] ["+path+"] ["+fmt.Sprintln(handle)+"]", LogTarget_HttpServer, LogLevel_Debug)
+
+	//hijack mode,use get and isHijack = true
+	if routeMethod == RouteMethod_HiJack {
+		server.router.Handle(RouteMethod_GET, path, server.wrapRouterHandle(handle, true))
+		return
+	}
+	//websocket mode,use default httpserver
+	if routeMethod == RouteMethod_WebSocket {
+		http.Handle(path, websocket.Handler(server.wrapWebSocketHandle(handle)))
+		return
+	}
+
+	//GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS mode
+	server.router.Handle(routeMethod, path, server.wrapRouterHandle(handle, false))
+	return
 }
 
 // ServerFile is a shortcut for router.ServeFiles(path, filepath)
@@ -130,7 +164,7 @@ func (server *HttpServer) ServerFile(urlpath string, filepath string) {
 
 // WebSocket is a shortcut for websocket.Handler
 func (server *HttpServer) WebSocket(path string, handle HttpHandle) {
-	http.Handle(path, websocket.Handler(server.wrapWebSocketHandle(handle)))
+	server.RegisterRoute(RouteMethod_WebSocket, path, handle)
 }
 
 type LogJson struct {
