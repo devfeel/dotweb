@@ -19,6 +19,16 @@ type HttpContext struct {
 	HijackConn   *HijackConn
 	IsWebSocket  bool
 	IsHijack     bool
+	isEnd        bool //表示当前处理流程是否需要终止
+}
+
+//set context process end
+func (ctx *HttpContext) End() {
+	ctx.isEnd = true
+}
+
+func (ctx *HttpContext) IsEnd() bool {
+	return ctx.isEnd
 }
 
 //reset response attr

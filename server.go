@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"golang.org/x/net/context/ctxhttp"
 	"golang.org/x/net/websocket"
 )
 
@@ -181,6 +182,9 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) htt
 		httpCtx := server.pool.context.Get().(*HttpContext)
 		httpCtx.Reset(res, r, params)
 
+		//增加状态计数
+		GlobalState.AddRequestCount(1)
+
 		//hijack处理
 		if isHijack {
 			_, hijack_err := httpCtx.Hijack()
@@ -229,6 +233,10 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) htt
 		for _, module := range server.dotweb.Modules {
 			if module.OnBeginRequest != nil {
 				module.OnBeginRequest(httpCtx)
+				//if current module set HttpContext.End,stop this request
+				if httpCtx.isEnd {
+					return
+				}
 			}
 		}
 
@@ -239,11 +247,13 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) htt
 		for _, module := range server.dotweb.Modules {
 			if module.OnEndRequest != nil {
 				module.OnEndRequest(httpCtx)
+				if httpCtx.isEnd {
+					//if current module set HttpContext.End,stop this request
+					return
+				}
 			}
 		}
 
-		//增加状态计数
-		GlobalState.AddRequestCount(1)
 	}
 }
 
