@@ -1,6 +1,7 @@
 package dotweb
 
 import (
+	"fmt"
 	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/framework/log"
 	"net/http"
@@ -78,6 +79,10 @@ func (ds *Dotweb) StartServer(httpport int) error {
 	ds.HttpServer.GET("/dotweb/state", showServerState)
 	ds.HttpServer.GET("/dotweb/query/:key", showQuery)
 
+	if ds.ExceptionHandler == nil {
+		ds.SetExceptionHandle(DefaultHTTPErrorHandler)
+	}
+
 	port := ":" + strconv.Itoa(httpport)
 	logger.Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
 	err := http.ListenAndServe(port, ds.HttpServer)
@@ -112,4 +117,12 @@ func showQuery(ctx *HttpContext) {
 	default:
 		ctx.WriteString("not support key => " + querykey)
 	}
+}
+
+//默认异常处理
+func DefaultHTTPErrorHandler(ctx *HttpContext, errinfo interface{}) {
+	//输出内容
+	ctx.Response.WriteHeader(http.StatusInternalServerError)
+	ctx.Response.Header().Set(HeaderContentType, CharsetUTF8)
+	ctx.WriteString(fmt.Sprintln(errinfo))
 }

@@ -6,7 +6,6 @@ import (
 	"github.com/devfeel/dotweb/framework/exception"
 	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/framework/log"
-	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -198,14 +197,10 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) htt
 			var errmsg string
 			if err := recover(); err != nil {
 				errmsg = exception.CatchError("httpserver::RouterHandle", LogTarget_HttpServer, err)
+
 				//具体异常处理函数
 				if server.dotweb.ExceptionHandler != nil {
 					server.dotweb.ExceptionHandler(httpCtx, err)
-				} else {
-					//输出内容
-					httpCtx.Response.WriteHeader(http.StatusInternalServerError)
-					httpCtx.Response.Header().Set(HeaderContentType, CharsetUTF8)
-					io.WriteString(httpCtx.Response.writer, errmsg)
 				}
 
 				//记录访问日志

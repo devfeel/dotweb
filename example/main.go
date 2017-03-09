@@ -38,7 +38,13 @@ func IndexReg(ctx *dotweb.HttpContext) {
 	ctx.WriteString("welcome to dotweb")
 }
 
+func DefaultError(ctx *dotweb.HttpContext) {
+	panic("DefaultError")
+}
+
 func InitRoute(dotserver *dotweb.Dotweb) {
 	dotserver.HttpServer.GET("/", Index)
+	dotserver.HttpServer.GET("/error", DefaultError)
 	dotserver.HttpServer.RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
+
 }
