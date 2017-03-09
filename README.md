@@ -100,6 +100,7 @@ func main() {
 ####RegisterModule
 * 支持OnBeginRequest、OnEndRequest两类中间件
 * 通过实现HttpModule.OnBeginRequest、HttpModule.OnEndRequest接口实现自定义中间件
+* 通过设置HttpContext.End()提前终止请求
 
 ##异常
 ####500错误
