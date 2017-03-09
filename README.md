@@ -105,3 +105,7 @@ type ExceptionHandle func(*HttpContext, interface{})
 ##相关项目
 ####<a href="https://github.com/devfeel/tokenserver" target="_blank">TokenServer</a>
 项目简介：token服务，提供token一致性服务以及相关的全局ID生成服务等
+
+
+##如何联系
+QQ群：193409346
