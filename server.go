@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
-	"golang.org/x/net/context/ctxhttp"
 	"golang.org/x/net/websocket"
 )
 
