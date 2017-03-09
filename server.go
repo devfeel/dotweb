@@ -198,7 +198,7 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) htt
 			if err := recover(); err != nil {
 				errmsg = exception.CatchError("httpserver::RouterHandle", LogTarget_HttpServer, err)
 
-				//具体异常处理函数
+				//默认异常处理
 				if server.dotweb.ExceptionHandler != nil {
 					server.dotweb.ExceptionHandler(httpCtx, err)
 				}

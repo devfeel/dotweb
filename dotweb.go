@@ -44,7 +44,7 @@ func (ds *Dotweb) RegisterModule(module *HttpModule) {
 }
 
 /*
-设置Debug模式，默认为false
+设置Debug模式,默认为false
 */
 func (ds *Dotweb) SetDebugMode(isDebug bool) {
 	ds.DebugMode = isDebug
