@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/devfeel/dotweb"
 	"github.com/devfeel/dotweb/framework/file"
+	"github.com/devfeel/dotweb/session"
 	"strconv"
 )
 
@@ -14,8 +15,16 @@ func main() {
 	//设置dotserver日志目录
 	dotserver.SetLogPath(file.GetCurrentDirectory())
 
-	//设置Debug模式
-	dotserver.SetDebugMode(true)
+	//设置Debug开关
+	dotserver.SetEnabledDebug(true)
+	//设置Session开关
+	dotserver.SetEnabledSession(true)
+
+	//设置Session配置
+	//runtime mode
+	dotserver.SetSessionConfig(session.NewDefaultRuntimeConfig())
+	//redis mode
+	//dotserver.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6379", ""))
 
 	//设置路由
 	InitRoute(dotserver)
@@ -45,9 +54,20 @@ func DefaultError(ctx *dotweb.HttpContext) {
 	panic("my panic error!")
 }
 
+func TestSession(ctx *dotweb.HttpContext) {
+	ctx.Session().Set("username", "dotweb")
+	userName := ctx.Session().GetString("username")
+
+	ctx.WriteString("welcome to dotweb - sessionid=> " + ctx.SessionID +
+		", session-len=>" + strconv.Itoa(ctx.Session().Count()) +
+		",username=>" + userName)
+
+}
+
 func InitRoute(dotserver *dotweb.Dotweb) {
 	dotserver.HttpServer.GET("/", Index)
 	dotserver.HttpServer.GET("/error", DefaultError)
+	dotserver.HttpServer.GET("/session", TestSession)
 	dotserver.HttpServer.RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
 
 }

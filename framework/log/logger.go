@@ -97,5 +97,6 @@ func writeFile(logFile string, log string) {
 		fmt.Println(logFile, err)
 		return
 	}
+	//fmt.Print(logstr)
 	file.WriteString(logstr)
 }

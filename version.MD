@@ -1,5 +1,9 @@
 ##dotweb版本记录：
 
+####Version 0.3.2
+* 新增Session模块实现 - runtime\redis 两种模式
+* 2017-03-13 14:00
+
 
 ####Version 0.3.1
 * 新增HttpServer.RegisterRoute函数，新增example目录

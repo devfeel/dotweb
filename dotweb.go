@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/framework/log"
+	"github.com/devfeel/dotweb/session"
 	"net/http"
 	_ "net/http/pprof"
 	"runtime"
@@ -14,10 +15,10 @@ import (
 
 type Dotweb struct {
 	HttpServer       *HttpServer
+	SessionConfig    *session.StoreConfig
 	Modules          []*HttpModule
 	logpath          string
 	ExceptionHandler ExceptionHandle
-	DebugMode        bool
 }
 
 type ExceptionHandle func(*HttpContext, interface{})
@@ -26,14 +27,12 @@ type ExceptionHandle func(*HttpContext, interface{})
 * 创建DotServer实例，返回指针
  */
 func New() *Dotweb {
-	dotweb := &Dotweb{
+	application := &Dotweb{
 		HttpServer: NewHttpServer(),
 		Modules:    make([]*HttpModule, 0, 10),
-		DebugMode:  false,
 	}
-	dotweb.HttpServer.setDotweb(dotweb)
-
-	return dotweb
+	application.HttpServer.setDotweb(application)
+	return application
 }
 
 /*
@@ -46,8 +45,20 @@ func (ds *Dotweb) RegisterModule(module *HttpModule) {
 /*
 设置Debug模式,默认为false
 */
-func (ds *Dotweb) SetDebugMode(isDebug bool) {
-	ds.DebugMode = isDebug
+func (ds *Dotweb) SetEnabledDebug(isEnabled bool) {
+	ds.HttpServer.ServerConfig.EnabledDebug = isEnabled
+}
+
+/*
+设置是否启用Session,默认为false
+*/
+func (ds *Dotweb) SetEnabledSession(isEnabled bool) {
+	ds.HttpServer.ServerConfig.EnabledSession = isEnabled
+}
+
+//set session store config
+func (ds *Dotweb) SetSessionConfig(config *session.StoreConfig) {
+	ds.SessionConfig = config
 }
 
 /*
@@ -92,6 +103,14 @@ func (ds *Dotweb) StartServer(httpport int) error {
 		ds.SetExceptionHandle(ds.DefaultHTTPErrorHandler)
 	}
 
+	//init session manager
+	if ds.HttpServer.ServerConfig.EnabledSession {
+		if ds.SessionConfig == nil {
+			panic("no set SessionConfig, but set enabledsession true")
+		}
+		ds.HttpServer.InitSessionManager(ds.SessionConfig)
+	}
+
 	port := ":" + strconv.Itoa(httpport)
 	logger.Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
 	err := http.ListenAndServe(port, ds.HttpServer)
@@ -103,7 +122,7 @@ func (ds *Dotweb) DefaultHTTPErrorHandler(ctx *HttpContext, errinfo interface{})
 	//输出内容
 	ctx.Response.WriteHeader(http.StatusInternalServerError)
 	ctx.Response.Header().Set(HeaderContentType, CharsetUTF8)
-	if ds.DebugMode {
+	if ds.HttpServer.ServerConfig.EnabledDebug {
 		ctx.WriteString(fmt.Sprintln(errinfo))
 	} else {
 		ctx.WriteString("Internal Server Error")

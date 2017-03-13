@@ -6,6 +6,7 @@ import (
 	"github.com/devfeel/dotweb/framework/exception"
 	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/framework/log"
+	"github.com/devfeel/dotweb/session"
 	"net/http"
 	"strings"
 	"sync"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/net/websocket"
+	"net/url"
 )
 
 const (
@@ -38,9 +40,18 @@ type (
 
 	//HttpServer定义
 	HttpServer struct {
-		router *httprouter.Router
-		dotweb *Dotweb
-		pool   *pool
+		router         *httprouter.Router
+		dotweb         *Dotweb
+		sessionManager *session.SessionManager
+		lock_session   *sync.RWMutex
+		pool           *pool
+		ServerConfig   *ServerConfig
+	}
+
+	//server global config
+	ServerConfig struct {
+		EnabledDebug   bool //is enabled debug mode
+		EnabledSession bool //is enabled seesion
 	}
 
 	//pool定义
@@ -49,6 +60,14 @@ type (
 		context  sync.Pool
 	}
 )
+
+func NewServerConfig() *ServerConfig {
+	config := &ServerConfig{
+		EnabledDebug:   false,
+		EnabledSession: false,
+	}
+	return config
+}
 
 // Handle is a function that can be registered to a route to handle HTTP
 // requests. Like http.HandlerFunc, but has a third parameter for the values of
@@ -70,7 +89,10 @@ func NewHttpServer() *HttpServer {
 				},
 			},
 		},
+		ServerConfig: NewServerConfig(),
+		lock_session: new(sync.RWMutex),
 	}
+
 	return server
 }
 
@@ -86,11 +108,34 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+//init session manager
+func (server *HttpServer) InitSessionManager(config *session.StoreConfig) {
+	if server.sessionManager == nil {
+		//设置Session
+		server.lock_session.Lock()
+		if manager, err := session.NewDefaultSessionManager(config); err != nil {
+			//panic error with create session manager
+			panic(err.Error())
+		} else {
+			server.sessionManager = manager
+		}
+		server.lock_session.Unlock()
+	}
+}
+
 /*
 * 关联当前HttpServer实例对应的DotServer实例
  */
 func (server *HttpServer) setDotweb(dotweb *Dotweb) {
 	server.dotweb = dotweb
+}
+
+//get session manager in current httpserver
+func (server *HttpServer) GetSessionManager() *session.SessionManager {
+	if !server.ServerConfig.EnabledSession {
+		return nil
+	}
+	return server.sessionManager
 }
 
 // GET is a shortcut for router.Handle("GET", path, handle)
@@ -179,10 +224,28 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) htt
 		res := server.pool.response.Get().(*Response)
 		res.Reset(w)
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(res, r, params)
+		httpCtx.Reset(res, r, server, params)
 
 		//增加状态计数
 		GlobalState.AddRequestCount(1)
+
+		//session
+		//if exists client-sessionid, use it
+		//if not exists client-sessionid, new one
+		if server.ServerConfig.EnabledSession {
+			sessionId, err := server.GetSessionManager().GetClientSessionID(r)
+			if err == nil && sessionId != "" {
+				httpCtx.SessionID = sessionId
+			} else {
+				httpCtx.SessionID = server.GetSessionManager().NewSessionID()
+				cookie := http.Cookie{
+					Name:  server.sessionManager.CookieName,
+					Value: url.QueryEscape(httpCtx.SessionID),
+					Path:  "/",
+				}
+				httpCtx.WriteCookieObj(cookie)
+			}
+		}
 
 		//hijack处理
 		if isHijack {
@@ -265,7 +328,7 @@ func (server *HttpServer) wrapWebSocketHandle(handle HttpHandle) websocket.Handl
 	return func(ws *websocket.Conn) {
 		//get from pool
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(nil, ws.Request(), nil)
+		httpCtx.Reset(nil, ws.Request(), server, nil)
 		httpCtx.WebSocket = &WebSocket{
 			Conn: ws,
 		}

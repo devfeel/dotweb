@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/devfeel/dotweb/session"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -20,6 +21,8 @@ type HttpContext struct {
 	IsWebSocket  bool
 	IsHijack     bool
 	isEnd        bool //表示当前处理流程是否需要终止
+	HttpServer   *HttpServer
+	SessionID    string
 }
 
 //set context process end
@@ -32,14 +35,33 @@ func (ctx *HttpContext) IsEnd() bool {
 }
 
 //reset response attr
-func (ctx *HttpContext) Reset(res *Response, r *http.Request, params httprouter.Params) {
+func (ctx *HttpContext) Reset(res *Response, r *http.Request, server *HttpServer, params httprouter.Params) {
 	ctx.Request = r
 	ctx.Response = res
 	ctx.RouterParams = params
 	ctx.IsHijack = false
 	ctx.IsWebSocket = false
+	ctx.HttpServer = server
 }
 
+//get session state in current context
+func (ctx *HttpContext) Session() (session *session.SessionState) {
+	if ctx.HttpServer == nil {
+		//return nil, errors.New("no effective http-server")
+		panic("no effective http-server")
+	}
+	if !ctx.HttpServer.ServerConfig.EnabledSession {
+		//return nil, errors.New("http-server not enabled session")
+		panic("http-server not enabled session")
+	}
+	state, err := ctx.HttpServer.sessionManager.GetSessionState(ctx.SessionID)
+	if err != nil {
+		panic(err.Error())
+	}
+	return state
+}
+
+//make current connection to hijack mode
 func (ctx *HttpContext) Hijack() (*HijackConn, error) {
 	hj, ok := ctx.Response.Writer().(http.Hijacker)
 	if !ok {

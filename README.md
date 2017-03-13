@@ -110,10 +110,25 @@ func main() {
 type ExceptionHandle func(*HttpContext, interface{})
 ```
 
+##Session
+####支持runtime、redis两种
+* runtime：基于内存存储实现session模块
+* redis：基于Redis存储实现session模块
+```
+//设置session支持
+dotserver.SetEnabledSession(true)
+//使用runtime模式
+dotserver.SetSessionConfig(session.NewDefaultRuntimeConfig())
+//使用redis模式
+dotserver.SetSessionConfig(session.NewDefaultRedisConfig("127.0.0.1:6379", "xxxx"))
+```
+
 ##外部依赖
 httprouter - github.com/julienschmidt/httprouter
 <br>
 websocket - golang.org/x/net/websocket
+<br>
+redis - github.com/garyburd/redigo/redis
 
 
 ##相关项目
