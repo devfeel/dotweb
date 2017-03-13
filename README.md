@@ -112,6 +112,7 @@ type ExceptionHandle func(*HttpContext, interface{})
 
 ##Session
 ####支持runtime、redis两种
+* 默认不开启Session支持
 * runtime：基于内存存储实现session模块
 * redis：基于Redis存储实现session模块
 ```
