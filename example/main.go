@@ -56,12 +56,17 @@ func DefaultError(ctx *dotweb.HttpContext) {
 }
 
 func TestSession(ctx *dotweb.HttpContext) {
-	ctx.Session().Set("username", "dotweb")
-	userName := ctx.Session().GetString("username")
+	type UserInfo struct {
+		UserName string
+		NickName string
+	}
+	user := UserInfo{UserName: "test", NickName: "testName"}
+	ctx.Session().Set("username", user)
+	userRead := ctx.Session().Get("username").(UserInfo)
 
 	ctx.WriteString("welcome to dotweb - sessionid=> " + ctx.SessionID +
 		", session-len=>" + strconv.Itoa(ctx.Session().Count()) +
-		",username=>" + userName)
+		",username=>" + fmt.Sprintln(userRead))
 }
 
 func InitRoute(dotserver *dotweb.Dotweb) {

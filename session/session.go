@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	DefaultSessionGCLifeTime  = 60     //second
-	DefaultSessionMaxLifeTime = 3 * 60 //second
+	DefaultSessionGCLifeTime  = 60      //second
+	DefaultSessionMaxLifeTime = 20 * 60 //second
 	DefaultSessionCookieName  = "dotweb_sessionId"
 	DefaultSessionLength      = 20
 	SessionStoreName_Runtime  = "runtime"
