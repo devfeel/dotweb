@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/devfeel/dotweb"
 	"github.com/devfeel/dotweb/framework/file"
+	//"github.com/devfeel/dotweb/session"
 	"github.com/devfeel/dotweb/session"
 	"strconv"
 )
@@ -61,7 +62,6 @@ func TestSession(ctx *dotweb.HttpContext) {
 	ctx.WriteString("welcome to dotweb - sessionid=> " + ctx.SessionID +
 		", session-len=>" + strconv.Itoa(ctx.Session().Count()) +
 		",username=>" + userName)
-
 }
 
 func InitRoute(dotserver *dotweb.Dotweb) {
