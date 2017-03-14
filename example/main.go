@@ -11,39 +11,47 @@ import (
 
 func main() {
 	//初始化DotServer
-	dotserver := dotweb.New()
+	app := dotweb.New()
 
 	//设置dotserver日志目录
-	dotserver.SetLogPath(file.GetCurrentDirectory())
+	app.SetLogPath(file.GetCurrentDirectory())
 
 	//设置Debug开关
-	dotserver.SetEnabledDebug(true)
+	app.SetEnabledDebug(true)
+
+	//设置gzip开关
+	app.SetEnabledGzip(true)
+
 	//设置Session开关
-	dotserver.SetEnabledSession(true)
+	app.SetEnabledSession(true)
 
 	//设置Session配置
 	//runtime mode
-	dotserver.SetSessionConfig(session.NewDefaultRuntimeConfig())
+	app.SetSessionConfig(session.NewDefaultRuntimeConfig())
 	//redis mode
-	//dotserver.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6379", ""))
+	//app.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6379", ""))
 
 	//设置路由
-	InitRoute(dotserver)
+	InitRoute(app)
+
+	//设置HttpModule
+	//InitModule(app)
 
 	//启动 监控服务
 	//pprofport := 8081
-	//go dotserver.StartPProfServer(pprofport)
+	//go app.StartPProfServer(pprofport)
 
 	// 开始服务
 	port := 8080
 	fmt.Println("dotweb.StartServer => " + strconv.Itoa(port))
-	err := dotserver.StartServer(port)
+	err := app.StartServer(port)
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
 func Index(ctx *dotweb.HttpContext) {
 	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	ctx.WriteString("welcome to dotweb")
+	//ctx.WriteString("welcome to dotwebwelcome to dotwebwelcome to dotwebwelcome to dotweb")
+	ctx.WriteString("")
 }
 
 func IndexReg(ctx *dotweb.HttpContext) {
@@ -74,5 +82,26 @@ func InitRoute(dotserver *dotweb.Dotweb) {
 	dotserver.HttpServer.GET("/error", DefaultError)
 	dotserver.HttpServer.GET("/session", TestSession)
 	dotserver.HttpServer.RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
+}
 
+func InitModule(dotserver *dotweb.Dotweb) {
+	dotserver.RegisterModule(&dotweb.HttpModule{
+		OnBeginRequest: func(ctx *dotweb.HttpContext) {
+			fmt.Println("BeginRequest1:", ctx)
+		},
+		OnEndRequest: func(ctx *dotweb.HttpContext) {
+			fmt.Println("EndRequest1:", ctx)
+		},
+	})
+
+	dotserver.RegisterModule(&dotweb.HttpModule{
+		OnBeginRequest: func(ctx *dotweb.HttpContext) {
+			fmt.Println("BeginRequest2:", ctx)
+		},
+	})
+	dotserver.RegisterModule(&dotweb.HttpModule{
+		OnEndRequest: func(ctx *dotweb.HttpContext) {
+			fmt.Println("EndRequest3:", ctx)
+		},
+	})
 }

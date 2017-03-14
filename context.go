@@ -8,13 +8,13 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/devfeel/dotweb/router"
 	"github.com/devfeel/dotweb/session"
-	"github.com/julienschmidt/httprouter"
 )
 
 type HttpContext struct {
 	Request      *http.Request
-	RouterParams httprouter.Params
+	RouterParams router.Params
 	Response     *Response
 	WebSocket    *WebSocket
 	HijackConn   *HijackConn
@@ -35,7 +35,7 @@ func (ctx *HttpContext) IsEnd() bool {
 }
 
 //reset response attr
-func (ctx *HttpContext) Reset(res *Response, r *http.Request, server *HttpServer, params httprouter.Params) {
+func (ctx *HttpContext) Reset(res *Response, r *http.Request, server *HttpServer, params router.Params) {
 	ctx.Request = r
 	ctx.Response = res
 	ctx.RouterParams = params
@@ -112,6 +112,10 @@ func (ctx *HttpContext) PostString(key string) string {
 
 func (ctx *HttpContext) QueryHeader(key string) string {
 	return ctx.Request.Header.Get(key)
+}
+
+func (ctx *HttpContext) DelHeader(key string) {
+	ctx.Response.Header().Del(key)
 }
 
 //set response header kv info

@@ -35,6 +35,7 @@ func StartServer() error {
 * 支持Hijack与websocket
 
 ## 路由
+特殊说明：集成github.com/julienschmidt/httprouter
 #### 常规路由
 目前支持GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE 这几类请求方法
 另外也支持HiJack\WebSocket\ServerFile三类特殊应用
@@ -127,8 +128,6 @@ ctx.Session().Set(key, value)
 ```
 
 ##外部依赖
-httprouter - github.com/julienschmidt/httprouter
-<br>
 websocket - golang.org/x/net/websocket
 <br>
 redis - github.com/garyburd/redigo/redis

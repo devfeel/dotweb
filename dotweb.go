@@ -56,6 +56,13 @@ func (ds *Dotweb) SetEnabledSession(isEnabled bool) {
 	ds.HttpServer.ServerConfig.EnabledSession = isEnabled
 }
 
+/*
+设置是否启用gzip,默认为false
+*/
+func (ds *Dotweb) SetEnabledGzip(isEnabled bool) {
+	ds.HttpServer.ServerConfig.EnabledGzip = isEnabled
+}
+
 //set session store config
 func (ds *Dotweb) SetSessionConfig(config *session.StoreConfig) {
 	ds.SessionConfig = config

@@ -12,8 +12,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/julienschmidt/httprouter"
+	"compress/gzip"
+	"github.com/devfeel/dotweb/router"
 	"golang.org/x/net/websocket"
+	"io"
 	"net/url"
 )
 
@@ -27,6 +29,9 @@ const (
 	RouteMethod_DELETE    = "DELETE"
 	RouteMethod_HiJack    = "HiJack"
 	RouteMethod_WebSocket = "WebSocket"
+
+	DefaultGzipLevel = 9
+	gzipScheme       = "gzip"
 )
 
 type (
@@ -40,7 +45,7 @@ type (
 
 	//HttpServer定义
 	HttpServer struct {
-		router         *httprouter.Router
+		router         *router.Router
 		dotweb         *Dotweb
 		sessionManager *session.SessionManager
 		lock_session   *sync.RWMutex
@@ -52,6 +57,7 @@ type (
 	ServerConfig struct {
 		EnabledDebug   bool //is enabled debug mode
 		EnabledSession bool //is enabled seesion
+		EnabledGzip    bool //is enabled gzip
 	}
 
 	//pool定义
@@ -76,7 +82,7 @@ type HttpHandle func(*HttpContext)
 
 func NewHttpServer() *HttpServer {
 	server := &HttpServer{
-		router: httprouter.New(),
+		router: router.New(),
 		pool: &pool{
 			response: sync.Pool{
 				New: func() interface{} {
@@ -218,14 +224,24 @@ type LogJson struct {
 }
 
 //wrap HttpHandle to httprouter.Handle
-func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) router.Handle {
+	return func(w http.ResponseWriter, r *http.Request, params router.Params) {
 		//get from pool
 		res := server.pool.response.Get().(*Response)
 		res.Reset(w)
 		httpCtx := server.pool.context.Get().(*HttpContext)
 		httpCtx.Reset(res, r, server, params)
 
+		//gzip
+		if server.ServerConfig.EnabledGzip {
+			gw, err := gzip.NewWriterLevel(w, DefaultGzipLevel)
+			if err != nil {
+				panic("use gzip error -> " + err.Error())
+			}
+			grw := &gzipResponseWriter{Writer: gw, ResponseWriter: w}
+			res.Reset(grw)
+			httpCtx.SetHeader(HeaderContentEncoding, gzipScheme)
+		}
 		//增加状态计数
 		GlobalState.AddRequestCount(1)
 
@@ -286,6 +302,11 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) htt
 			//HttpServer Logging
 			logger.Log(httpCtx.Url()+" "+logString(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
 
+			if server.ServerConfig.EnabledGzip {
+				var w io.Writer
+				w = res.Writer().(*gzipResponseWriter).Writer
+				w.(*gzip.Writer).Close()
+			}
 			// Return to pool
 			server.pool.response.Put(res)
 			server.pool.context.Put(httpCtx)

@@ -2,23 +2,39 @@ package dotweb
 
 import (
 	"bufio"
+	"compress/gzip"
 	"errors"
+	"fmt"
+	"github.com/labstack/echo"
+	"io"
 	"net"
 	"net/http"
 )
 
-type Response struct {
-	writer    http.ResponseWriter
-	Status    int
-	Size      int64
-	body      []byte
-	committed bool
-	header    http.Header
-}
+type (
+	Response struct {
+		writer      http.ResponseWriter
+		Status      int
+		Size        int64
+		body        []byte
+		committed   bool
+		header      http.Header
+		EnbaledGzip bool
+	}
+
+	gzipResponseWriter struct {
+		io.Writer
+		http.ResponseWriter
+	}
+)
 
 func NewResponse(w http.ResponseWriter) (r *Response) {
 	return &Response{writer: w,
 		header: w.Header()}
+}
+
+func (r *Response) SetEnabledGzip(isEnabled bool) {
+	r.EnbaledGzip = isEnabled
 }
 
 func (r *Response) Header() http.Header {
@@ -66,7 +82,11 @@ func (r *Response) Write(b []byte) (n int, err error) {
 // buffered data to the client.
 // See [http.Flusher](https://golang.org/pkg/net/http/#Flusher)
 func (r *Response) Flush() {
-	r.writer.(http.Flusher).Flush()
+	if r.EnbaledGzip {
+		r.Writer().(*gzipResponseWriter).Flush()
+	} else {
+		r.writer.(http.Flusher).Flush()
+	}
 }
 
 // Hijack implements the http.Hijacker interface to allow an HTTP handler to
@@ -83,5 +103,29 @@ func (r *Response) Reset(w http.ResponseWriter) {
 	r.Status = http.StatusOK
 	r.Size = 0
 	r.committed = false
-	r.writer = w
+}
+
+/*gzipResponseWriter*/
+func (w *gzipResponseWriter) WriteHeader(code int) {
+	if code == http.StatusNoContent { // Issue #489
+		w.ResponseWriter.Header().Del(echo.HeaderContentEncoding)
+	}
+	w.ResponseWriter.WriteHeader(code)
+}
+
+func (w *gzipResponseWriter) Write(b []byte) (int, error) {
+	if w.Header().Get(echo.HeaderContentType) == "" {
+		w.Header().Set(echo.HeaderContentType, http.DetectContentType(b))
+	}
+	fmt.Println("gzipResponseWriter:Write ", b)
+	return w.Writer.Write(b)
+}
+
+func (w *gzipResponseWriter) Flush() {
+	fmt.Println("gzipResponseWriter:Flush")
+	w.Writer.(*gzip.Writer).Flush()
+}
+
+func (w *gzipResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return w.ResponseWriter.(http.Hijacker).Hijack()
 }
