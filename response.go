@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"compress/gzip"
 	"errors"
-	"fmt"
 	"github.com/labstack/echo"
 	"io"
 	"net"
@@ -117,12 +116,10 @@ func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 	if w.Header().Get(echo.HeaderContentType) == "" {
 		w.Header().Set(echo.HeaderContentType, http.DetectContentType(b))
 	}
-	fmt.Println("gzipResponseWriter:Write ", b)
 	return w.Writer.Write(b)
 }
 
 func (w *gzipResponseWriter) Flush() {
-	fmt.Println("gzipResponseWriter:Flush")
 	w.Writer.(*gzip.Writer).Flush()
 }
 
