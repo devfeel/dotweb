@@ -127,6 +127,12 @@ dotserver.SetSessionConfig(session.NewDefaultRedisConfig("127.0.0.1:6379", "xxxx
 ctx.Session().Set(key, value)
 ```
 
+##Server Config
+目前支持三个选项：Debug、Session、Gzip
+* SetEnabledDebug 设置是否开启debug模式，会输出server端的debug日志，默认不开启
+* SetEnabledSession 设置是否开启Session支持，目前支持runtime、redis两种模式，默认不开启
+* SetEnabledGzip 设置是否开启Gzip支持，默认不开启
+
 ##外部依赖
 websocket - golang.org/x/net/websocket
 <br>
