@@ -83,6 +83,8 @@ func TestBind(ctx *dotweb.HttpContext) {
 	errstr := "no error"
 	if err := ctx.Bind(user); err != nil {
 		errstr = err.Error()
+	}else{
+
 	}
 
 	ctx.WriteString("TestBind [" + errstr + "] " + fmt.Sprint(user))
