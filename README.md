@@ -98,7 +98,7 @@ func main() {
 <br>curl http://127.0.0.1/hello/category1/1
 
 
-##绑定
+## 绑定
 * HttpContext.Bind(interface{})
 * 支持json、xml、Form数据
 * 集成echo的bind实现模块
@@ -108,13 +108,13 @@ func main() {
 
 ```
 
-##中间件(拦截器)
+## 中间件(拦截器)
 ####RegisterModule
 * 支持OnBeginRequest、OnEndRequest两类中间件
 * 通过实现HttpModule.OnBeginRequest、HttpModule.OnEndRequest接口实现自定义中间件
 * 通过设置HttpContext.End()提前终止请求
 
-##异常
+## 异常
 ####500错误
 * 默认设置: 当发生未处理异常时，会根据DebugMode向页面输出默认错误信息或者具体异常信息，并返回 500 错误头
 * 自定义: 通过DotServer.SetExceptionHandle(handler *ExceptionHandle)实现自定义异常处理逻辑
@@ -122,7 +122,7 @@ func main() {
 type ExceptionHandle func(*HttpContext, interface{})
 ```
 
-##Session
+## Session
 ####支持runtime、redis两种
 * 默认不开启Session支持
 * runtime:基于内存存储实现session模块
@@ -138,22 +138,22 @@ dotserver.SetSessionConfig(session.NewDefaultRedisConfig("127.0.0.1:6379", "xxxx
 ctx.Session().Set(key, value)
 ```
 
-##Server Config
+## Server Config
 目前支持三个选项：Debug、Session、Gzip
 * SetEnabledDebug 设置是否开启debug模式，会输出server端的debug日志，默认不开启
 * SetEnabledSession 设置是否开启Session支持，目前支持runtime、redis两种模式，默认不开启
 * SetEnabledGzip 设置是否开启Gzip支持，默认不开启
 
-##外部依赖
+## 外部依赖
 websocket - golang.org/x/net/websocket
 <br>
 redis - github.com/garyburd/redigo/redis
 
 
-##相关项目
+## 相关项目
 ####<a href="https://github.com/devfeel/tokenserver" target="_blank">TokenServer</a>
 项目简介：token服务，提供token一致性服务以及相关的全局ID生成服务等
 
 
-##如何联系
+## 如何联系
 QQ群：193409346
