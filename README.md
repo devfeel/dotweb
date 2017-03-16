@@ -101,7 +101,7 @@ func main() {
 ####HttpContext.Bind(interface{})
 * 支持json、xml、Form数据
 * 集成echo的bind实现模块
-```
+```go
   user := new(UserInfo)
   err := ctx.Bind(user)
 
