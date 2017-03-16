@@ -97,6 +97,16 @@ func main() {
 <br>curl http://127.0.0.1/hello/devfeel
 <br>curl http://127.0.0.1/hello/category1/1
 
+##Bind
+####HttpContext.Bind(interface{})
+* 支持json、xml、Form数据
+* 集成echo的bind实现模块
+```
+  user := new(UserInfo)
+  err := ctx.Bind(user)
+
+```
+
 ##中间件(拦截器)
 ####RegisterModule
 * 支持OnBeginRequest、OnEndRequest两类中间件
