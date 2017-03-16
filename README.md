@@ -98,8 +98,8 @@ func main() {
 <br>curl http://127.0.0.1/hello/category1/1
 
 
-##Bind
-####HttpContext.Bind(interface{})
+##绑定
+* HttpContext.Bind(interface{})
 * 支持json、xml、Form数据
 * 集成echo的bind实现模块
 ```go
