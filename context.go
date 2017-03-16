@@ -42,6 +42,7 @@ func (ctx *HttpContext) Reset(res *Response, r *http.Request, server *HttpServer
 	ctx.IsHijack = false
 	ctx.IsWebSocket = false
 	ctx.HttpServer = server
+	ctx.isEnd = false
 }
 
 //get session state in current context
@@ -97,6 +98,30 @@ func (ctx *HttpContext) QueryString(key string) string {
 	return ctx.Request.URL.Query().Get(key)
 }
 
+/*
+* 根据指定key获取包括在post、put和get内的值
+ */
+func (ctx *HttpContext) FormValue(key string) string {
+	return ctx.Request.FormValue(key)
+}
+
+/*
+* 根据指定key获取包括在post、put内的值
+ */
+func (ctx *HttpContext) PostFormValue(key string) string {
+	return ctx.Request.PostFormValue(key)
+}
+
+/*
+* 根据指定key获取包括在post、put内的值
+ */
+func (ctx *HttpContext) PostString(key string) string {
+	return ctx.Request.PostFormValue(key)
+}
+
+/*
+* 获取post提交的字节数组
+ */
 func (ctx *HttpContext) PostBody() []byte {
 	bts, err := ioutil.ReadAll(ctx.Request.Body)
 	if err != nil {
@@ -104,10 +129,6 @@ func (ctx *HttpContext) PostBody() []byte {
 	} else {
 		return bts
 	}
-}
-
-func (ctx *HttpContext) PostString(key string) string {
-	return ctx.Request.PostForm.Get(key)
 }
 
 func (ctx *HttpContext) QueryHeader(key string) string {

@@ -20,7 +20,7 @@ func main() {
 	app.SetEnabledDebug(true)
 
 	//设置gzip开关
-	app.SetEnabledGzip(true)
+	//app.SetEnabledGzip(true)
 
 	//设置Session开关
 	app.SetEnabledSession(true)
@@ -59,6 +59,17 @@ func IndexReg(ctx *dotweb.HttpContext) {
 	ctx.WriteString("welcome to dotweb")
 }
 
+func KeyPost(ctx *dotweb.HttpContext) {
+	username1 := ctx.PostString("username")
+	username2 := ctx.FormValue("username")
+	username3 := ctx.PostFormValue("username")
+	ctx.WriteString("username:" + username1 + " - " + username2 + " - " + username3)
+}
+
+func JsonPost(ctx *dotweb.HttpContext) {
+	ctx.WriteString("body:" + string(ctx.PostBody()))
+}
+
 func DefaultError(ctx *dotweb.HttpContext) {
 	panic("my panic error!")
 }
@@ -79,6 +90,8 @@ func TestSession(ctx *dotweb.HttpContext) {
 
 func InitRoute(dotserver *dotweb.Dotweb) {
 	dotserver.HttpServer.GET("/", Index)
+	dotserver.HttpServer.POST("/keypost", KeyPost)
+	dotserver.HttpServer.POST("/jsonpost", JsonPost)
 	dotserver.HttpServer.GET("/error", DefaultError)
 	dotserver.HttpServer.GET("/session", TestSession)
 	dotserver.HttpServer.RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
