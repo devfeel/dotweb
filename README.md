@@ -103,8 +103,19 @@ func main() {
 * 支持json、xml、Form数据
 * 集成echo的bind实现模块
 ```go
-  user := new(UserInfo)
-  err := ctx.Bind(user)
+type UserInfo struct {
+		UserName string
+		Sex      int
+}
+
+func(ctx *dotweb.HttpContext) TestBind{
+        user := new(UserInfo)
+        if err := ctx.Bind(user); err != nil {
+        	 ctx.WriteString("err => " + err.Error())
+        }else{
+             ctx.WriteString("TestBind " + fmt.Sprint(user))
+        }
+}
 
 ```
 
