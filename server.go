@@ -51,6 +51,7 @@ type (
 		lock_session   *sync.RWMutex
 		pool           *pool
 		ServerConfig   *ServerConfig
+		binder         Binder
 	}
 
 	//server global config
@@ -97,6 +98,7 @@ func NewHttpServer() *HttpServer {
 		},
 		ServerConfig: NewServerConfig(),
 		lock_session: new(sync.RWMutex),
+		binder:       &binder{},
 	}
 
 	return server
@@ -215,6 +217,10 @@ func (server *HttpServer) ServerFile(urlpath string, filepath string) {
 // WebSocket is a shortcut for websocket.Handler
 func (server *HttpServer) WebSocket(path string, handle HttpHandle) {
 	server.RegisterRoute(RouteMethod_WebSocket, path, handle)
+}
+
+func (server *HttpServer) Binder() Binder {
+	return server.binder
 }
 
 type LogJson struct {

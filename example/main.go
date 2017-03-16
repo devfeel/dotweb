@@ -74,6 +74,20 @@ func DefaultError(ctx *dotweb.HttpContext) {
 	panic("my panic error!")
 }
 
+func TestBind(ctx *dotweb.HttpContext) {
+	type UserInfo struct {
+		UserName string
+		Sex      int
+	}
+	user := new(UserInfo)
+	errstr := "no error"
+	if err := ctx.Bind(user); err != nil {
+		errstr = err.Error()
+	}
+
+	ctx.WriteString("TestBind [" + errstr + "] " + fmt.Sprint(user))
+}
+
 func TestSession(ctx *dotweb.HttpContext) {
 	type UserInfo struct {
 		UserName string
@@ -92,6 +106,7 @@ func InitRoute(dotserver *dotweb.Dotweb) {
 	dotserver.HttpServer.GET("/", Index)
 	dotserver.HttpServer.POST("/keypost", KeyPost)
 	dotserver.HttpServer.POST("/jsonpost", JsonPost)
+	dotserver.HttpServer.POST("/testbind", TestBind)
 	dotserver.HttpServer.GET("/error", DefaultError)
 	dotserver.HttpServer.GET("/session", TestSession)
 	dotserver.HttpServer.RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)

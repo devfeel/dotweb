@@ -10,6 +10,11 @@ import (
 
 	"github.com/devfeel/dotweb/router"
 	"github.com/devfeel/dotweb/session"
+	"github.com/labstack/echo"
+)
+
+const (
+	defaultMemory = 32 << 20 // 32 MB
 )
 
 type HttpContext struct {
@@ -106,6 +111,27 @@ func (ctx *HttpContext) FormValue(key string) string {
 }
 
 /*
+* 获取包括post、put和get内的值
+ */
+func (ctx *HttpContext) FormValues() map[string][]string {
+	ctx.parseForm()
+	return map[string][]string(ctx.Request.Form)
+}
+
+func (ctx *HttpContext) parseForm() error {
+	if strings.HasPrefix(ctx.QueryHeader(echo.HeaderContentType), echo.MIMEMultipartForm) {
+		if err := ctx.Request.ParseMultipartForm(defaultMemory); err != nil {
+			return err
+		}
+	} else {
+		if err := ctx.Request.ParseForm(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+/*
 * 根据指定key获取包括在post、put内的值
  */
 func (ctx *HttpContext) PostFormValue(key string) string {
@@ -129,6 +155,13 @@ func (ctx *HttpContext) PostBody() []byte {
 	} else {
 		return bts
 	}
+}
+
+/*
+* 支持Json、Xml、Form提交的属性绑定
+ */
+func (ctx *HttpContext) Bind(i interface{}) error {
+	return ctx.HttpServer.Binder().Bind(i, ctx)
 }
 
 func (ctx *HttpContext) QueryHeader(key string) string {
