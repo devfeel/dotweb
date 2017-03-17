@@ -120,25 +120,25 @@ func(ctx *dotweb.HttpContext) TestBind{
 ```
 
 ## 中间件(拦截器)
-####RegisterModule
+#### RegisterModule
 * 支持OnBeginRequest、OnEndRequest两类中间件
 * 通过实现HttpModule.OnBeginRequest、HttpModule.OnEndRequest接口实现自定义中间件
 * 通过设置HttpContext.End()提前终止请求
 
 ## 异常
-####500错误
+#### 500错误
 * 默认设置: 当发生未处理异常时，会根据DebugMode向页面输出默认错误信息或者具体异常信息，并返回 500 错误头
 * 自定义: 通过DotServer.SetExceptionHandle(handler *ExceptionHandle)实现自定义异常处理逻辑
-```
+```go
 type ExceptionHandle func(*HttpContext, interface{})
 ```
 
 ## Session
-####支持runtime、redis两种
+#### 支持runtime、redis两种
 * 默认不开启Session支持
 * runtime:基于内存存储实现session模块
 * redis:基于Redis存储实现session模块,其中redis key以dotweb:session:xxxxxxxxxxxx组成
-```
+```go
 //设置session支持
 dotserver.SetEnabledSession(true)
 //使用runtime模式
@@ -162,7 +162,7 @@ redis - github.com/garyburd/redigo/redis
 
 
 ## 相关项目
-####<a href="https://github.com/devfeel/tokenserver" target="_blank">TokenServer</a>
+#### <a href="https://github.com/devfeel/tokenserver" target="_blank">TokenServer</a>
 项目简介：token服务，提供token一致性服务以及相关的全局ID生成服务等
 
 
