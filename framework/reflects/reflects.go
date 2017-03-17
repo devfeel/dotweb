@@ -24,7 +24,7 @@ func ConvertMapToStruct(tagName string, ptr interface{}, form map[string][]strin
 			inputFieldName = typeField.Name
 			// If "form" tag is nil, we inspect if the field is a struct.
 			if structFieldKind == reflect.Struct {
-				err := BindMap(tagName, structField.Addr().Interface(), form)
+				err := ConvertMapToStruct(tagName, structField.Addr().Interface(), form)
 				if err != nil {
 					return err
 				}
