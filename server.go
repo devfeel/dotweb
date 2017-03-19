@@ -190,7 +190,7 @@ func (server *HttpServer) HiJack(path string, handle HttpHandle) {
 // support GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS\HiJack\WebSocket
 func (server *HttpServer) RegisterRoute(routeMethod string, path string, handle HttpHandle) {
 
-	logger.Log("Dotweb:RegisterRoute ["+routeMethod+"] ["+path+"] ["+fmt.Sprintln(handle)+"]", LogTarget_HttpServer, LogLevel_Debug)
+	logger.Log("Dotweb:RegisterRoute ["+routeMethod+"] ["+path+"]", LogTarget_HttpServer, LogLevel_Debug)
 
 	//hijack mode,use get and isHijack = true
 	if routeMethod == RouteMethod_HiJack {
