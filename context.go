@@ -94,6 +94,11 @@ func (ctx *HttpContext) IsEnd() bool {
 	return ctx.isEnd
 }
 
+//redirect replies to the request with a redirect to url
+func (ctx *HttpContext) Redirect(targetUrl string) {
+	http.Redirect(ctx.Response.Writer(), ctx.Request, targetUrl, http.StatusMovedPermanently)
+}
+
 /*
 * 返回查询字符串map表示
  */

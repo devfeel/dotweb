@@ -76,43 +76,16 @@ func DefaultError(ctx *dotweb.HttpContext) {
 	panic("my panic error!")
 }
 
-func TestBind(ctx *dotweb.HttpContext) {
-	type UserInfo struct {
-		UserName string
-		Sex      int
-	}
-	user := new(UserInfo)
-	errstr := "no error"
-	if err := ctx.Bind(user); err != nil {
-		errstr = err.Error()
-	} else {
-
-	}
-
-	ctx.WriteString("TestBind [" + errstr + "] " + fmt.Sprint(user))
-}
-
-func TestSession(ctx *dotweb.HttpContext) {
-	type UserInfo struct {
-		UserName string
-		NickName string
-	}
-	user := UserInfo{UserName: "test", NickName: "testName"}
-	ctx.Session().Set("username", user)
-	userRead := ctx.Session().Get("username").(UserInfo)
-
-	ctx.WriteString("welcome to dotweb - sessionid=> " + ctx.SessionID +
-		", session-len=>" + strconv.Itoa(ctx.Session().Count()) +
-		",username=>" + fmt.Sprintln(userRead))
+func Redirect(ctx *dotweb.HttpContext) {
+	ctx.Redirect("http://www.baidu.com")
 }
 
 func InitRoute(server *dotweb.HttpServer) {
 	server.GET("/", Index)
 	server.POST("/keypost", KeyPost)
 	server.POST("/jsonpost", JsonPost)
-	server.POST("/testbind", TestBind)
 	server.GET("/error", DefaultError)
-	server.GET("/session", TestSession)
+	server.GET("/redirect", Redirect)
 	server.RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
 }
 
