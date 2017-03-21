@@ -11,74 +11,133 @@ import (
 	"runtime/debug"
 	"runtime/pprof"
 	"strconv"
+	"sync"
 )
 
-type Dotweb struct {
-	HttpServer       *HttpServer
-	SessionConfig    *session.StoreConfig
-	Modules          []*HttpModule
-	logpath          string
-	ExceptionHandler ExceptionHandle
-}
+type (
+	DotWeb struct {
+		HttpServer       *HttpServer
+		SessionConfig    *session.StoreConfig
+		Modules          []*HttpModule
+		logpath          string
+		ExceptionHandler ExceptionHandle
+		AppContext       *AppContext
+	}
 
-type ExceptionHandle func(*HttpContext, interface{})
+	AppContext struct {
+		contextMap   map[string]interface{}
+		contextMutex *sync.RWMutex
+	}
+
+	ExceptionHandle func(*HttpContext, interface{})
+)
 
 /*
 * 创建DotServer实例，返回指针
  */
-func New() *Dotweb {
-	application := &Dotweb{
+func New() *DotWeb {
+	app := &DotWeb{
 		HttpServer: NewHttpServer(),
 		Modules:    make([]*HttpModule, 0, 10),
+		AppContext: NewAppContext(),
 	}
-	application.HttpServer.setDotweb(application)
-	return application
+	app.HttpServer.setDotApp(app)
+	return app
+}
+
+func NewAppContext() *AppContext {
+	return &AppContext{
+		contextMap:   make(map[string]interface{}),
+		contextMutex: new(sync.RWMutex),
+	}
+}
+
+/*
+* 以key、value置入AppContext
+ */
+func (ctx *AppContext) Set(key string, value interface{}) error {
+	ctx.contextMutex.Lock()
+	ctx.contextMap[key] = value
+	ctx.contextMutex.Unlock()
+	return nil
+}
+
+/*
+* 读取指定key在AppContext中的内容
+ */
+func (ctx *AppContext) Get(key string) (value interface{}, exists bool) {
+	ctx.contextMutex.RLock()
+	value, exists = ctx.contextMap[key]
+	ctx.contextMutex.RUnlock()
+	return value, exists
+}
+
+/*
+* 读取指定key在AppContext中的内容，以string格式输出
+ */
+func (ctx *AppContext) GetString(key string) string {
+	value, exists := ctx.Get(key)
+	if !exists {
+		return ""
+	}
+	return fmt.Sprint(value)
+}
+
+/*
+* 读取指定key在AppContext中的内容，以int格式输出
+ */
+func (ctx *AppContext) GetInt(key string) int {
+	value, exists := ctx.Get(key)
+	if !exists {
+		return 0
+	}
+	return value.(int)
 }
 
 /*
 * 添加处理模块
  */
-func (ds *Dotweb) RegisterModule(module *HttpModule) {
+func (ds *DotWeb) RegisterModule(module *HttpModule) {
 	ds.Modules = append(ds.Modules, module)
 }
 
 /*
 设置Debug模式,默认为false
 */
-func (ds *Dotweb) SetEnabledDebug(isEnabled bool) {
+func (ds *DotWeb) SetEnabledDebug(isEnabled bool) {
 	ds.HttpServer.ServerConfig.EnabledDebug = isEnabled
 }
 
 /*
 设置是否启用Session,默认为false
 */
-func (ds *Dotweb) SetEnabledSession(isEnabled bool) {
+func (ds *DotWeb) SetEnabledSession(isEnabled bool) {
 	ds.HttpServer.ServerConfig.EnabledSession = isEnabled
 }
 
 /*
 设置是否启用gzip,默认为false
 */
-func (ds *Dotweb) SetEnabledGzip(isEnabled bool) {
+func (ds *DotWeb) SetEnabledGzip(isEnabled bool) {
 	ds.HttpServer.ServerConfig.EnabledGzip = isEnabled
 }
 
 //set session store config
-func (ds *Dotweb) SetSessionConfig(config *session.StoreConfig) {
+func (ds *DotWeb) SetSessionConfig(config *session.StoreConfig) {
 	ds.SessionConfig = config
 }
 
 /*
 * 设置异常处理函数
  */
-func (ds *Dotweb) SetExceptionHandle(handler ExceptionHandle) {
+func (ds *DotWeb) SetExceptionHandle(handler ExceptionHandle) {
 	ds.ExceptionHandler = handler
 }
 
 /*
 * 启动pprof服务，该端口号请不要与StartServer的端口号一致
  */
-func (ds *Dotweb) StartPProfServer(httpport int) error {
+func (ds *DotWeb) StartPProfServer(httpport int) error {
 	port := ":" + strconv.Itoa(httpport)
 	err := http.ListenAndServe(port, nil)
 	return err
@@ -87,7 +146,7 @@ func (ds *Dotweb) StartPProfServer(httpport int) error {
 /*
 * 设置日志根目录
  */
-func (ds *Dotweb) SetLogPath(path string) {
+func (ds *DotWeb) SetLogPath(path string) {
 	ds.logpath = path
 }
 
@@ -95,7 +154,7 @@ func (ds *Dotweb) SetLogPath(path string) {
 * 需要初始化HttpRoute
 * httpPort := 80
  */
-func (ds *Dotweb) StartServer(httpport int) error {
+func (ds *DotWeb) StartServer(httpport int) error {
 	//启动内部日志
 	logger.StartLogHandler(ds.logpath)
 
@@ -125,7 +184,7 @@ func (ds *Dotweb) StartServer(httpport int) error {
 }
 
 //默认异常处理
-func (ds *Dotweb) DefaultHTTPErrorHandler(ctx *HttpContext, errinfo interface{}) {
+func (ds *DotWeb) DefaultHTTPErrorHandler(ctx *HttpContext, errinfo interface{}) {
 	//输出内容
 	ctx.Response.WriteHeader(http.StatusInternalServerError)
 	ctx.Response.Header().Set(HeaderContentType, CharsetUTF8)

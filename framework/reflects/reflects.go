@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-//讲map转换为指定struct
+//convert map to struct
 func ConvertMapToStruct(tagName string, ptr interface{}, form map[string][]string) error {
 	typ := reflect.TypeOf(ptr).Elem()
 	val := reflect.ValueOf(ptr).Elem()

@@ -46,7 +46,7 @@ type (
 	//HttpServer定义
 	HttpServer struct {
 		router         *router.Router
-		dotweb         *Dotweb
+		DotApp         *DotWeb
 		sessionManager *session.SessionManager
 		lock_session   *sync.RWMutex
 		pool           *pool
@@ -134,8 +134,8 @@ func (server *HttpServer) InitSessionManager(config *session.StoreConfig) {
 /*
 * 关联当前HttpServer实例对应的DotServer实例
  */
-func (server *HttpServer) setDotweb(dotweb *Dotweb) {
-	server.dotweb = dotweb
+func (server *HttpServer) setDotApp(dotApp *DotWeb) {
+	server.DotApp = dotApp
 }
 
 //get session manager in current httpserver
@@ -287,8 +287,8 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 				errmsg = exception.CatchError("httpserver::RouterHandle", LogTarget_HttpServer, err)
 
 				//默认异常处理
-				if server.dotweb.ExceptionHandler != nil {
-					server.dotweb.ExceptionHandler(httpCtx, err)
+				if server.DotApp.ExceptionHandler != nil {
+					server.DotApp.ExceptionHandler(httpCtx, err)
 				}
 
 				//记录访问日志
@@ -319,7 +319,7 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 		}()
 
 		//处理前置Module集合
-		for _, module := range server.dotweb.Modules {
+		for _, module := range server.DotApp.Modules {
 			if module.OnBeginRequest != nil {
 				module.OnBeginRequest(httpCtx)
 				//if current module set HttpContext.End,stop this request
@@ -337,7 +337,7 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 		}
 
 		//处理后置Module集合
-		for _, module := range server.dotweb.Modules {
+		for _, module := range server.DotApp.Modules {
 			if module.OnEndRequest != nil {
 				module.OnEndRequest(httpCtx)
 				if httpCtx.isEnd {

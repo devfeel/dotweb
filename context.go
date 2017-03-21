@@ -26,17 +26,9 @@ type HttpContext struct {
 	IsWebSocket  bool
 	IsHijack     bool
 	isEnd        bool //表示当前处理流程是否需要终止
+	dotApp       *DotWeb
 	HttpServer   *HttpServer
 	SessionID    string
-}
-
-//set context process end
-func (ctx *HttpContext) End() {
-	ctx.isEnd = true
-}
-
-func (ctx *HttpContext) IsEnd() bool {
-	return ctx.isEnd
 }
 
 //reset response attr
@@ -48,6 +40,17 @@ func (ctx *HttpContext) Reset(res *Response, r *http.Request, server *HttpServer
 	ctx.IsWebSocket = false
 	ctx.HttpServer = server
 	ctx.isEnd = false
+}
+
+//get application's global appcontext
+//issue #3
+func (ctx *HttpContext) AppContext() *AppContext {
+	if ctx.HttpServer != nil {
+		return ctx.HttpServer.DotApp.AppContext
+	} else {
+		return NewAppContext()
+	}
+
 }
 
 //get session state in current context
@@ -82,6 +85,15 @@ func (ctx *HttpContext) Hijack() (*HijackConn, error) {
 	return ctx.HijackConn, nil
 }
 
+//set context process end
+func (ctx *HttpContext) End() {
+	ctx.isEnd = true
+}
+
+func (ctx *HttpContext) IsEnd() bool {
+	return ctx.isEnd
+}
+
 /*
 * 返回查询字符串map表示
  */
@@ -108,6 +120,18 @@ func (ctx *HttpContext) QueryString(key string) string {
  */
 func (ctx *HttpContext) FormValue(key string) string {
 	return ctx.Request.FormValue(key)
+}
+
+func (ctx *HttpContext) FormFile(key string) (*UploadFile, error) {
+	file, header, err := ctx.Request.FormFile(key)
+	if err != nil {
+		return nil, err
+	} else {
+		return &UploadFile{
+			File:   file,
+			Header: header,
+		}, nil
+	}
 }
 
 /*
@@ -191,10 +215,6 @@ func (ctx *HttpContext) ContentType() string {
 
 func (ctx *HttpContext) GetRouterName(key string) string {
 	return ctx.RouterParams.ByName(key)
-}
-
-func (ctx *HttpContext) Server() string {
-	return ctx.QueryHeader(HeaderServer)
 }
 
 // IsAJAX returns if it is a ajax request
