@@ -95,6 +95,7 @@ func (ctx *HttpContext) IsEnd() bool {
 }
 
 //redirect replies to the request with a redirect to url
+//default use 301
 func (ctx *HttpContext) Redirect(targetUrl string) {
 	http.Redirect(ctx.Response.Writer(), ctx.Request, targetUrl, http.StatusMovedPermanently)
 }
