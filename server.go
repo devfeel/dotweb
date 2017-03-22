@@ -328,7 +328,7 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 		}
 
 		//处理用户handle
-		//if already set HttpContext.End,ignore user handler
+		//if already set HttpContext.End,ignore user handler - fixed issue #5
 		if !httpCtx.IsEnd() {
 			handle(httpCtx)
 		}

@@ -102,7 +102,8 @@ func (ctx *HttpContext) Hijack() (*HijackConn, error) {
 	return ctx.HijackConn, nil
 }
 
-//set context process end
+//set context user handler process end
+//if set HttpContext.End,ignore user handler, but exec all http module  - fixed issue #5
 func (ctx *HttpContext) End() {
 	ctx.isEnd = true
 }
