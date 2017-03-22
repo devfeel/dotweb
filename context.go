@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"github.com/devfeel/dotweb/router"
 	"github.com/devfeel/dotweb/session"
-	"github.com/labstack/echo"
 )
 
 const (
@@ -169,7 +168,7 @@ func (ctx *HttpContext) FormValues() map[string][]string {
 }
 
 func (ctx *HttpContext) parseForm() error {
-	if strings.HasPrefix(ctx.QueryHeader(echo.HeaderContentType), echo.MIMEMultipartForm) {
+	if strings.HasPrefix(ctx.QueryHeader(HeaderContentType), MIMEMultipartForm) {
 		if err := ctx.Request.ParseMultipartForm(defaultMemory); err != nil {
 			return err
 		}
