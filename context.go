@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 
+	"fmt"
 	"github.com/devfeel/dotweb/router"
 	"github.com/devfeel/dotweb/session"
 	"github.com/labstack/echo"
@@ -66,6 +67,7 @@ func (ctx *HttpContext) AppContext() *ItemContext {
 	}
 }
 
+//get request's global item context
 func (ctx *HttpContext) Items() *ItemContext {
 	return ctx.items
 }
@@ -342,7 +344,8 @@ func (ctx *HttpContext) ReadCookieObj(name string) (*http.Cookie, error) {
 }
 
 // write string content to response
-func (ctx *HttpContext) WriteString(content string) (int, error) {
+func (ctx *HttpContext) WriteString(contents ...interface{}) (int, error) {
+	content := fmt.Sprint(contents...)
 	if ctx.IsHijack {
 		return ctx.HijackConn.WriteString(content)
 	} else {

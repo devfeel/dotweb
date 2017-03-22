@@ -94,6 +94,17 @@ func (ctx *ItemContext) GetInt(key string) int {
 	return value.(int)
 }
 
+//check exists key
+func (ctx *ItemContext) Exists(key string) bool {
+	_, exists := ctx.contextMap[key]
+	return exists
+}
+
+//get context length
+func (ctx *ItemContext) Len() int {
+	return len(ctx.contextMap)
+}
+
 /*
 * 添加处理模块
  */

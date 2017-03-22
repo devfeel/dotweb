@@ -53,6 +53,7 @@ func main() {
 
 func Index(ctx *dotweb.HttpContext) {
 	ctx.WriteString("index => " + ctx.Items().GetString("count"))
+	ctx.WriteString("\r\n")
 	ctx.Items().Set("count", 2)
 }
 
@@ -64,10 +65,18 @@ func InitModule(dotserver *dotweb.DotWeb) {
 	dotserver.RegisterModule(&dotweb.HttpModule{
 		OnBeginRequest: func(ctx *dotweb.HttpContext) {
 			ctx.Items().Set("count", 1)
-			//ctx.End()
+			ctx.WriteString("OnBeginRequest => ", ctx.Items().GetString("count"))
+			ctx.WriteString("\r\n")
+			if ctx.QueryString("skip") == "1" {
+				ctx.End()
+			}
 		},
 		OnEndRequest: func(ctx *dotweb.HttpContext) {
-			ctx.WriteString("OnEndRequest => " + ctx.Items().GetString("count"))
+			if ctx.Items().Exists("count") {
+				ctx.WriteString("OnEndRequest => ", ctx.Items().GetString("count"))
+			} else {
+				ctx.WriteString("OnEndRequest => ", ctx.Items().Len())
+			}
 		},
 	})
 }
