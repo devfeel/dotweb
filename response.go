@@ -18,7 +18,8 @@ type (
 		body        []byte
 		committed   bool
 		header      http.Header
-		EnbaledGzip bool
+		EnabledGzip bool
+		isEnd       bool
 	}
 
 	gzipResponseWriter struct {
@@ -33,7 +34,7 @@ func NewResponse(w http.ResponseWriter) (r *Response) {
 }
 
 func (r *Response) SetEnabledGzip(isEnabled bool) {
-	r.EnbaledGzip = isEnabled
+	r.EnabledGzip = isEnabled
 }
 
 func (r *Response) Header() http.Header {
@@ -77,11 +78,16 @@ func (r *Response) Write(b []byte) (n int, err error) {
 	return
 }
 
+//stop current response
+func (r *Response) End() {
+	r.isEnd = true
+}
+
 // Flush implements the http.Flusher interface to allow an HTTP handler to flush
 // buffered data to the client.
 // See [http.Flusher](https://golang.org/pkg/net/http/#Flusher)
 func (r *Response) Flush() {
-	if r.EnbaledGzip {
+	if r.EnabledGzip {
 		r.Writer().(*gzipResponseWriter).Flush()
 	} else {
 		r.writer.(http.Flusher).Flush()

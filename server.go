@@ -315,6 +315,8 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 			}
 			// Return to pool
 			server.pool.response.Put(res)
+			//release context
+			httpCtx.release()
 			server.pool.context.Put(httpCtx)
 		}()
 
@@ -322,28 +324,19 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 		for _, module := range server.DotApp.Modules {
 			if module.OnBeginRequest != nil {
 				module.OnBeginRequest(httpCtx)
-				//if current module set HttpContext.End,stop this request
-				if httpCtx.isEnd {
-					return
-				}
 			}
 		}
 
 		//处理用户handle
-		handle(httpCtx)
-		if httpCtx.isEnd {
-			//if current module set HttpContext.End,stop this request
-			return
+		//if already set HttpContext.End,ignore user handler
+		if !httpCtx.IsEnd() {
+			handle(httpCtx)
 		}
 
 		//处理后置Module集合
 		for _, module := range server.DotApp.Modules {
 			if module.OnEndRequest != nil {
 				module.OnEndRequest(httpCtx)
-				if httpCtx.isEnd {
-					//if current module set HttpContext.End,stop this request
-					return
-				}
 			}
 		}
 

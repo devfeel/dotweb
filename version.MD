@@ -1,5 +1,11 @@
 ##dotweb版本记录：
 
+#### Version 0.3.5.1
+* 新增ItemContext支持 - 单次请求完整通道内共享容器,通过HttpContext.Items().Get\Set操作
+* 可在OnBeginRequest、UserHandler、OnEndRequest三个环节使用
+* 新增example\httpmodule
+* 2017-03-21 15:00
+
 #### Version 0.3.5
 * 新增AppContext支持 - 进程内共享容器,通过HttpContext.AppContext.Get\Set操作
 * 新增文件上传支持, 新增HttpContext.FormFile("key"),返回*UploadFile

@@ -21,10 +21,10 @@ type (
 		Modules          []*HttpModule
 		logpath          string
 		ExceptionHandler ExceptionHandle
-		AppContext       *AppContext
+		AppContext       *ItemContext
 	}
 
-	AppContext struct {
+	ItemContext struct {
 		contextMap   map[string]interface{}
 		contextMutex *sync.RWMutex
 	}
@@ -39,14 +39,14 @@ func New() *DotWeb {
 	app := &DotWeb{
 		HttpServer: NewHttpServer(),
 		Modules:    make([]*HttpModule, 0, 10),
-		AppContext: NewAppContext(),
+		AppContext: NewItemContext(),
 	}
 	app.HttpServer.setDotApp(app)
 	return app
 }
 
-func NewAppContext() *AppContext {
-	return &AppContext{
+func NewItemContext() *ItemContext {
+	return &ItemContext{
 		contextMap:   make(map[string]interface{}),
 		contextMutex: new(sync.RWMutex),
 	}
@@ -55,7 +55,7 @@ func NewAppContext() *AppContext {
 /*
 * 以key、value置入AppContext
  */
-func (ctx *AppContext) Set(key string, value interface{}) error {
+func (ctx *ItemContext) Set(key string, value interface{}) error {
 	ctx.contextMutex.Lock()
 	ctx.contextMap[key] = value
 	ctx.contextMutex.Unlock()
@@ -65,7 +65,7 @@ func (ctx *AppContext) Set(key string, value interface{}) error {
 /*
 * 读取指定key在AppContext中的内容
  */
-func (ctx *AppContext) Get(key string) (value interface{}, exists bool) {
+func (ctx *ItemContext) Get(key string) (value interface{}, exists bool) {
 	ctx.contextMutex.RLock()
 	value, exists = ctx.contextMap[key]
 	ctx.contextMutex.RUnlock()
@@ -75,7 +75,7 @@ func (ctx *AppContext) Get(key string) (value interface{}, exists bool) {
 /*
 * 读取指定key在AppContext中的内容，以string格式输出
  */
-func (ctx *AppContext) GetString(key string) string {
+func (ctx *ItemContext) GetString(key string) string {
 	value, exists := ctx.Get(key)
 	if !exists {
 		return ""
@@ -86,7 +86,7 @@ func (ctx *AppContext) GetString(key string) string {
 /*
 * 读取指定key在AppContext中的内容，以int格式输出
  */
-func (ctx *AppContext) GetInt(key string) int {
+func (ctx *ItemContext) GetInt(key string) int {
 	value, exists := ctx.Get(key)
 	if !exists {
 		return 0

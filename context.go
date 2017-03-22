@@ -29,6 +29,7 @@ type HttpContext struct {
 	dotApp       *DotWeb
 	HttpServer   *HttpServer
 	SessionID    string
+	items        *ItemContext
 }
 
 //reset response attr
@@ -40,17 +41,33 @@ func (ctx *HttpContext) Reset(res *Response, r *http.Request, server *HttpServer
 	ctx.IsWebSocket = false
 	ctx.HttpServer = server
 	ctx.isEnd = false
+	ctx.items = NewItemContext()
+}
+
+//release all field
+func (ctx *HttpContext) release() {
+	ctx.Request = nil
+	ctx.Response = nil
+	ctx.RouterParams = nil
+	ctx.IsHijack = false
+	ctx.IsWebSocket = false
+	ctx.HttpServer = nil
+	ctx.isEnd = false
+	ctx.items = nil
 }
 
 //get application's global appcontext
 //issue #3
-func (ctx *HttpContext) AppContext() *AppContext {
+func (ctx *HttpContext) AppContext() *ItemContext {
 	if ctx.HttpServer != nil {
 		return ctx.HttpServer.DotApp.AppContext
 	} else {
-		return NewAppContext()
+		return NewItemContext()
 	}
+}
 
+func (ctx *HttpContext) Items() *ItemContext {
+	return ctx.items
 }
 
 //get session state in current context
