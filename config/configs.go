@@ -18,7 +18,8 @@ type (
 		LogPath      string `xml:"logpath,attr"`      //文件方式日志目录，如果为空，默认当前目录
 		Port         int    `xml:"port,attr"`         //端口
 		Offline      bool   `xml:"offline,attr"`      //是否维护，默认false
-		OfflineUrl   string `xml:"offlineurl,attr"`   //当设置为维护，默认维护页地址
+		OfflineText  string `xml:"offlinetext,attr"`  //当设置为维护，默认显示内容，如果设置url，优先url
+		OfflineUrl   string `xml:"offlineurl,attr"`   //当设置为维护，默认维护页地址，如果设置url，优先url
 		EnabledDebug bool   `xml:"enableddebug,attr"` //启用Debug模式
 		EnabledGzip  bool   `xml:"enabledgzip,attr"`  //启用gzip
 	}

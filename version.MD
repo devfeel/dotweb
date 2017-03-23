@@ -3,6 +3,7 @@
 #### Version 0.3.6
 * 新增Config支持, 支持Server、Session、Router三类配置
 * 新增HttpServer.RegisterHandler、HttpServer.GetHandler用于注册HttpHandle
+* 新增Offline配置，可设置Offline欢迎语或者默认跳转维护页
 * 新增example\config
 * 2017-03-23 22:00
 

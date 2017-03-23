@@ -32,6 +32,8 @@ const (
 
 	DefaultGzipLevel = 9
 	gzipScheme       = "gzip"
+
+	DefaultOfflineText = "sorry, server is offline!"
 )
 
 type (
@@ -52,6 +54,9 @@ type (
 		pool           *pool
 		ServerConfig   *ServerConfig
 		binder         Binder
+		offline        bool
+		offlineText    string
+		offlineUrl     string
 		handlerMap     map[string]HttpHandle
 		handlerMutex   *sync.RWMutex
 	}
@@ -140,6 +145,16 @@ func (server *HttpServer) InitSessionManager(config *session.StoreConfig) {
  */
 func (server *HttpServer) setDotApp(dotApp *DotWeb) {
 	server.DotApp = dotApp
+}
+
+func (server *HttpServer) setOffline(offline bool, offlineText string, offlineUrl string) {
+	server.offline = offline
+	server.offlineUrl = offlineUrl
+	if offlineText == "" {
+		server.offlineText = DefaultOfflineText
+	} else {
+		server.offlineText = offlineText
+	}
 }
 
 func (service *HttpServer) RegisterHandler(name string, handler HttpHandle) {
@@ -255,6 +270,18 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 		httpCtx := server.pool.context.Get().(*HttpContext)
 		httpCtx.Reset(res, r, server, params)
 
+		//处理维护
+		if server.offline {
+			//url优先
+			if server.offlineUrl != "" {
+				httpCtx.Redirect(server.offlineUrl)
+			} else {
+				//输出内容
+				httpCtx.WriteString(server.offlineText)
+			}
+			return
+		}
+
 		//gzip
 		if server.ServerConfig.EnabledGzip {
 			gw, err := gzip.NewWriterLevel(w, DefaultGzipLevel)
@@ -294,6 +321,7 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 				httpCtx.Response.WriteHeader(http.StatusInternalServerError)
 				httpCtx.Response.Header().Set(HeaderContentType, CharsetUTF8)
 				httpCtx.WriteString(hijack_err.Error())
+				return
 			}
 		}
 

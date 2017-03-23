@@ -33,6 +33,7 @@ func StartServer() error {
 * 统一的HTTP错误处理
 * 统一的日志处理
 * 支持Hijack与websocket
+* 支持维护配置，可设置维护欢迎语或维护跳转页
 
 ## 路由
 特殊说明：集成github.com/julienschmidt/httprouter

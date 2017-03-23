@@ -19,6 +19,7 @@ import (
 type (
 	DotWeb struct {
 		HttpServer       *HttpServer
+		AppConfig        *config.AppConfig
 		SessionConfig    *session.StoreConfig
 		Modules          []*HttpModule
 		logpath          string
@@ -202,11 +203,15 @@ func (ds *DotWeb) StartServer(httpport int) error {
 
 //start server with appconfig
 func (ds *DotWeb) StartServerWithConfig(config *config.AppConfig) error {
+	ds.AppConfig = config
 	if config.Server.LogPath != "" {
 		ds.logpath = config.Server.LogPath
 	}
 	ds.SetEnabledDebug(config.Server.EnabledDebug)
 	ds.SetEnabledGzip(config.Server.EnabledGzip)
+
+	//设置维护
+	ds.HttpServer.setOffline(config.Server.Offline, config.Server.OfflineText, config.Server.OfflineUrl)
 
 	if config.Session.EnabledSession {
 		ds.SetEnabledSession(config.Session.EnabledSession)
