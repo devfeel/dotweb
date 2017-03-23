@@ -1,5 +1,11 @@
 ##dotweb版本记录：
 
+#### Version 0.3.6
+* 新增Config支持, 支持Server、Session、Router三类配置
+* 新增HttpServer.RegisterHandler、HttpServer.GetHandler用于注册HttpHandle
+* 新增example\config
+* 2017-03-23 22:00
+
 #### Version 0.3.5.1
 * 新增ItemContext支持 - 单次请求完整通道内共享容器,通过HttpContext.Items().Get\Set操作
 * 可在OnBeginRequest、UserHandler、OnEndRequest三个环节使用

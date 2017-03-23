@@ -52,6 +52,8 @@ type (
 		pool           *pool
 		ServerConfig   *ServerConfig
 		binder         Binder
+		handlerMap     map[string]HttpHandle
+		handlerMutex   *sync.RWMutex
 	}
 
 	//server global config
@@ -99,6 +101,8 @@ func NewHttpServer() *HttpServer {
 		ServerConfig: NewServerConfig(),
 		lock_session: new(sync.RWMutex),
 		binder:       &binder{},
+		handlerMap:   make(map[string]HttpHandle),
+		handlerMutex: new(sync.RWMutex),
 	}
 
 	return server
@@ -136,6 +140,19 @@ func (server *HttpServer) InitSessionManager(config *session.StoreConfig) {
  */
 func (server *HttpServer) setDotApp(dotApp *DotWeb) {
 	server.DotApp = dotApp
+}
+
+func (service *HttpServer) RegisterHandler(name string, handler HttpHandle) {
+	service.handlerMutex.Lock()
+	service.handlerMap[name] = handler
+	service.handlerMutex.Unlock()
+}
+
+func (service *HttpServer) GetHandler(name string) (HttpHandle, bool) {
+	service.handlerMutex.RLock()
+	v, exists := service.handlerMap[name]
+	service.handlerMutex.RUnlock()
+	return v, exists
 }
 
 //get session manager in current httpserver

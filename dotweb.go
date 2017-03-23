@@ -2,6 +2,7 @@ package dotweb
 
 import (
 	"fmt"
+	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/framework/log"
 	"github.com/devfeel/dotweb/session"
@@ -11,6 +12,7 @@ import (
 	"runtime/debug"
 	"runtime/pprof"
 	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -30,6 +32,10 @@ type (
 	}
 
 	ExceptionHandle func(*HttpContext, interface{})
+)
+
+const (
+	DefaultHttpPort = 80 //default http port
 )
 
 /*
@@ -192,6 +198,35 @@ func (ds *DotWeb) StartServer(httpport int) error {
 	logger.Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
 	err := http.ListenAndServe(port, ds.HttpServer)
 	return err
+}
+
+//start server with appconfig
+func (ds *DotWeb) StartServerWithConfig(config *config.AppConfig) error {
+	if config.Server.LogPath != "" {
+		ds.logpath = config.Server.LogPath
+	}
+	ds.SetEnabledDebug(config.Server.EnabledDebug)
+	ds.SetEnabledGzip(config.Server.EnabledGzip)
+
+	if config.Session.EnabledSession {
+		ds.SetEnabledSession(config.Session.EnabledSession)
+		ds.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP, config.Session.UserName, config.Session.Password))
+	}
+
+	//load router and register
+	for _, v := range config.Routers {
+		if h, isok := ds.HttpServer.GetHandler(v.HandlerName); isok && v.IsUse {
+			ds.HttpServer.RegisterRoute(strings.ToUpper(v.Method), v.Path, h)
+		}
+	}
+
+	//start server
+	port := config.Server.Port
+	if port <= 0 {
+		port = DefaultHttpPort
+	}
+	return ds.StartServer(port)
+
 }
 
 //默认异常处理
