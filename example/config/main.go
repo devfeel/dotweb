@@ -10,15 +10,8 @@ func main() {
 	//初始化DotServer
 	app := dotweb.New()
 
-	//设置路由
+	//注册HttpHandler
 	RegisterHandler(app.HttpServer)
-
-	//设置HttpModule
-	//InitModule(app)
-
-	//启动 监控服务
-	//pprofport := 8081
-	//go app.StartPProfServer(pprofport)
 
 	appConfig := config.InitConfig("d:/dotweb.conf")
 
