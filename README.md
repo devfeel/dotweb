@@ -38,9 +38,9 @@ func StartServer() error {
 ## 路由
 特殊说明：集成github.com/julienschmidt/httprouter
 #### 常规路由
-目前支持GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE 这几类请求方法
-另外也支持HiJack\WebSocket\ServerFile三类特殊应用
-支持注册Handler，以启用配置化
+* 目前支持GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE 这几类请求方法
+* 另外也支持HiJack\WebSocket\ServerFile三类特殊应用
+* 支持注册Handler，以启用配置化
 ```go
 1、Router.GET(path string, handle HttpHandle)
 2、Router.POST(path string, handle HttpHandle)
@@ -52,8 +52,8 @@ func StartServer() error {
 8、Router.HiJack(path string, handle HttpHandle)
 9、Router.WebSocket(path string, handle HttpHandle)
 10、Router.RegisterRoute(routeMethod string, path string, handle HttpHandle)
-11、RegisterHandler(name string, handler HttpHandle)
-12、GetHandler(name string) (HttpHandle, bool)
+11、Router.RegisterHandler(name string, handler HttpHandle)
+12、Router.GetHandler(name string) (HttpHandle, bool)
 ```
 接受两个参数，一个是URI路径，另一个是 HttpHandle 类型，设定匹配到该路径时执行的方法；
 #### 静态路由
