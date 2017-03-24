@@ -152,10 +152,7 @@ func (ctx *HttpContext) FormFile(key string) (*UploadFile, error) {
 	if err != nil {
 		return nil, err
 	} else {
-		return &UploadFile{
-			File:   file,
-			Header: header,
-		}, nil
+		return NewUploadFile(file, header), nil
 	}
 }
 
