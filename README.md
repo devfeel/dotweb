@@ -16,7 +16,7 @@ func StartServer() error {
 	//设置dotserver日志目录
 	dotserver.SetLogPath("/home/logs/wwwroot/")
 	//设置路由
-	dotserver.HttpServer.GET("/index", func(ctx *dotweb.HttpContext) {
+	dotserver.HttpServer.Router().GET("/index", func(ctx *dotweb.HttpContext) {
 		ctx.WriteString("welcome to my first web!")
 	})
 	//开始服务
