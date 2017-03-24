@@ -50,6 +50,23 @@ func TestBind(ctx *dotweb.HttpContext) {
 	ctx.WriteString("TestBind [" + errstr + "] " + fmt.Sprint(user))
 }
 
+func GetBind(ctx *dotweb.HttpContext) {
+	type UserInfo struct {
+		UserName string `form:"user"`
+		Sex      int    `form:"sex"`
+	}
+	user := new(UserInfo)
+	errstr := "no error"
+	if err := ctx.Bind(user); err != nil {
+		errstr = err.Error()
+	} else {
+
+	}
+
+	ctx.WriteString("GetBind [" + errstr + "] " + fmt.Sprint(user))
+}
+
 func InitRoute(server *dotweb.HttpServer) {
 	server.Router().POST("/", TestBind)
+	server.Router().GET("/getbind", GetBind)
 }

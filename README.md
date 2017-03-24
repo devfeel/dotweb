@@ -40,17 +40,20 @@ func StartServer() error {
 #### 常规路由
 目前支持GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE 这几类请求方法
 另外也支持HiJack\WebSocket\ServerFile三类特殊应用
+支持注册Handler，以启用配置化
 ```go
-1、HttpServer.GET(path string, handle HttpHandle)
-2、HttpServer.POST(path string, handle HttpHandle)
-3、HttpServer.HEAD(path string, handle HttpHandle)
-4、HttpServer.OPTIONS(path string, handle HttpHandle)
-5、HttpServer.PUT(path string, handle HttpHandle)
-6、HttpServer.PATCH(path string, handle HttpHandle)
-7、HttpServer.DELETE(path string, handle HttpHandle)
-8、HttpServer.HiJack(path string, handle HttpHandle)
-9、HttpServer.WebSocket(path string, handle HttpHandle)
-10、HttpServer.RegisterRoute(routeMethod string, path string, handle HttpHandle)
+1、Router.GET(path string, handle HttpHandle)
+2、Router.POST(path string, handle HttpHandle)
+3、Router.HEAD(path string, handle HttpHandle)
+4、Router.OPTIONS(path string, handle HttpHandle)
+5、Router.PUT(path string, handle HttpHandle)
+6、Router.PATCH(path string, handle HttpHandle)
+7、Router.DELETE(path string, handle HttpHandle)
+8、Router.HiJack(path string, handle HttpHandle)
+9、Router.WebSocket(path string, handle HttpHandle)
+10、Router.RegisterRoute(routeMethod string, path string, handle HttpHandle)
+11、RegisterHandler(name string, handler HttpHandle)
+12、GetHandler(name string) (HttpHandle, bool)
 ```
 接受两个参数，一个是URI路径，另一个是 HttpHandle 类型，设定匹配到该路径时执行的方法；
 #### 静态路由
@@ -64,7 +67,7 @@ import (
 
 func main() {
     dotserver := dotweb.New()
-    dotserver.Get("/hello", func(ctx *dotweb.HttpContext) {
+    dotserver.Router().Get("/hello", func(ctx *dotweb.HttpContext) {
         ctx.WriteString("hello world!")
     })
     dotserver.StartServer(80)
@@ -83,12 +86,12 @@ import (
 
 func main() {
     dotserver := dotweb.New()
-    dotserver.Get("/hello/:name", func(ctx *dotweb.HttpContext) {
+    dotserver.Router().Get("/hello/:name", func(ctx *dotweb.HttpContext) {
         ctx.WriteString("hello " + ctx.GetRouterName("name"))
     })
-    dotserver.Get("/news/:category/:newsid", func(ctx *dotweb.HttpContext) {
+    dotserver.Router().Get("/news/:category/:newsid", func(ctx *dotweb.HttpContext) {
     	category := ctx.GetRouterName("category")
-	newsid := ctx.GetRouterName("newsid")
+	    newsid := ctx.GetRouterName("newsid")
         ctx.WriteString("news info: category=" + category + " newsid=" + newsid)
     })
     dotserver.StartServer(80)
@@ -105,8 +108,8 @@ func main() {
 * 集成echo的bind实现模块
 ```go
 type UserInfo struct {
-		UserName string
-		Sex      int
+		UserName string `form:"user"`
+		Sex      int    `form:"sex"`
 }
 
 func(ctx *dotweb.HttpContext) TestBind{

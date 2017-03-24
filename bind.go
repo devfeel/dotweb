@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+const (
+	defaultTagName = "form"
+)
+
 type (
 	// Binder is the interface that wraps the Bind method.
 	Binder interface {
@@ -30,8 +34,12 @@ func (b *binder) Bind(i interface{}, ctx *HttpContext) (err error) {
 		err = json.NewDecoder(req.Body).Decode(i)
 	case strings.HasPrefix(ctype, MIMEApplicationXML):
 		err = xml.NewDecoder(req.Body).Decode(i)
-	case strings.HasPrefix(ctype, MIMEApplicationForm), strings.HasPrefix(ctype, MIMEMultipartForm):
-		err = reflects.ConvertMapToStruct("form", i, ctx.FormValues())
+	//case strings.HasPrefix(ctype, MIMEApplicationForm), strings.HasPrefix(ctype, MIMEMultipartForm),
+	//	strings.HasPrefix(ctype, MIMETextHTML):
+	//	err = reflects.ConvertMapToStruct(defaultTagName, i, ctx.FormValues())
+	default:
+		//no check content type for fixed issue #6
+		err = reflects.ConvertMapToStruct(defaultTagName, i, ctx.FormValues())
 	}
 	return err
 }
