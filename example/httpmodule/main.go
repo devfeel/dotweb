@@ -58,7 +58,7 @@ func Index(ctx *dotweb.HttpContext) {
 }
 
 func InitRoute(server *dotweb.HttpServer) {
-	server.GET("/", Index)
+	server.Router().GET("/", Index)
 }
 
 func InitModule(dotserver *dotweb.DotWeb) {

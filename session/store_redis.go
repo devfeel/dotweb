@@ -26,8 +26,8 @@ func getRedisKey(key string) string {
 func NewRedisStore(config *StoreConfig) *RedisStore {
 	return &RedisStore{
 		lock:        new(sync.RWMutex),
-		serverIp:    config.StoreServerIP,
-		password:    config.StorePassword,
+		serverIp:    config.ServerIP,
+		password:    config.Password,
 		maxlifetime: config.Maxlifetime,
 	}
 }

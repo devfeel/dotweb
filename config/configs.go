@@ -13,14 +13,13 @@ type (
 		Session SessionConfig  `xml:"session"`
 		Routers []RouterConfig `xml:"routers>router"`
 	}
-
 	ServerConfig struct {
 		LogPath      string `xml:"logpath,attr"`      //文件方式日志目录，如果为空，默认当前目录
+		EnabledDebug bool   `xml:"enableddebug,attr"` //启用Debug模式
 		Port         int    `xml:"port,attr"`         //端口
 		Offline      bool   `xml:"offline,attr"`      //是否维护，默认false
 		OfflineText  string `xml:"offlinetext,attr"`  //当设置为维护，默认显示内容，如果设置url，优先url
 		OfflineUrl   string `xml:"offlineurl,attr"`   //当设置为维护，默认维护页地址，如果设置url，优先url
-		EnabledDebug bool   `xml:"enableddebug,attr"` //启用Debug模式
 		EnabledGzip  bool   `xml:"enabledgzip,attr"`  //启用gzip
 	}
 
@@ -40,6 +39,20 @@ type (
 		IsUse       bool   `xml:"isuse,attr"` //是否启用，默认false
 	}
 )
+
+func NewAppConfig() *AppConfig {
+	config := &AppConfig{}
+	return config
+}
+func NewServerConfig() *ServerConfig {
+	config := &ServerConfig{}
+	return config
+}
+
+func NewSessionConfig() *SessionConfig {
+	config := &SessionConfig{}
+	return config
+}
 
 //初始化配置文件
 func InitConfig(configFile string) *AppConfig {

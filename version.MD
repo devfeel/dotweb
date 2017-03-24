@@ -1,5 +1,12 @@
 ##dotweb版本记录：
 
+
+#### Version 0.3.6.5
+* App、Server、Session配置代码梳理优化
+* 新增Server接口，新增OfflineServer实现
+* 新增Router接口，将原HttpServer路由操作转移至HttpServer.Router()
+* 2017-03-24 14:00
+
 #### Version 0.3.6
 * 新增Config支持, 支持Server、Session、Router三类配置
 * 新增HttpServer.RegisterHandler、HttpServer.GetHandler用于注册HttpHandle

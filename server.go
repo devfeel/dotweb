@@ -13,27 +13,16 @@ import (
 	"time"
 
 	"compress/gzip"
-	"github.com/devfeel/dotweb/router"
+	"github.com/devfeel/dotweb/config"
+	"github.com/devfeel/dotweb/routers"
 	"golang.org/x/net/websocket"
 	"io"
 	"net/url"
 )
 
 const (
-	RouteMethod_GET       = "GET"
-	RouteMethod_HEAD      = "HEAD"
-	RouteMethod_OPTIONS   = "OPTIONS"
-	RouteMethod_POST      = "POST"
-	RouteMethod_PUT       = "PUT"
-	RouteMethod_PATCH     = "PATCH"
-	RouteMethod_DELETE    = "DELETE"
-	RouteMethod_HiJack    = "HiJack"
-	RouteMethod_WebSocket = "WebSocket"
-
 	DefaultGzipLevel = 9
 	gzipScheme       = "gzip"
-
-	DefaultOfflineText = "sorry, server is offline!"
 )
 
 type (
@@ -47,25 +36,15 @@ type (
 
 	//HttpServer定义
 	HttpServer struct {
-		router         *router.Router
+		router         Router
 		DotApp         *DotWeb
 		sessionManager *session.SessionManager
 		lock_session   *sync.RWMutex
 		pool           *pool
-		ServerConfig   *ServerConfig
+		ServerConfig   *config.ServerConfig
+		SessionConfig  *config.SessionConfig
 		binder         Binder
 		offline        bool
-		offlineText    string
-		offlineUrl     string
-		handlerMap     map[string]HttpHandle
-		handlerMutex   *sync.RWMutex
-	}
-
-	//server global config
-	ServerConfig struct {
-		EnabledDebug   bool //is enabled debug mode
-		EnabledSession bool //is enabled seesion
-		EnabledGzip    bool //is enabled gzip
 	}
 
 	//pool定义
@@ -75,14 +54,6 @@ type (
 	}
 )
 
-func NewServerConfig() *ServerConfig {
-	config := &ServerConfig{
-		EnabledDebug:   false,
-		EnabledSession: false,
-	}
-	return config
-}
-
 // Handle is a function that can be registered to a route to handle HTTP
 // requests. Like http.HandlerFunc, but has a third parameter for the values of
 // wildcards (variables).
@@ -90,7 +61,6 @@ type HttpHandle func(*HttpContext)
 
 func NewHttpServer() *HttpServer {
 	server := &HttpServer{
-		router: router.New(),
 		pool: &pool{
 			response: sync.Pool{
 				New: func() interface{} {
@@ -103,17 +73,17 @@ func NewHttpServer() *HttpServer {
 				},
 			},
 		},
-		ServerConfig: NewServerConfig(),
-		lock_session: new(sync.RWMutex),
-		binder:       &binder{},
-		handlerMap:   make(map[string]HttpHandle),
-		handlerMutex: new(sync.RWMutex),
+		ServerConfig:  config.NewServerConfig(),
+		SessionConfig: config.NewSessionConfig(),
+		lock_session:  new(sync.RWMutex),
+		binder:        &binder{},
 	}
-
+	//设置router
+	server.router = NewRouter(server)
 	return server
 }
 
-//ServeHTTP makes the httprouter implement the http.Handler interface.
+//ServeHTTP make sure request can be handled correctly
 func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	//针对websocket与调试信息特殊处理
 	if checkIsWebSocketRequest(req) {
@@ -121,8 +91,23 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	} else {
 		//设置header信息
 		w.Header().Set(HeaderServer, DefaultServerName)
-		server.router.ServeHTTP(w, req)
+		//处理维护
+		if server.IsOffline() {
+			server.DotApp.OfflineServer.ServeHTTP(w, req)
+		} else {
+			server.Router().ServeHTTP(w, req)
+		}
 	}
+}
+
+//IsOffline check server is set offline state
+func (server *HttpServer) IsOffline() bool {
+	return server.offline
+}
+
+//SetOffline set server offline config
+func (server *HttpServer) SetOffline(offline bool, offlineText string, offlineUrl string) {
+	server.offline = offline
 }
 
 //init session manager
@@ -147,110 +132,20 @@ func (server *HttpServer) setDotApp(dotApp *DotWeb) {
 	server.DotApp = dotApp
 }
 
-func (server *HttpServer) setOffline(offline bool, offlineText string, offlineUrl string) {
-	server.offline = offline
-	server.offlineUrl = offlineUrl
-	if offlineText == "" {
-		server.offlineText = DefaultOfflineText
-	} else {
-		server.offlineText = offlineText
-	}
-}
-
-func (service *HttpServer) RegisterHandler(name string, handler HttpHandle) {
-	service.handlerMutex.Lock()
-	service.handlerMap[name] = handler
-	service.handlerMutex.Unlock()
-}
-
-func (service *HttpServer) GetHandler(name string) (HttpHandle, bool) {
-	service.handlerMutex.RLock()
-	v, exists := service.handlerMap[name]
-	service.handlerMutex.RUnlock()
-	return v, exists
-}
-
 //get session manager in current httpserver
 func (server *HttpServer) GetSessionManager() *session.SessionManager {
-	if !server.ServerConfig.EnabledSession {
+	if !server.SessionConfig.EnabledSession {
 		return nil
 	}
 	return server.sessionManager
 }
 
-// GET is a shortcut for router.Handle("GET", path, handle)
-func (server *HttpServer) GET(path string, handle HttpHandle) {
-	server.RegisterRoute(RouteMethod_GET, path, handle)
+//get router interface in server
+func (server *HttpServer) Router() Router {
+	return server.router
 }
 
-// HEAD is a shortcut for router.Handle("HEAD", path, handle)
-func (server *HttpServer) HEAD(path string, handle HttpHandle) {
-	server.RegisterRoute(RouteMethod_HEAD, path, handle)
-}
-
-// OPTIONS is a shortcut for router.Handle("OPTIONS", path, handle)
-func (server *HttpServer) OPTIONS(path string, handle HttpHandle) {
-	server.RegisterRoute(RouteMethod_OPTIONS, path, handle)
-}
-
-// POST is a shortcut for router.Handle("POST", path, handle)
-func (server *HttpServer) POST(path string, handle HttpHandle) {
-	server.RegisterRoute(RouteMethod_POST, path, handle)
-}
-
-// PUT is a shortcut for router.Handle("PUT", path, handle)
-func (server *HttpServer) PUT(path string, handle HttpHandle) {
-	server.RegisterRoute(RouteMethod_PUT, path, handle)
-}
-
-// PATCH is a shortcut for router.Handle("PATCH", path, handle)
-func (server *HttpServer) PATCH(path string, handle HttpHandle) {
-	server.RegisterRoute(RouteMethod_PATCH, path, handle)
-}
-
-// DELETE is a shortcut for router.Handle("DELETE", path, handle)
-func (server *HttpServer) DELETE(path string, handle HttpHandle) {
-	server.RegisterRoute(RouteMethod_DELETE, path, handle)
-}
-
-// DELETE is a shortcut for router.Handle("DELETE", path, handle)
-func (server *HttpServer) HiJack(path string, handle HttpHandle) {
-	server.RegisterRoute(RouteMethod_GET, path, handle)
-}
-
-// shortcut for router.Handle(httpmethod, path, handle)
-// support GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS\HiJack\WebSocket
-func (server *HttpServer) RegisterRoute(routeMethod string, path string, handle HttpHandle) {
-
-	logger.Log("Dotweb:RegisterRoute ["+routeMethod+"] ["+path+"]", LogTarget_HttpServer, LogLevel_Debug)
-
-	//hijack mode,use get and isHijack = true
-	if routeMethod == RouteMethod_HiJack {
-		server.router.Handle(RouteMethod_GET, path, server.wrapRouterHandle(handle, true))
-		return
-	}
-	//websocket mode,use default httpserver
-	if routeMethod == RouteMethod_WebSocket {
-		http.Handle(path, websocket.Handler(server.wrapWebSocketHandle(handle)))
-		return
-	}
-
-	//GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS mode
-	server.router.Handle(routeMethod, path, server.wrapRouterHandle(handle, false))
-	return
-}
-
-// ServerFile is a shortcut for router.ServeFiles(path, filepath)
-// simple demo:server.ServerFile("/src/*filepath", "/var/www")
-func (server *HttpServer) ServerFile(urlpath string, filepath string) {
-	server.router.ServeFiles(urlpath, http.Dir(filepath))
-}
-
-// WebSocket is a shortcut for websocket.Handler
-func (server *HttpServer) WebSocket(path string, handle HttpHandle) {
-	server.RegisterRoute(RouteMethod_WebSocket, path, handle)
-}
-
+//get binder interface in server
 func (server *HttpServer) Binder() Binder {
 	return server.binder
 }
@@ -262,25 +157,13 @@ type LogJson struct {
 }
 
 //wrap HttpHandle to httprouter.Handle
-func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) router.Handle {
-	return func(w http.ResponseWriter, r *http.Request, params router.Params) {
+func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) routers.Handle {
+	return func(w http.ResponseWriter, r *http.Request, params routers.Params) {
 		//get from pool
 		res := server.pool.response.Get().(*Response)
 		res.Reset(w)
 		httpCtx := server.pool.context.Get().(*HttpContext)
 		httpCtx.Reset(res, r, server, params)
-
-		//处理维护
-		if server.offline {
-			//url优先
-			if server.offlineUrl != "" {
-				httpCtx.Redirect(server.offlineUrl)
-			} else {
-				//输出内容
-				httpCtx.WriteString(server.offlineText)
-			}
-			return
-		}
 
 		//gzip
 		if server.ServerConfig.EnabledGzip {
@@ -298,7 +181,7 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 		//session
 		//if exists client-sessionid, use it
 		//if not exists client-sessionid, new one
-		if server.ServerConfig.EnabledSession {
+		if server.SessionConfig.EnabledSession {
 			sessionId, err := server.GetSessionManager().GetClientSessionID(r)
 			if err == nil && sessionId != "" {
 				httpCtx.SessionID = sessionId

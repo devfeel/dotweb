@@ -81,12 +81,12 @@ func Redirect(ctx *dotweb.HttpContext) {
 }
 
 func InitRoute(server *dotweb.HttpServer) {
-	server.GET("/", Index)
-	server.POST("/keypost", KeyPost)
-	server.POST("/jsonpost", JsonPost)
-	server.GET("/error", DefaultError)
-	server.GET("/redirect", Redirect)
-	server.RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
+	server.Router().GET("/", Index)
+	server.Router().POST("/keypost", KeyPost)
+	server.Router().POST("/jsonpost", JsonPost)
+	server.Router().GET("/error", DefaultError)
+	server.Router().GET("/redirect", Redirect)
+	server.Router().RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
 }
 
 func InitModule(dotserver *dotweb.DotWeb) {

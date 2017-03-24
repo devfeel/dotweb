@@ -34,7 +34,7 @@ func Redirect(ctx *dotweb.HttpContext) {
 }
 
 func RegisterHandler(server *dotweb.HttpServer) {
-	server.RegisterHandler("Index", Index)
-	server.RegisterHandler("DefaultError", DefaultError)
-	server.RegisterHandler("Redirect", Redirect)
+	server.Router().RegisterHandler("Index", Index)
+	server.Router().RegisterHandler("DefaultError", DefaultError)
+	server.Router().RegisterHandler("Redirect", Redirect)
 }

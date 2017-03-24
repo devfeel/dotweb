@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"fmt"
-	"github.com/devfeel/dotweb/router"
+	"github.com/devfeel/dotweb/routers"
 	"github.com/devfeel/dotweb/session"
 )
 
@@ -19,7 +19,7 @@ const (
 
 type HttpContext struct {
 	Request      *http.Request
-	RouterParams router.Params
+	RouterParams routers.Params
 	Response     *Response
 	WebSocket    *WebSocket
 	HijackConn   *HijackConn
@@ -33,7 +33,7 @@ type HttpContext struct {
 }
 
 //reset response attr
-func (ctx *HttpContext) Reset(res *Response, r *http.Request, server *HttpServer, params router.Params) {
+func (ctx *HttpContext) Reset(res *Response, r *http.Request, server *HttpServer, params routers.Params) {
 	ctx.Request = r
 	ctx.Response = res
 	ctx.RouterParams = params
@@ -77,7 +77,7 @@ func (ctx *HttpContext) Session() (session *session.SessionState) {
 		//return nil, errors.New("no effective http-server")
 		panic("no effective http-server")
 	}
-	if !ctx.HttpServer.ServerConfig.EnabledSession {
+	if !ctx.HttpServer.SessionConfig.EnabledSession {
 		//return nil, errors.New("http-server not enabled session")
 		panic("http-server not enabled session")
 	}
@@ -306,13 +306,16 @@ func (ctx *HttpContext) SetStatusCode(code int) error {
 	return ctx.Response.WriteHeader(code)
 }
 
-// write cookie for domain&name&liveseconds
+// write cookie for domain & name & maxAge
 //
 // default path = "/"
 // default domain = current domain
-// default seconds = 0
-func (ctx *HttpContext) WriteCookie(name, value string, seconds int) {
-	cookie := http.Cookie{Name: name, Value: value, MaxAge: seconds}
+// default maxAge = 0 //seconds
+// seconds=0 means no 'Max-Age' attribute specified.
+// seconds<0 means delete cookie now, equivalently 'Max-Age: 0'
+// seconds>0 means Max-Age attribute present and given in seconds
+func (ctx *HttpContext) WriteCookie(name, value string, maxAge int) {
+	cookie := http.Cookie{Name: name, Value: value, MaxAge: maxAge}
 	http.SetCookie(ctx.Response.Writer(), &cookie)
 }
 

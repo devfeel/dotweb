@@ -5,6 +5,7 @@ import (
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/framework/log"
+	"github.com/devfeel/dotweb/servers"
 	"github.com/devfeel/dotweb/session"
 	"net/http"
 	_ "net/http/pprof"
@@ -19,8 +20,8 @@ import (
 type (
 	DotWeb struct {
 		HttpServer       *HttpServer
+		OfflineServer    servers.Server
 		AppConfig        *config.AppConfig
-		SessionConfig    *session.StoreConfig
 		Modules          []*HttpModule
 		logpath          string
 		ExceptionHandler ExceptionHandle
@@ -44,9 +45,10 @@ const (
  */
 func New() *DotWeb {
 	app := &DotWeb{
-		HttpServer: NewHttpServer(),
-		Modules:    make([]*HttpModule, 0, 10),
-		AppContext: NewItemContext(),
+		HttpServer:    NewHttpServer(),
+		OfflineServer: servers.NewOfflineServer(),
+		Modules:       make([]*HttpModule, 0, 10),
+		AppContext:    NewItemContext(),
 	}
 	app.HttpServer.setDotApp(app)
 	return app
@@ -130,7 +132,7 @@ func (ds *DotWeb) SetEnabledDebug(isEnabled bool) {
 设置是否启用Session,默认为false
 */
 func (ds *DotWeb) SetEnabledSession(isEnabled bool) {
-	ds.HttpServer.ServerConfig.EnabledSession = isEnabled
+	ds.HttpServer.SessionConfig.EnabledSession = isEnabled
 }
 
 /*
@@ -141,8 +143,12 @@ func (ds *DotWeb) SetEnabledGzip(isEnabled bool) {
 }
 
 //set session store config
-func (ds *DotWeb) SetSessionConfig(config *session.StoreConfig) {
-	ds.SessionConfig = config
+func (ds *DotWeb) SetSessionConfig(storeConfig *session.StoreConfig) {
+	ds.HttpServer.SessionConfig.Timeout = storeConfig.Maxlifetime
+	ds.HttpServer.SessionConfig.SessionMode = storeConfig.StoreName
+	ds.HttpServer.SessionConfig.ServerIP = storeConfig.ServerIP
+	ds.HttpServer.SessionConfig.UserName = storeConfig.UserName
+	ds.HttpServer.SessionConfig.Password = storeConfig.Password
 }
 
 /*
@@ -178,21 +184,22 @@ func (ds *DotWeb) StartServer(httpport int) error {
 
 	//添加框架默认路由规则
 	//默认支持pprof信息查看
-	ds.HttpServer.GET("/dotweb/debug/pprof/:key", initPProf)
-	ds.HttpServer.GET("/dotweb/debug/freemem", freeMemory)
-	ds.HttpServer.GET("/dotweb/state", showServerState)
-	ds.HttpServer.GET("/dotweb/query/:key", showQuery)
+	ds.HttpServer.Router().GET("/dotweb/debug/pprof/:key", initPProf)
+	ds.HttpServer.Router().GET("/dotweb/debug/freemem", freeMemory)
+	ds.HttpServer.Router().GET("/dotweb/state", showServerState)
+	ds.HttpServer.Router().GET("/dotweb/query/:key", showQuery)
 
 	if ds.ExceptionHandler == nil {
 		ds.SetExceptionHandle(ds.DefaultHTTPErrorHandler)
 	}
 
 	//init session manager
-	if ds.HttpServer.ServerConfig.EnabledSession {
-		if ds.SessionConfig == nil {
-			panic("no set SessionConfig, but set enabledsession true")
+	if ds.HttpServer.SessionConfig.EnabledSession {
+		if ds.HttpServer.sessionManager == nil {
+			//panic("no set SessionConfig, but set enabledsession true")
+			logger.Warn("no set SessionConfig, but set enabledsession true, now will use default runtime session", LogTarget_HttpServer)
 		}
-		ds.HttpServer.InitSessionManager(ds.SessionConfig)
+		ds.HttpServer.InitSessionManager(session.NewDefaultRuntimeConfig())
 	}
 
 	port := ":" + strconv.Itoa(httpport)
@@ -211,8 +218,12 @@ func (ds *DotWeb) StartServerWithConfig(config *config.AppConfig) error {
 	ds.SetEnabledGzip(config.Server.EnabledGzip)
 
 	//设置维护
-	ds.HttpServer.setOffline(config.Server.Offline, config.Server.OfflineText, config.Server.OfflineUrl)
+	if config.Server.Offline {
+		ds.HttpServer.SetOffline(config.Server.Offline, config.Server.OfflineText, config.Server.OfflineUrl)
+		ds.OfflineServer.SetOffline(config.Server.Offline, config.Server.OfflineText, config.Server.OfflineUrl)
+	}
 
+	//设置session
 	if config.Session.EnabledSession {
 		ds.SetEnabledSession(config.Session.EnabledSession)
 		ds.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP, config.Session.UserName, config.Session.Password))
@@ -220,8 +231,8 @@ func (ds *DotWeb) StartServerWithConfig(config *config.AppConfig) error {
 
 	//load router and register
 	for _, v := range config.Routers {
-		if h, isok := ds.HttpServer.GetHandler(v.HandlerName); isok && v.IsUse {
-			ds.HttpServer.RegisterRoute(strings.ToUpper(v.Method), v.Path, h)
+		if h, isok := ds.HttpServer.Router().GetHandler(v.HandlerName); isok && v.IsUse {
+			ds.HttpServer.Router().RegisterRoute(strings.ToUpper(v.Method), v.Path, h)
 		}
 	}
 

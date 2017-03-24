@@ -32,11 +32,11 @@ type (
 
 	//session config info
 	StoreConfig struct {
-		StoreName     string
-		Maxlifetime   int64
-		StoreServerIP string
-		StoreUserName string
-		StorePassword string
+		StoreName   string
+		Maxlifetime int64
+		ServerIP    string
+		UserName    string
+		Password    string
 	}
 
 	SessionManager struct {
@@ -74,11 +74,11 @@ func NewDefaultRedisConfig(serverIp, password string) *StoreConfig {
 //create new store config
 func NewStoreConfig(storeName string, maxlifetime int64, serverIp, userName, password string) *StoreConfig {
 	return &StoreConfig{
-		StoreName:     storeName,
-		Maxlifetime:   maxlifetime,
-		StoreServerIP: serverIp,
-		StoreUserName: userName,
-		StorePassword: password,
+		StoreName:   storeName,
+		Maxlifetime: maxlifetime,
+		ServerIP:    serverIp,
+		UserName:    userName,
+		Password:    password,
 	}
 }
 

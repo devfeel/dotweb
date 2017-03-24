@@ -66,5 +66,5 @@ func TestSession(ctx *dotweb.HttpContext) {
 }
 
 func InitRoute(server *dotweb.HttpServer) {
-	server.GET("/", TestSession)
+	server.Router().GET("/", TestSession)
 }

@@ -51,5 +51,5 @@ func TestBind(ctx *dotweb.HttpContext) {
 }
 
 func InitRoute(server *dotweb.HttpServer) {
-	server.POST("/", TestBind)
+	server.Router().POST("/", TestBind)
 }

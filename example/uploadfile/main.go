@@ -35,7 +35,7 @@ func main() {
 }
 
 func InitRoute(server *dotweb.HttpServer) {
-	server.POST("/file", FileUpload)
+	server.Router().POST("/file", FileUpload)
 }
 
 func FileUpload(ctx *dotweb.HttpContext) {
