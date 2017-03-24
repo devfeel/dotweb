@@ -67,7 +67,7 @@ import (
 
 func main() {
     dotserver := dotweb.New()
-    dotserver.Router().Get("/hello", func(ctx *dotweb.HttpContext) {
+    dotserver.HttpServer.Router().Get("/hello", func(ctx *dotweb.HttpContext) {
         ctx.WriteString("hello world!")
     })
     dotserver.StartServer(80)
@@ -86,10 +86,10 @@ import (
 
 func main() {
     dotserver := dotweb.New()
-    dotserver.Router().Get("/hello/:name", func(ctx *dotweb.HttpContext) {
+    dotserver.HttpServer.Router().Get("/hello/:name", func(ctx *dotweb.HttpContext) {
         ctx.WriteString("hello " + ctx.GetRouterName("name"))
     })
-    dotserver.Router().Get("/news/:category/:newsid", func(ctx *dotweb.HttpContext) {
+    dotserver.HttpServer.Router().Get("/news/:category/:newsid", func(ctx *dotweb.HttpContext) {
     	category := ctx.GetRouterName("category")
 	    newsid := ctx.GetRouterName("newsid")
         ctx.WriteString("news info: category=" + category + " newsid=" + newsid)
