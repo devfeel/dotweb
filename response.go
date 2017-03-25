@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"compress/gzip"
 	"errors"
-	"github.com/labstack/echo"
 	"io"
 	"net"
 	"net/http"
@@ -113,14 +112,14 @@ func (r *Response) Reset(w http.ResponseWriter) {
 /*gzipResponseWriter*/
 func (w *gzipResponseWriter) WriteHeader(code int) {
 	if code == http.StatusNoContent { // Issue #489
-		w.ResponseWriter.Header().Del(echo.HeaderContentEncoding)
+		w.ResponseWriter.Header().Del(HeaderContentEncoding)
 	}
 	w.ResponseWriter.WriteHeader(code)
 }
 
 func (w *gzipResponseWriter) Write(b []byte) (int, error) {
-	if w.Header().Get(echo.HeaderContentType) == "" {
-		w.Header().Set(echo.HeaderContentType, http.DetectContentType(b))
+	if w.Header().Get(HeaderContentType) == "" {
+		w.Header().Set(HeaderContentType, http.DetectContentType(b))
 	}
 	return w.Writer.Write(b)
 }
