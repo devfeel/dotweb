@@ -149,7 +149,7 @@ dotserver.SetEnabledSession(true)
 //使用runtime模式
 dotserver.SetSessionConfig(session.NewDefaultRuntimeConfig())
 //使用redis模式
-dotserver.SetSessionConfig(session.NewDefaultRedisConfig("127.0.0.1:6379", "xxxx"))
+dotserver.SetSessionConfig(session.NewDefaultRedisConfig("127.0.0.1:6379"))
 //HttpContext使用
 ctx.Session().Set(key, value)
 ```

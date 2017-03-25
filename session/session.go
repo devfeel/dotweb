@@ -67,8 +67,8 @@ func NewDefaultRuntimeConfig() *StoreConfig {
 }
 
 //create new store with default config and use redis store
-func NewDefaultRedisConfig(serverIp, password string) *StoreConfig {
-	return NewStoreConfig(SessionStoreName_Redis, DefaultSessionMaxLifeTime, serverIp, "", password)
+func NewDefaultRedisConfig(serverIp string) *StoreConfig {
+	return NewStoreConfig(SessionStoreName_Redis, DefaultSessionMaxLifeTime, serverIp, "", "")
 }
 
 //create new store config

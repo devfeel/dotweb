@@ -14,8 +14,7 @@ const (
 type RedisStore struct {
 	lock        *sync.RWMutex // locker
 	maxlifetime int64
-	serverIp    string
-	password    string
+	serverIp    string //connection string, like "redis://:password@10.0.1.11:6379/0"
 }
 
 func getRedisKey(key string) string {
@@ -27,7 +26,6 @@ func NewRedisStore(config *StoreConfig) *RedisStore {
 	return &RedisStore{
 		lock:        new(sync.RWMutex),
 		serverIp:    config.ServerIP,
-		password:    config.Password,
 		maxlifetime: config.Maxlifetime,
 	}
 }
