@@ -57,17 +57,19 @@ func GetRedisClient(address string) *RedisClient {
 	return redis
 }
 
-//获取指定key的内容
-func (rc *RedisClient) Get(key string) (string, error) {
+//获取指定key的内容, interface{}
+func (rc *RedisClient) GetObj(key string) (interface{}, error) {
 	// 从连接池里面获得一个连接
 	conn := rc.pool.Get()
 	// 连接完关闭，其实没有关闭，是放回池里，也就是队列里面，等待下一个重用
 	defer conn.Close()
 	reply, errDo := conn.Do("GET", key)
-	if errDo == nil && reply == nil {
-		return "", nil
-	}
-	val, err := redis.String(reply, errDo)
+	return reply, errDo
+}
+
+//获取指定key的内容, string
+func (rc *RedisClient) Get(key string) (string, error) {
+	val, err := redis.String(rc.GetObj(key))
 	return val, err
 }
 
@@ -175,19 +177,18 @@ func (rc *RedisClient) LPush(key string, val string) (int64, error) {
 	}
 }
 
-//设置指定key的内容
-func (rc *RedisClient) Set(key string, val string) (string, error) {
+func (rc *RedisClient) Set(key string, val interface{}) (interface{}, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
-	val, err := redis.String(conn.Do("SET", key, val))
+	val, err := conn.Do("SET", key, val)
 	return val, err
 }
 
 //设置指定key的内容
-func (rc *RedisClient) SetWithExpire(key string, val string, timeOutSeconds int64) (string, error) {
+func (rc *RedisClient) SetWithExpire(key string, val interface{}, timeOutSeconds int64) (interface{}, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
-	val, err := redis.String(conn.Do("SET", key, val, "EX", timeOutSeconds))
+	val, err := conn.Do("SET", key, val, "EX", timeOutSeconds)
 	return val, err
 }
 
@@ -197,4 +198,12 @@ func (rc *RedisClient) Expire(key string, timeOutSeconds int64) (int64, error) {
 	defer conn.Close()
 	val, err := redis.Int64(conn.Do("EXPIRE", key, timeOutSeconds))
 	return val, err
+}
+
+//删除当前数据库里面的所有数据
+//这个命令永远不会出现失败
+func (rc *RedisClient) FlushDB() {
+	conn := rc.pool.Get()
+	defer conn.Close()
+	conn.Do("FLUSHALL")
 }

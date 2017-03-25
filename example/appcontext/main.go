@@ -35,19 +35,26 @@ func main() {
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
+type TestContext struct {
+	UserName string
+	Sex      int
+}
+
 //you can curl http://127.0.0.1:8080/
 func Index(ctx *dotweb.HttpContext) {
 	gstring := ctx.AppContext().GetString("gstring")
 	gint := ctx.AppContext().GetInt("gint")
 	ctx.AppContext().Set("index", "index-v")
+	ctx.AppContext().Set("user", "user-v")
 	ctx.WriteString("index -> " + gstring + ";" + strconv.Itoa(gint))
 }
 
 //you can curl http://127.0.0.1:8080/2
 func Index2(ctx *dotweb.HttpContext) {
 	gindex := ctx.AppContext().GetString("index")
-	gint := ctx.AppContext().GetInt("gint")
-	ctx.WriteString("index -> " + gindex + ";" + strconv.Itoa(gint))
+	ctx.AppContext().Remove("index")
+	user, _ := ctx.AppContext().Once("user")
+	ctx.WriteString("index -> " + gindex + ";" + fmt.Sprint(user))
 }
 
 func InitRoute(server *dotweb.HttpServer) {

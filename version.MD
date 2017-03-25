@@ -1,5 +1,11 @@
 ##dotweb版本记录：
 
+#### Version 0.3.7
+* 新增Cache模块，支持runtime、redis，常规支持Get\Set\GetString\GetInt\GetInt64\Incr\Decr\Exists\Clear操作
+* Cache通过app.SetCache启用，通过HttpContext.Cache()使用
+* ItemContext增加Remove、Once接口，影响HttpContext.AppContext、HttpContext.Items
+* 优化部分代码
+* 2017-03-25 22:30
 
 #### Version 0.3.6.5
 * App、Server、Session配置代码梳理优化

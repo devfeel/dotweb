@@ -41,7 +41,7 @@ func (store *RedisStore) SessionRead(sessionId string) (*SessionState, error) {
 	if len(kvs) == 0 {
 		kv = make(map[interface{}]interface{})
 	} else {
-		kv, err = gob.DecodeGob([]byte(kvs))
+		kv, err = gob.DecodeMap([]byte(kvs))
 		if err != nil {
 			return nil, err
 		}
@@ -65,7 +65,7 @@ func (store *RedisStore) SessionExist(sessionId string) bool {
 //SessionUpdate update session state in store
 func (store *RedisStore) SessionUpdate(state *SessionState) bool {
 	redisClient := redisutil.GetRedisClient(store.serverIp)
-	bytes, err := gob.EncodeGob(state.values)
+	bytes, err := gob.EncodeMap(state.values)
 	if err != nil {
 		return false
 	}

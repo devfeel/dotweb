@@ -2,6 +2,7 @@ package dotweb
 
 import (
 	"fmt"
+	"github.com/devfeel/dotweb/cache"
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/framework/log"
@@ -20,6 +21,7 @@ import (
 type (
 	DotWeb struct {
 		HttpServer       *HttpServer
+		cache            cache.Cache
 		OfflineServer    servers.Server
 		AppConfig        *config.AppConfig
 		Modules          []*HttpModule
@@ -81,6 +83,26 @@ func (ctx *ItemContext) Get(key string) (value interface{}, exists bool) {
 	return value, exists
 }
 
+//remove item by gived key
+//if not exists key, do nothing...
+func (ctx *ItemContext) Remove(key string) {
+	ctx.contextMutex.Lock()
+	delete(ctx.contextMap, key)
+	ctx.contextMutex.Unlock()
+}
+
+//get item by gived key, and remove it
+//only can be read once, it will be locked
+func (ctx *ItemContext) Once(key string) (value interface{}, exists bool) {
+	ctx.contextMutex.Lock()
+	defer ctx.contextMutex.Unlock()
+	value, exists = ctx.contextMap[key]
+	if exists {
+		delete(ctx.contextMap, key)
+	}
+	return value, exists
+}
+
 /*
 * 读取指定key在AppContext中的内容，以string格式输出
  */
@@ -112,6 +134,20 @@ func (ctx *ItemContext) Exists(key string) bool {
 //get context length
 func (ctx *ItemContext) Len() int {
 	return len(ctx.contextMap)
+}
+
+/*
+* return cache interface
+ */
+func (ds *DotWeb) Cache() cache.Cache {
+	return ds.cache
+}
+
+/*
+* set cache interface
+ */
+func (ds *DotWeb) SetCache(ca cache.Cache) {
+	ds.cache = ca
 }
 
 /*
@@ -200,6 +236,11 @@ func (ds *DotWeb) StartServer(httpport int) error {
 			logger.Warn("no set SessionConfig, but set enabledsession true, now will use default runtime session", LogTarget_HttpServer)
 		}
 		ds.HttpServer.InitSessionManager(session.NewDefaultRuntimeConfig())
+	}
+
+	//if cache not set, create default runtime cache
+	if ds.Cache() == nil {
+		ds.cache = cache.NewRuntimeCache()
 	}
 
 	port := ":" + strconv.Itoa(httpport)

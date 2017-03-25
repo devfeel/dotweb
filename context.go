@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"fmt"
+	"github.com/devfeel/dotweb/cache"
 	"github.com/devfeel/dotweb/routers"
 	"github.com/devfeel/dotweb/session"
 )
@@ -26,7 +27,6 @@ type HttpContext struct {
 	IsWebSocket  bool
 	IsHijack     bool
 	isEnd        bool //表示当前处理流程是否需要终止
-	dotApp       *DotWeb
 	HttpServer   *HttpServer
 	SessionID    string
 	items        *ItemContext
@@ -64,6 +64,11 @@ func (ctx *HttpContext) AppContext() *ItemContext {
 	} else {
 		return NewItemContext()
 	}
+}
+
+//get application's global cache
+func (ctx *HttpContext) Cache() cache.Cache {
+	return ctx.HttpServer.DotApp.Cache()
 }
 
 //get request's global item context

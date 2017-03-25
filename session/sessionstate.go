@@ -63,12 +63,18 @@ func (state *SessionState) Get(key interface{}) interface{} {
 // Get get value as string by key in current state
 func (state *SessionState) GetString(key interface{}) string {
 	v := state.Get(key)
-	return fmt.Sprintln(v)
+	return fmt.Sprint(v)
 }
 
 // Get get value as int by key in current state
 func (state *SessionState) GetInt(key interface{}) int {
 	v, _ := strconv.Atoi(state.GetString(key))
+	return v
+}
+
+// Get get value as int64 by key in current state
+func (state *SessionState) GetInt64(key interface{}) int64 {
+	v, _ := strconv.ParseInt(state.GetString(key), 10, 64)
 	return v
 }
 
