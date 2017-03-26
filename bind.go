@@ -43,3 +43,7 @@ func (b *binder) Bind(i interface{}, ctx *HttpContext) (err error) {
 	}
 	return err
 }
+
+func newBinder() *binder {
+	return &binder{}
+}

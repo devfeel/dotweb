@@ -30,6 +30,7 @@ type HttpContext struct {
 	HttpServer   *HttpServer
 	SessionID    string
 	items        *ItemContext
+	viewData     *ItemContext
 }
 
 //reset response attr
@@ -41,7 +42,6 @@ func (ctx *HttpContext) Reset(res *Response, r *http.Request, server *HttpServer
 	ctx.IsWebSocket = false
 	ctx.HttpServer = server
 	ctx.isEnd = false
-	ctx.items = NewItemContext()
 }
 
 //release all field
@@ -54,6 +54,7 @@ func (ctx *HttpContext) release() {
 	ctx.HttpServer = nil
 	ctx.isEnd = false
 	ctx.items = nil
+	ctx.viewData = nil
 }
 
 //get application's global appcontext
@@ -71,9 +72,22 @@ func (ctx *HttpContext) Cache() cache.Cache {
 	return ctx.HttpServer.DotApp.Cache()
 }
 
-//get request's global item context
+//get request's tem context
+//lazy init when first use
 func (ctx *HttpContext) Items() *ItemContext {
+	if ctx.items == nil {
+		ctx.items = NewItemContext()
+	}
 	return ctx.items
+}
+
+//get view data context
+//lazy init when first use
+func (ctx *HttpContext) ViewData() *ItemContext {
+	if ctx.viewData == nil {
+		ctx.viewData = NewItemContext()
+	}
+	return ctx.viewData
 }
 
 //get session state in current context
@@ -345,6 +359,12 @@ func (ctx *HttpContext) ReadCookie(name string) (string, error) {
 // read cookie object for name
 func (ctx *HttpContext) ReadCookieObj(name string) (*http.Cookie, error) {
 	return ctx.Request.Cookie(name)
+}
+
+// write view content to response
+func (ctx *HttpContext) View(name string) error {
+	err := ctx.HttpServer.Renderer().Render(ctx.Response.Writer(), name, ctx.ViewData().contextMap, ctx)
+	return err
 }
 
 // write string content to response

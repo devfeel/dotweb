@@ -1,5 +1,13 @@
 ##dotweb版本记录：
 
+#### Version 0.3.8
+* 新增模板渲染支持，新增Renderer接口，需实现Render(io.Writer, string, interface{}, *HttpContext) error
+* 支持接入不同的模板引擎，默认使用http/template内建引擎
+* HttpContext增加ViewData，用于向模板传递值
+* HttpContext增加View()方法，传入模板文件名，用于简化模板使用：View(name string) error
+* 增加example\render
+* 2017-03-26 11:10
+
 #### Version 0.3.7
 * 新增Cache模块，支持runtime、redis，常规支持Get\Set\GetString\GetInt\GetInt64\Incr\Decr\Exists\Clear操作
 * Cache通过app.SetCache启用，通过HttpContext.Cache()使用

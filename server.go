@@ -44,6 +44,7 @@ type (
 		ServerConfig   *config.ServerConfig
 		SessionConfig  *config.SessionConfig
 		binder         Binder
+		render         Renderer
 		offline        bool
 	}
 
@@ -76,7 +77,7 @@ func NewHttpServer() *HttpServer {
 		ServerConfig:  config.NewServerConfig(),
 		SessionConfig: config.NewSessionConfig(),
 		lock_session:  new(sync.RWMutex),
-		binder:        &binder{},
+		binder:        newBinder(),
 	}
 	//设置router
 	server.router = NewRouter(server)
@@ -148,6 +149,16 @@ func (server *HttpServer) Router() Router {
 //get binder interface in server
 func (server *HttpServer) Binder() Binder {
 	return server.binder
+}
+
+//get renderer interface in server
+func (server *HttpServer) Renderer() Renderer {
+	return server.render
+}
+
+//set custom renderer in server
+func (server *HttpServer) SetRenderer(r Renderer) {
+	server.render = r
 }
 
 type LogJson struct {

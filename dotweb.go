@@ -243,6 +243,11 @@ func (ds *DotWeb) StartServer(httpport int) error {
 		ds.cache = cache.NewRuntimeCache()
 	}
 
+	//if renderer not set, create inner renderer
+	if ds.HttpServer.Renderer() == nil {
+		ds.HttpServer.SetRenderer(NewInnerRenderer())
+	}
+
 	port := ":" + strconv.Itoa(httpport)
 	logger.Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
 	err := http.ListenAndServe(port, ds.HttpServer)
