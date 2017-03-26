@@ -111,12 +111,29 @@ func (server *HttpServer) SetOffline(offline bool, offlineText string, offlineUr
 	server.offline = offline
 }
 
+//set session store config
+func (server *HttpServer) SetSessionConfig(storeConfig *session.StoreConfig) {
+	//sync session config
+	server.SessionConfig.Timeout = storeConfig.Maxlifetime
+	server.SessionConfig.SessionMode = storeConfig.StoreName
+	server.SessionConfig.ServerIP = storeConfig.ServerIP
+	server.SessionConfig.UserName = storeConfig.UserName
+	server.SessionConfig.Password = storeConfig.Password
+}
+
 //init session manager
-func (server *HttpServer) InitSessionManager(config *session.StoreConfig) {
+func (server *HttpServer) InitSessionManager() {
+	storeConfig := new(session.StoreConfig)
+	storeConfig.Maxlifetime = server.SessionConfig.Timeout
+	storeConfig.StoreName = server.SessionConfig.SessionMode
+	storeConfig.ServerIP = server.SessionConfig.ServerIP
+	storeConfig.UserName = server.SessionConfig.UserName
+	storeConfig.Password = server.SessionConfig.Password
+
 	if server.sessionManager == nil {
 		//设置Session
 		server.lock_session.Lock()
-		if manager, err := session.NewDefaultSessionManager(config); err != nil {
+		if manager, err := session.NewDefaultSessionManager(storeConfig); err != nil {
 			//panic error with create session manager
 			panic(err.Error())
 		} else {
@@ -159,6 +176,11 @@ func (server *HttpServer) Renderer() Renderer {
 //set custom renderer in server
 func (server *HttpServer) SetRenderer(r Renderer) {
 	server.render = r
+}
+
+//set EnabledAutoHEAD true or false
+func (server *HttpServer) SetEnabledAutoHEAD(autoHEAD bool) {
+	server.ServerConfig.EnabledAutoHEAD = autoHEAD
 }
 
 type LogJson struct {
@@ -245,7 +267,7 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 			//HttpServer Logging
-			logger.Log(httpCtx.Url()+" "+logString(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
+			logger.Log(httpCtx.Url()+" "+logContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
 
 			if server.ServerConfig.EnabledGzip {
 				var w io.Writer
@@ -282,6 +304,20 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 	}
 }
 
+//wrap fileHandler to httprouter.Handle
+func (server *HttpServer) wrapFileHandle(fileHandler http.Handler) routers.Handle {
+	return func(w http.ResponseWriter, r *http.Request, params routers.Params) {
+		//增加状态计数
+		GlobalState.AddRequestCount(1)
+		startTime := time.Now()
+		r.URL.Path = params.ByName("filepath")
+		fileHandler.ServeHTTP(w, r)
+		timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
+		//HttpServer Logging
+		logger.Log(r.URL.String()+" "+logRequest(r, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
+	}
+}
+
 //wrap HttpHandle to websocket.Handle
 func (server *HttpServer) wrapWebSocketHandle(handle HttpHandle) websocket.Handler {
 	return func(ws *websocket.Conn) {
@@ -314,7 +350,7 @@ func (server *HttpServer) wrapWebSocketHandle(handle HttpHandle) websocket.Handl
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 			//HttpServer Logging
-			logger.Log(httpCtx.Url()+" "+logString(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
+			logger.Log(httpCtx.Url()+" "+logContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
 
 			// Return to pool
 			server.pool.context.Put(httpCtx)
@@ -328,24 +364,45 @@ func (server *HttpServer) wrapWebSocketHandle(handle HttpHandle) websocket.Handl
 }
 
 //get default log string
-func logString(ctx *HttpContext, timetaken int64) string {
-
+func logContext(ctx *HttpContext, timetaken int64) string {
 	var reqbytelen, resbytelen, method, proto, status, userip string
-	if !ctx.IsWebSocket {
-		reqbytelen = convert.Int642String(ctx.Request.ContentLength)
-		resbytelen = convert.Int642String(ctx.Response.Size)
-		method = ctx.Request.Method
-		proto = ctx.Request.Proto
-		status = convert.Int2String(ctx.Response.Status)
-		userip = ctx.RemoteIP()
-	} else {
-		reqbytelen = convert.Int642String(ctx.Request.ContentLength)
-		resbytelen = "0"
-		method = ctx.Request.Method
-		proto = ctx.Request.Proto
-		status = "0"
-		userip = ctx.RemoteIP()
+	if ctx != nil {
+		if !ctx.IsWebSocket {
+			reqbytelen = convert.Int642String(ctx.Request.ContentLength)
+			resbytelen = convert.Int642String(ctx.Response.Size)
+			method = ctx.Request.Method
+			proto = ctx.Request.Proto
+			status = convert.Int2String(ctx.Response.Status)
+			userip = ctx.RemoteIP()
+		} else {
+			reqbytelen = convert.Int642String(ctx.Request.ContentLength)
+			resbytelen = "0"
+			method = ctx.Request.Method
+			proto = ctx.Request.Proto
+			status = "0"
+			userip = ctx.RemoteIP()
+		}
 	}
+
+	log := method + " "
+	log += userip + " "
+	log += proto + " "
+	log += status + " "
+	log += reqbytelen + " "
+	log += resbytelen + " "
+	log += convert.Int642String(timetaken)
+
+	return log
+}
+
+func logRequest(req *http.Request, timetaken int64) string {
+	var reqbytelen, resbytelen, method, proto, status, userip string
+	reqbytelen = convert.Int642String(req.ContentLength)
+	resbytelen = ""
+	method = req.Method
+	proto = req.Proto
+	status = "200"
+	userip = req.RemoteAddr
 
 	log := method + " "
 	log += userip + " "

@@ -1,5 +1,13 @@
 ##dotweb版本记录：
 
+#### Version 0.3.9
+* 增强静态文件处理，增加设置目录浏览开关，通过Router.ServerFile使用
+* Router增加Any路由方式，如果设置为Any，则自动匹配：GET\HEAD\POST\PUT\PATCH\OPTIONS\DELETE
+* ServerConfig增加EnabledListDir选项，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
+* ServerConfig增加EnabledAutoHEAD选项，如果设置该选项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
+* 优化部分代码，增加example\static、example\router
+* 2017-03-26 19:30
+
 #### Version 0.3.8
 * 新增模板渲染支持，新增Renderer接口，需实现Render(io.Writer, string, interface{}, *HttpContext) error
 * 支持接入第三方模板引擎，默认使用http/template内建引擎

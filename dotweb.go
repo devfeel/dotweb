@@ -158,6 +158,13 @@ func (ds *DotWeb) RegisterModule(module *HttpModule) {
 }
 
 /*
+设置是否允许目录浏览,默认为false
+*/
+func (ds *DotWeb) SetEnabledListDir(isEnabled bool) {
+	ds.HttpServer.ServerConfig.EnabledListDir = isEnabled
+}
+
+/*
 设置Debug模式,默认为false
 */
 func (ds *DotWeb) SetEnabledDebug(isEnabled bool) {
@@ -180,11 +187,7 @@ func (ds *DotWeb) SetEnabledGzip(isEnabled bool) {
 
 //set session store config
 func (ds *DotWeb) SetSessionConfig(storeConfig *session.StoreConfig) {
-	ds.HttpServer.SessionConfig.Timeout = storeConfig.Maxlifetime
-	ds.HttpServer.SessionConfig.SessionMode = storeConfig.StoreName
-	ds.HttpServer.SessionConfig.ServerIP = storeConfig.ServerIP
-	ds.HttpServer.SessionConfig.UserName = storeConfig.UserName
-	ds.HttpServer.SessionConfig.Password = storeConfig.Password
+	ds.HttpServer.SetSessionConfig(storeConfig)
 }
 
 /*
@@ -231,11 +234,12 @@ func (ds *DotWeb) StartServer(httpport int) error {
 
 	//init session manager
 	if ds.HttpServer.SessionConfig.EnabledSession {
-		if ds.HttpServer.sessionManager == nil {
+		if ds.HttpServer.SessionConfig.SessionMode == "" {
 			//panic("no set SessionConfig, but set enabledsession true")
-			logger.Warn("no set SessionConfig, but set enabledsession true, now will use default runtime session", LogTarget_HttpServer)
+			logger.Warn("not set SessionMode, but set enabledsession true, now will use default runtime session", LogTarget_HttpServer)
+			ds.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
 		}
-		ds.HttpServer.InitSessionManager(session.NewDefaultRuntimeConfig())
+		ds.HttpServer.InitSessionManager()
 	}
 
 	//if cache not set, create default runtime cache

@@ -14,13 +14,15 @@ type (
 		Routers []RouterConfig `xml:"routers>router"`
 	}
 	ServerConfig struct {
-		LogPath      string `xml:"logpath,attr"`      //文件方式日志目录，如果为空，默认当前目录
-		EnabledDebug bool   `xml:"enableddebug,attr"` //启用Debug模式
-		Port         int    `xml:"port,attr"`         //端口
-		Offline      bool   `xml:"offline,attr"`      //是否维护，默认false
-		OfflineText  string `xml:"offlinetext,attr"`  //当设置为维护，默认显示内容，如果设置url，优先url
-		OfflineUrl   string `xml:"offlineurl,attr"`   //当设置为维护，默认维护页地址，如果设置url，优先url
-		EnabledGzip  bool   `xml:"enabledgzip,attr"`  //启用gzip
+		LogPath         string `xml:"logpath,attr"`         //文件方式日志目录，如果为空，默认当前目录
+		EnabledListDir  bool   `xml:"enabledlistdir,attr"`  //设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
+		EnabledDebug    bool   `xml:"enableddebug,attr"`    //是否启用Debug模式
+		EnabledGzip     bool   `xml:"enabledgzip,attr"`     //是否启用gzip
+		EnabledAutoHEAD bool   `xml:"enabledautohead,attr"` //设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
+		Port            int    `xml:"port,attr"`            //端口
+		Offline         bool   `xml:"offline,attr"`         //是否维护，默认false
+		OfflineText     string `xml:"offlinetext,attr"`     //当设置为维护，默认显示内容，如果设置url，优先url
+		OfflineUrl      string `xml:"offlineurl,attr"`      //当设置为维护，默认维护页地址，如果设置url，优先url
 	}
 
 	SessionConfig struct {

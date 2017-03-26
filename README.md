@@ -40,8 +40,10 @@ func StartServer() error {
 ## 路由
 特殊说明：集成github.com/julienschmidt/httprouter
 #### 常规路由
-* 目前支持GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE 这几类请求方法
-* 另外也支持HiJack\WebSocket\ServerFile三类特殊应用
+* 支持GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE 这几类请求方法
+* 支持HiJack\WebSocket\ServerFile三类特殊应用
+* 支持Any注册方式，默认兼容GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE方式
+* 支持通过配置开启默认添加HEAD方式
 * 支持注册Handler，以启用配置化
 ```go
 1、Router.GET(path string, handle HttpHandle)
@@ -53,9 +55,10 @@ func StartServer() error {
 7、Router.DELETE(path string, handle HttpHandle)
 8、Router.HiJack(path string, handle HttpHandle)
 9、Router.WebSocket(path string, handle HttpHandle)
-10、Router.RegisterRoute(routeMethod string, path string, handle HttpHandle)
-11、Router.RegisterHandler(name string, handler HttpHandle)
-12、Router.GetHandler(name string) (HttpHandle, bool)
+10、Router.Any(path string, handle HttpHandle)
+11、Router.RegisterRoute(routeMethod string, path string, handle HttpHandle)
+12、Router.RegisterHandler(name string, handler HttpHandle)
+13、Router.GetHandler(name string) (HttpHandle, bool)
 ```
 接受两个参数，一个是URI路径，另一个是 HttpHandle 类型，设定匹配到该路径时执行的方法；
 #### 静态路由
@@ -160,6 +163,8 @@ ctx.Session().Set(key, value)
 * SetEnabledDebug 设置是否开启debug模式，会输出server端的debug日志，默认不开启
 * SetEnabledSession 设置是否开启Session支持，目前支持runtime、redis两种模式，默认不开启
 * SetEnabledGzip 设置是否开启Gzip支持，默认不开启
+* EnabledListDir 设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
+* EnabledAutoHEAD 设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
 
 ## 外部依赖
 websocket - golang.org/x/net/websocket
