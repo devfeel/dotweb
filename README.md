@@ -8,7 +8,6 @@ go get -u github.com/devfeel/dotweb
 ```
 
 ## 快速开始：
-
 ```go
 func StartServer() error {
 	//初始化DotServer
@@ -25,6 +24,8 @@ func StartServer() error {
 }
 
 ```
+#### 详细示例 - https://github.com/devfeel/dotweb-example
+
 ## 特性
 * 支持静态路由、参数路由
 * 路由支持文件/目录服务，支持设置是否允许目录浏览
@@ -159,10 +160,10 @@ ctx.Session().Set(key, value)
 ```
 
 ## Server Config
-目前支持三个选项：Debug、Session、Gzip
-* SetEnabledDebug 设置是否开启debug模式，会输出server端的debug日志，默认不开启
-* SetEnabledSession 设置是否开启Session支持，目前支持runtime、redis两种模式，默认不开启
-* SetEnabledGzip 设置是否开启Gzip支持，默认不开启
+目前支持5个选项：
+* EnabledDebug 设置是否开启debug模式，会输出server端的debug日志，默认不开启
+* EnabledSession 设置是否开启Session支持，目前支持runtime、redis两种模式，默认不开启
+* EnabledGzip 设置是否开启Gzip支持，默认不开启
 * EnabledListDir 设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
 * EnabledAutoHEAD 设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
 

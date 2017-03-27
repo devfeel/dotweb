@@ -1,7 +1,7 @@
 package dotweb
 
 import (
-	"github.com/devfeel/dotweb/framework/file"
+	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/framework/log"
 	"github.com/devfeel/dotweb/routers"
 	"golang.org/x/net/websocket"
@@ -191,7 +191,7 @@ func (r *router) ServerFile(path string, fileroot string) {
 	var root http.FileSystem
 	root = http.Dir(fileroot)
 	if !r.server.ServerConfig.EnabledListDir {
-		root = &file.HideReaddirFS{root}
+		root = &core.HideReaddirFS{root}
 	}
 	fileServer := http.FileServer(root)
 	r.router.Handle(RouteMethod_GET, path, r.server.wrapFileHandle(fileServer))

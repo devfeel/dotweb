@@ -10,6 +10,7 @@ import (
 
 	"fmt"
 	"github.com/devfeel/dotweb/cache"
+	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/routers"
 	"github.com/devfeel/dotweb/session"
 )
@@ -29,8 +30,8 @@ type HttpContext struct {
 	isEnd        bool //表示当前处理流程是否需要终止
 	HttpServer   *HttpServer
 	SessionID    string
-	items        *ItemContext
-	viewData     *ItemContext
+	items        *core.ItemContext
+	viewData     *core.ItemContext
 }
 
 //reset response attr
@@ -59,11 +60,11 @@ func (ctx *HttpContext) release() {
 
 //get application's global appcontext
 //issue #3
-func (ctx *HttpContext) AppContext() *ItemContext {
+func (ctx *HttpContext) AppContext() *core.ItemContext {
 	if ctx.HttpServer != nil {
 		return ctx.HttpServer.DotApp.AppContext
 	} else {
-		return NewItemContext()
+		return core.NewItemContext()
 	}
 }
 
@@ -74,18 +75,18 @@ func (ctx *HttpContext) Cache() cache.Cache {
 
 //get request's tem context
 //lazy init when first use
-func (ctx *HttpContext) Items() *ItemContext {
+func (ctx *HttpContext) Items() *core.ItemContext {
 	if ctx.items == nil {
-		ctx.items = NewItemContext()
+		ctx.items = core.NewItemContext()
 	}
 	return ctx.items
 }
 
 //get view data context
 //lazy init when first use
-func (ctx *HttpContext) ViewData() *ItemContext {
+func (ctx *HttpContext) ViewData() *core.ItemContext {
 	if ctx.viewData == nil {
-		ctx.viewData = NewItemContext()
+		ctx.viewData = core.NewItemContext()
 	}
 	return ctx.viewData
 }
@@ -363,7 +364,7 @@ func (ctx *HttpContext) ReadCookieObj(name string) (*http.Cookie, error) {
 
 // write view content to response
 func (ctx *HttpContext) View(name string) error {
-	err := ctx.HttpServer.Renderer().Render(ctx.Response.Writer(), name, ctx.ViewData().contextMap, ctx)
+	err := ctx.HttpServer.Renderer().Render(ctx.Response.Writer(), name, ctx.ViewData().GetCurrentMap(), ctx)
 	return err
 }
 

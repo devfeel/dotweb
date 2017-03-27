@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/devfeel/dotweb/cache"
 	"github.com/devfeel/dotweb/config"
+	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/framework/log"
 	"github.com/devfeel/dotweb/servers"
@@ -15,7 +16,6 @@ import (
 	"runtime/pprof"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 type (
@@ -27,12 +27,7 @@ type (
 		Modules          []*HttpModule
 		logpath          string
 		ExceptionHandler ExceptionHandle
-		AppContext       *ItemContext
-	}
-
-	ItemContext struct {
-		contextMap   map[string]interface{}
-		contextMutex *sync.RWMutex
+		AppContext       *core.ItemContext
 	}
 
 	ExceptionHandle func(*HttpContext, interface{})
@@ -50,90 +45,10 @@ func New() *DotWeb {
 		HttpServer:    NewHttpServer(),
 		OfflineServer: servers.NewOfflineServer(),
 		Modules:       make([]*HttpModule, 0, 10),
-		AppContext:    NewItemContext(),
+		AppContext:    core.NewItemContext(),
 	}
 	app.HttpServer.setDotApp(app)
 	return app
-}
-
-func NewItemContext() *ItemContext {
-	return &ItemContext{
-		contextMap:   make(map[string]interface{}),
-		contextMutex: new(sync.RWMutex),
-	}
-}
-
-/*
-* 以key、value置入AppContext
- */
-func (ctx *ItemContext) Set(key string, value interface{}) error {
-	ctx.contextMutex.Lock()
-	ctx.contextMap[key] = value
-	ctx.contextMutex.Unlock()
-	return nil
-}
-
-/*
-* 读取指定key在AppContext中的内容
- */
-func (ctx *ItemContext) Get(key string) (value interface{}, exists bool) {
-	ctx.contextMutex.RLock()
-	value, exists = ctx.contextMap[key]
-	ctx.contextMutex.RUnlock()
-	return value, exists
-}
-
-//remove item by gived key
-//if not exists key, do nothing...
-func (ctx *ItemContext) Remove(key string) {
-	ctx.contextMutex.Lock()
-	delete(ctx.contextMap, key)
-	ctx.contextMutex.Unlock()
-}
-
-//get item by gived key, and remove it
-//only can be read once, it will be locked
-func (ctx *ItemContext) Once(key string) (value interface{}, exists bool) {
-	ctx.contextMutex.Lock()
-	defer ctx.contextMutex.Unlock()
-	value, exists = ctx.contextMap[key]
-	if exists {
-		delete(ctx.contextMap, key)
-	}
-	return value, exists
-}
-
-/*
-* 读取指定key在AppContext中的内容，以string格式输出
- */
-func (ctx *ItemContext) GetString(key string) string {
-	value, exists := ctx.Get(key)
-	if !exists {
-		return ""
-	}
-	return fmt.Sprint(value)
-}
-
-/*
-* 读取指定key在AppContext中的内容，以int格式输出
- */
-func (ctx *ItemContext) GetInt(key string) int {
-	value, exists := ctx.Get(key)
-	if !exists {
-		return 0
-	}
-	return value.(int)
-}
-
-//check exists key
-func (ctx *ItemContext) Exists(key string) bool {
-	_, exists := ctx.contextMap[key]
-	return exists
-}
-
-//get context length
-func (ctx *ItemContext) Len() int {
-	return len(ctx.contextMap)
 }
 
 /*
