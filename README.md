@@ -10,16 +10,16 @@ go get -u github.com/devfeel/dotweb
 ## 快速开始：
 ```go
 func StartServer() error {
-	//初始化DotServer
-	dotserver := dotweb.New()
-	//设置dotserver日志目录
-	dotserver.SetLogPath("/home/logs/wwwroot/")
+	//初始化DotApp
+	dotapp := dotweb.New()
+	//设置dotapp日志目录
+	dotapp.SetLogPath("/home/logs/wwwroot/")
 	//设置路由
-	dotserver.HttpServer.Router().GET("/index", func(ctx *dotweb.HttpContext) {
+	dotapp.HttpServer.Router().GET("/index", func(ctx *dotweb.HttpContext) {
 		ctx.WriteString("welcome to my first web!")
 	})
 	//开始服务
-	err := dotserver.StartServer(80)
+	err := dotapp.StartServer(80)
 	return err
 }
 
@@ -72,11 +72,11 @@ import (
 )
 
 func main() {
-    dotserver := dotweb.New()
-    dotserver.HttpServer.Router().Get("/hello", func(ctx *dotweb.HttpContext) {
+    dotapp := dotweb.New()
+    dotapp.HttpServer.Router().Get("/hello", func(ctx *dotweb.HttpContext) {
         ctx.WriteString("hello world!")
     })
-    dotserver.StartServer(80)
+    dotapp.StartServer(80)
 }
 ```
 测试：
@@ -91,16 +91,16 @@ import (
 )
 
 func main() {
-    dotserver := dotweb.New()
-    dotserver.HttpServer.Router().Get("/hello/:name", func(ctx *dotweb.HttpContext) {
+    dotapp := dotweb.New()
+    dotapp.HttpServer.Router().Get("/hello/:name", func(ctx *dotweb.HttpContext) {
         ctx.WriteString("hello " + ctx.GetRouterName("name"))
     })
-    dotserver.HttpServer.Router().Get("/news/:category/:newsid", func(ctx *dotweb.HttpContext) {
+    dotapp.HttpServer.Router().Get("/news/:category/:newsid", func(ctx *dotweb.HttpContext) {
     	category := ctx.GetRouterName("category")
 	    newsid := ctx.GetRouterName("newsid")
         ctx.WriteString("news info: category=" + category + " newsid=" + newsid)
     })
-    dotserver.StartServer(80)
+    dotapp.StartServer(80)
 }
 ```
 测试：
@@ -150,11 +150,11 @@ type ExceptionHandle func(*HttpContext, interface{})
 * redis:基于Redis存储实现session模块,其中redis key以dotweb:session:xxxxxxxxxxxx组成
 ```go
 //设置session支持
-dotserver.SetEnabledSession(true)
+dotapp.SetEnabledSession(true)
 //使用runtime模式
-dotserver.SetSessionConfig(session.NewDefaultRuntimeConfig())
+dotapp.SetSessionConfig(session.NewDefaultRuntimeConfig())
 //使用redis模式
-dotserver.SetSessionConfig(session.NewDefaultRedisConfig("127.0.0.1:6379"))
+dotapp.SetSessionConfig(session.NewDefaultRedisConfig("127.0.0.1:6379"))
 //HttpContext使用
 ctx.Session().Set(key, value)
 ```
