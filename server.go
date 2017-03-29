@@ -223,10 +223,7 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 				}
 				httpCtx.WriteCookieObj(cookie)
 			}
-			//特殊的，如果为Cookie存储方式
-			if server.SessionConfig.SessionMode == session.SessionMode_Cookie {
 
-			}
 		}
 
 		//hijack处理
