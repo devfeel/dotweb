@@ -14,8 +14,9 @@ const (
 	DefaultSessionMaxLifeTime = 20 * 60 //second
 	DefaultSessionCookieName  = "dotweb_sessionId"
 	DefaultSessionLength      = 20
-	SessionStoreName_Runtime  = "runtime"
-	SessionStoreName_Redis    = "redis"
+	SessionMode_Runtime       = "runtime"
+	SessionMode_Redis         = "redis"
+	SessionMode_Cookie        = "cookie"
 
 	LogTarget_Session = "dotweb_session"
 )
@@ -35,8 +36,6 @@ type (
 		StoreName   string
 		Maxlifetime int64
 		ServerIP    string
-		UserName    string
-		Password    string
 	}
 
 	SessionManager struct {
@@ -50,9 +49,9 @@ type (
 //create new session store with store config
 func GetSessionStore(config *StoreConfig) SessionStore {
 	switch config.StoreName {
-	case SessionStoreName_Runtime:
+	case SessionMode_Runtime:
 		return NewRuntimeStore(config)
-	case SessionStoreName_Redis:
+	case SessionMode_Redis:
 		return NewRedisStore(config)
 	default:
 		panic("not support session store -> " + config.StoreName)
@@ -63,22 +62,20 @@ func GetSessionStore(config *StoreConfig) SessionStore {
 
 //create new store with default config and use runtime store
 func NewDefaultRuntimeConfig() *StoreConfig {
-	return NewStoreConfig(SessionStoreName_Runtime, DefaultSessionMaxLifeTime, "", "", "")
+	return NewStoreConfig(SessionMode_Runtime, DefaultSessionMaxLifeTime, "")
 }
 
 //create new store with default config and use redis store
 func NewDefaultRedisConfig(serverIp string) *StoreConfig {
-	return NewStoreConfig(SessionStoreName_Redis, DefaultSessionMaxLifeTime, serverIp, "", "")
+	return NewStoreConfig(SessionMode_Redis, DefaultSessionMaxLifeTime, serverIp)
 }
 
 //create new store config
-func NewStoreConfig(storeName string, maxlifetime int64, serverIp, userName, password string) *StoreConfig {
+func NewStoreConfig(storeName string, maxlifetime int64, serverIp string) *StoreConfig {
 	return &StoreConfig{
 		StoreName:   storeName,
 		Maxlifetime: maxlifetime,
 		ServerIP:    serverIp,
-		UserName:    userName,
-		Password:    password,
 	}
 }
 

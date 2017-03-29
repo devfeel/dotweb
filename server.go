@@ -117,8 +117,6 @@ func (server *HttpServer) SetSessionConfig(storeConfig *session.StoreConfig) {
 	server.SessionConfig.Timeout = storeConfig.Maxlifetime
 	server.SessionConfig.SessionMode = storeConfig.StoreName
 	server.SessionConfig.ServerIP = storeConfig.ServerIP
-	server.SessionConfig.UserName = storeConfig.UserName
-	server.SessionConfig.Password = storeConfig.Password
 }
 
 //init session manager
@@ -127,8 +125,6 @@ func (server *HttpServer) InitSessionManager() {
 	storeConfig.Maxlifetime = server.SessionConfig.Timeout
 	storeConfig.StoreName = server.SessionConfig.SessionMode
 	storeConfig.ServerIP = server.SessionConfig.ServerIP
-	storeConfig.UserName = server.SessionConfig.UserName
-	storeConfig.Password = server.SessionConfig.Password
 
 	if server.sessionManager == nil {
 		//设置Session
@@ -226,6 +222,10 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 					Path:  "/",
 				}
 				httpCtx.WriteCookieObj(cookie)
+			}
+			//特殊的，如果为Cookie存储方式
+			if server.SessionConfig.SessionMode == session.SessionMode_Cookie {
+
 			}
 		}
 

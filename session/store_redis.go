@@ -10,7 +10,7 @@ const (
 	defaultRedisKeyPre = "dotweb:session:"
 )
 
-// MemProvider Implement the provider interface
+// RedisStore Implement the SessionStore interface
 type RedisStore struct {
 	lock        *sync.RWMutex // locker
 	maxlifetime int64

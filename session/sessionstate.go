@@ -82,7 +82,9 @@ func (state *SessionState) GetInt64(key interface{}) int64 {
 func (state *SessionState) Remove(key interface{}) error {
 	state.lock.Lock()
 	defer state.lock.Unlock()
+	fmt.Println("SessionState->RemovePre ", key, " ", state.values)
 	delete(state.values, key)
+	fmt.Println("SessionState->RemoveEnd ", key, " ", state.values)
 	return nil
 }
 

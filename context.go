@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	defaultMemory = 32 << 20 // 32 MB
+	defaultMemory   = 32 << 20 // 32 MB
+	defaultHttpCode = http.StatusOK
 )
 
 type HttpContext struct {
@@ -133,10 +134,13 @@ func (ctx *HttpContext) IsEnd() bool {
 	return ctx.isEnd
 }
 
-//redirect replies to the request with a redirect to url
-//default use 301
-func (ctx *HttpContext) Redirect(targetUrl string) {
-	http.Redirect(ctx.Response.Writer(), ctx.Request, targetUrl, http.StatusMovedPermanently)
+//redirect replies to the request with a redirect to url and with httpcode
+//default use http.StatusFound
+func (ctx *HttpContext) Redirect(code int, targetUrl string) {
+	ctx.Response.Header().Set(HeaderCacheControl, "no-cache")
+	ctx.SetHeader(HeaderLocation, targetUrl)
+	ctx.SetStatusCode(code)
+	//http.Redirect(ctx.Response.Writer(), ctx.Request, targetUrl, code)
 }
 
 /*
@@ -368,13 +372,23 @@ func (ctx *HttpContext) View(name string) error {
 	return err
 }
 
+// write code and content content to response
+func (ctx *HttpContext) Write(code int, content []byte) (int, error) {
+	if ctx.IsHijack {
+		//TODO:hijack mode, status-code set default 200
+		return ctx.HijackConn.WriteBlob(content)
+	} else {
+		return ctx.Response.Write(code, content)
+	}
+}
+
 // write string content to response
 func (ctx *HttpContext) WriteString(contents ...interface{}) (int, error) {
 	content := fmt.Sprint(contents...)
 	if ctx.IsHijack {
 		return ctx.HijackConn.WriteString(content)
 	} else {
-		return ctx.Response.Write([]byte(content))
+		return ctx.Response.Write(defaultHttpCode, []byte(content))
 	}
 }
 
@@ -386,7 +400,7 @@ func (ctx *HttpContext) WriteBlob(contentType string, b []byte) (int, error) {
 	if ctx.IsHijack {
 		return ctx.HijackConn.WriteBlob(b)
 	} else {
-		return ctx.Response.Write(b)
+		return ctx.Response.Write(defaultHttpCode, b)
 	}
 }
 

@@ -67,9 +67,9 @@ func (r *Response) WriteHeader(code int) error {
 }
 
 // Write writes the data to the connection as part of an HTTP reply.
-func (r *Response) Write(b []byte) (n int, err error) {
+func (r *Response) Write(code int, b []byte) (n int, err error) {
 	if !r.committed {
-		r.WriteHeader(http.StatusOK)
+		r.WriteHeader(code)
 	}
 	n, err = r.writer.Write(b)
 	r.Size += int64(n)

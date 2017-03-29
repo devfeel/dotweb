@@ -5,6 +5,7 @@ import (
 	"github.com/devfeel/dotweb"
 	"github.com/devfeel/dotweb/framework/file"
 	"github.com/devfeel/dotweb/session"
+	"net/http"
 	"strconv"
 )
 
@@ -77,7 +78,7 @@ func DefaultError(ctx *dotweb.HttpContext) {
 }
 
 func Redirect(ctx *dotweb.HttpContext) {
-	ctx.Redirect("http://www.baidu.com")
+	ctx.Redirect(http.StatusNotFound, "http://www.baidu.com")
 }
 
 func InitRoute(server *dotweb.HttpServer) {

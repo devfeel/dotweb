@@ -12,7 +12,7 @@ type HijackConn struct {
 	header     string
 }
 
-//hjiack writestring
+//hjiack conn write string
 func (hj *HijackConn) WriteString(content string) (int, error) {
 	n, err := hj.ReadWriter.WriteString(hj.header + "\r\n" + content)
 	if err == nil {
@@ -21,7 +21,7 @@ func (hj *HijackConn) WriteString(content string) (int, error) {
 	return n, err
 }
 
-//hjiack writestring
+//hjiack conn write []byte
 func (hj *HijackConn) WriteBlob(p []byte) (size int, err error) {
 	size, err = hj.ReadWriter.Write(p)
 	if err == nil {
@@ -30,7 +30,7 @@ func (hj *HijackConn) WriteBlob(p []byte) (size int, err error) {
 	return
 }
 
-//hjiack write header
+//hjiack conn write header
 func (hj *HijackConn) SetHeader(key, value string) {
 	hj.header += key + ": " + value + "\r\n"
 }
