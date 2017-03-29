@@ -127,6 +127,7 @@ func (manager *SessionManager) GetClientSessionID(req *http.Request) (string, er
 
 func (manager *SessionManager) GetSessionState(sessionId string) (session *SessionState, err error) {
 	session, err = manager.store.SessionRead(sessionId)
+	return
 }
 
 //GC loop gc session data
