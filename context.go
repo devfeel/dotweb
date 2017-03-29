@@ -325,7 +325,7 @@ func (ctx *HttpContext) SetStatusCode(code int) error {
 	return ctx.Response.WriteHeader(code)
 }
 
-// write cookie for domain & name & maxAge
+// write cookie for name & value & maxAge
 //
 // default path = "/"
 // default domain = current domain
@@ -333,34 +333,35 @@ func (ctx *HttpContext) SetStatusCode(code int) error {
 // seconds=0 means no 'Max-Age' attribute specified.
 // seconds<0 means delete cookie now, equivalently 'Max-Age: 0'
 // seconds>0 means Max-Age attribute present and given in seconds
-func (ctx *HttpContext) WriteCookie(name, value string, maxAge int) {
-	cookie := http.Cookie{Name: name, Value: value, MaxAge: maxAge}
-	http.SetCookie(ctx.Response.Writer(), &cookie)
+func (ctx *HttpContext) SetCookieValue(name, value string, maxAge int) {
+	cookie := http.Cookie{Name: name, Value: url.QueryEscape(value), MaxAge: maxAge}
+	cookie.Path = "/"
+	ctx.SetCookie(cookie)
 }
 
 // write cookie with cookie-obj
-func (ctx *HttpContext) WriteCookieObj(cookie http.Cookie) {
+func (ctx *HttpContext) SetCookie(cookie http.Cookie) {
 	http.SetCookie(ctx.Response.Writer(), &cookie)
 }
 
 // remove cookie for path&name
 func (ctx *HttpContext) RemoveCookie(name string) {
 	cookie := http.Cookie{Name: name, MaxAge: -1}
-	http.SetCookie(ctx.Response.Writer(), &cookie)
+	ctx.SetCookie(cookie)
 }
 
 // read cookie value for name
-func (ctx *HttpContext) ReadCookie(name string) (string, error) {
+func (ctx *HttpContext) ReadCookieValue(name string) (string, error) {
 	cookieobj, err := ctx.Request.Cookie(name)
 	if err != nil {
 		return "", err
 	} else {
-		return cookieobj.Value, nil
+		return url.QueryUnescape(cookieobj.Value)
 	}
 }
 
 // read cookie object for name
-func (ctx *HttpContext) ReadCookieObj(name string) (*http.Cookie, error) {
+func (ctx *HttpContext) ReadCookie(name string) (*http.Cookie, error) {
 	return ctx.Request.Cookie(name)
 }
 

@@ -221,7 +221,7 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 					Value: url.QueryEscape(httpCtx.SessionID),
 					Path:  "/",
 				}
-				httpCtx.WriteCookieObj(cookie)
+				httpCtx.SetCookie(cookie)
 			}
 
 		}
