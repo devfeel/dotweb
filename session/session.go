@@ -16,7 +16,6 @@ const (
 	DefaultSessionLength      = 20
 	SessionMode_Runtime       = "runtime"
 	SessionMode_Redis         = "redis"
-	SessionMode_Cookie        = "cookie"
 
 	LogTarget_Session = "dotweb_session"
 )
@@ -128,7 +127,6 @@ func (manager *SessionManager) GetClientSessionID(req *http.Request) (string, er
 
 func (manager *SessionManager) GetSessionState(sessionId string) (session *SessionState, err error) {
 	session, err = manager.store.SessionRead(sessionId)
-	return
 }
 
 //GC loop gc session data

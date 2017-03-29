@@ -57,6 +57,7 @@ func (ctx *HttpContext) release() {
 	ctx.isEnd = false
 	ctx.items = nil
 	ctx.viewData = nil
+	ctx.SessionID = ""
 }
 
 //get application's global appcontext
