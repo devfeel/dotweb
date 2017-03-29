@@ -40,6 +40,12 @@ func (r *Response) Header() http.Header {
 	return r.header
 }
 
+func (r *Response) Redirect(code int, targetUrl string) {
+	r.Header().Set(HeaderCacheControl, "no-cache")
+	r.Header().Set(HeaderLocation, targetUrl)
+	r.WriteHeader(code)
+}
+
 func (r *Response) Writer() http.ResponseWriter {
 	return r.writer
 }

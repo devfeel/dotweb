@@ -135,12 +135,9 @@ func (ctx *HttpContext) IsEnd() bool {
 }
 
 //redirect replies to the request with a redirect to url and with httpcode
-//default use http.StatusFound
+//default you can use http.StatusFound
 func (ctx *HttpContext) Redirect(code int, targetUrl string) {
-	ctx.Response.Header().Set(HeaderCacheControl, "no-cache")
-	ctx.SetHeader(HeaderLocation, targetUrl)
-	ctx.SetStatusCode(code)
-	//http.Redirect(ctx.Response.Writer(), ctx.Request, targetUrl, code)
+	ctx.Response.Redirect(code, targetUrl)
 }
 
 /*
