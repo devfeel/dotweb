@@ -46,6 +46,7 @@ func StartServer() error {
 * 支持Any注册方式，默认兼容GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE方式
 * 支持通过配置开启默认添加HEAD方式
 * 支持注册Handler，以启用配置化
+* 支持检查请求与指定路由是否匹配
 ```go
 1、Router.GET(path string, handle HttpHandle)
 2、Router.POST(path string, handle HttpHandle)
@@ -60,6 +61,7 @@ func StartServer() error {
 11、Router.RegisterRoute(routeMethod string, path string, handle HttpHandle)
 12、Router.RegisterHandler(name string, handler HttpHandle)
 13、Router.GetHandler(name string) (HttpHandle, bool)
+14、Router.MatchPath(ctx *HttpContext, routePath string) bool
 ```
 接受两个参数，一个是URI路径，另一个是 HttpHandle 类型，设定匹配到该路径时执行的方法；
 #### 静态路由
