@@ -43,6 +43,7 @@ func (ctx *HttpContext) Reset(res *Response, r *http.Request, server *HttpServer
 	ctx.IsHijack = false
 	ctx.IsWebSocket = false
 	ctx.HttpServer = server
+	ctx.items = nil
 	ctx.isEnd = false
 }
 
