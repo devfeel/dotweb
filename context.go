@@ -209,6 +209,7 @@ func (ctx *HttpContext) PostFormValue(key string) string {
 
 /*
 * 根据指定key获取包括在post、put内的值
+* Obsolete("use PostFormValue replace this")
  */
 func (ctx *HttpContext) PostString(key string) string {
 	return ctx.Request.PostFormValue(key)
