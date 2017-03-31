@@ -70,6 +70,7 @@ func (ds *DotWeb) SetCache(ca cache.Cache) {
  */
 func (ds *DotWeb) RegisterModule(module *HttpModule) {
 	ds.Modules = append(ds.Modules, module)
+	module.Server = ds.HttpServer
 }
 
 /*

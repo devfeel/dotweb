@@ -59,11 +59,17 @@ func Index(ctx *dotweb.HttpContext) {
 
 func InitRoute(server *dotweb.HttpServer) {
 	server.Router().GET("/", Index)
+	server.Router().GET("/user", Index) //need login
+	server.Router().GET("/login", Index)
+	server.Router().GET("/reg", Index)
 }
 
 func InitModule(dotserver *dotweb.DotWeb) {
 	dotserver.RegisterModule(&dotweb.HttpModule{
 		OnBeginRequest: func(ctx *dotweb.HttpContext) {
+			if ctx.HttpServer.Router().MatchPath(ctx, "/user") {
+				//TODO:need login
+			}
 			ctx.Items().Set("count", 1)
 			ctx.WriteString("OnBeginRequest => ", ctx.Items().GetString("count"))
 			ctx.WriteString("\r\n")

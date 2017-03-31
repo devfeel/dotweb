@@ -28,6 +28,7 @@ const (
 type (
 	//HttpModule定义
 	HttpModule struct {
+		Server *HttpServer
 		//响应请求时作为 HTTP 执行管线链中的第一个事件发生
 		OnBeginRequest func(*HttpContext)
 		//响应请求时作为 HTTP 执行管线链中的最后一个事件发生。

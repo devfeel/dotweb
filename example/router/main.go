@@ -17,7 +17,7 @@ func main() {
 	//设置Debug开关
 	app.SetEnabledDebug(true)
 
-	app.HttpServer.SetEnabledAutoHEAD(true)
+	//app.HttpServer.SetEnabledAutoHEAD(true)
 
 	//设置路由
 	InitRoute(app.HttpServer)
@@ -35,7 +35,8 @@ func main() {
 
 func Index(ctx *dotweb.HttpContext) {
 	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	ctx.WriteString("index - " + ctx.Request.Method)
+	flag := ctx.HttpServer.Router().MatchPath(ctx, "/d/:x/y")
+	ctx.WriteString("index - " + ctx.Request.Method + " - " + fmt.Sprint(flag))
 }
 
 func Any(ctx *dotweb.HttpContext) {
@@ -45,5 +46,6 @@ func Any(ctx *dotweb.HttpContext) {
 
 func InitRoute(server *dotweb.HttpServer) {
 	server.Router().GET("/", Index)
-	server.Router().Any("/any", Any)
+	server.Router().GET("/d/:x/y", Index)
+	server.Router().GET("/any", Any)
 }

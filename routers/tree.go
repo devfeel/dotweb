@@ -317,6 +317,68 @@ func (n *node) insertChild(numParams uint8, path, fullPath string, handle Handle
 	n.handle = handle
 }
 
+func (n *node) getNode(path string) *node {
+walk: // outer loop for walking the tree
+	for {
+		if len(path) > len(n.path) {
+			if path[:len(n.path)] == n.path {
+				path = path[len(n.path):]
+				// If this node does not have a wildcard (param or catchAll)
+				// child,  we can just look up the next child node and continue
+				// to walk down the tree
+				if !n.wildChild {
+					c := path[0]
+					for i := 0; i < len(n.indices); i++ {
+						if c == n.indices[i] {
+							n = n.children[i]
+							continue walk
+						}
+					}
+
+					// Nothing found.
+					// We can recommend to redirect to the same URL without a
+					// trailing slash if a leaf exists for that path.
+					return nil
+
+				}
+
+				// handle wildcard child
+				n = n.children[0]
+				switch n.nType {
+				case param:
+					// find param end (either '/' or path end)
+					end := 0
+					for end < len(path) && path[end] != '/' {
+						end++
+					}
+
+					// we need to go deeper!
+					if end < len(path) {
+						if len(n.children) > 0 {
+							path = path[end:]
+							n = n.children[0]
+							continue walk
+						}
+
+						// ... but we can't
+						return nil
+					}
+
+					return n
+
+				case catchAll:
+					return n
+				default:
+					panic("invalid node type")
+				}
+			}
+		} else if path == n.path {
+			return n
+		}
+		return nil
+	}
+}
+
 // Returns the handle registered with the given path (key). The values of
 // wildcards are saved to a map.
 // If no handle can be found, a TSR (trailing slash redirect) recommendation is

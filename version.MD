@@ -1,5 +1,10 @@
 ##dotweb版本记录：
 
+#### Version 0.3.9.1
+* Router增加MatchPath接口，用于检查指定请求与指定路由是否匹配，一般用于HttpModule中
+* ctx.HttpServer.Router().MatchPath(ctx, "/user")
+* 2017-03-31 22:30
+
 #### Version 0.3.9
 * 增强静态文件处理，增加设置目录浏览开关，通过Router.ServerFile使用
 * Router增加Any路由方式，如果设置为Any，则自动匹配：GET\HEAD\POST\PUT\PATCH\OPTIONS\DELETE

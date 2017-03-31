@@ -321,6 +321,18 @@ func (r *Router) allowed(path, reqMethod string) (allow string) {
 	return
 }
 
+// MatchPath match request path and target path is same router
+func (r *Router) MatchPath(req *http.Request, routePath string) bool {
+	path := req.URL.Path
+	var n1, n2 *node
+	if root := r.trees[req.Method]; root != nil {
+		n1 = root.getNode(path)
+		n2 = root.getNode(routePath)
+		return n1 == n2
+	}
+	return false
+}
+
 // ServeHTTP makes the router implement the http.Handler interface.
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if r.PanicHandler != nil {
@@ -328,7 +340,6 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	path := req.URL.Path
-
 	if root := r.trees[req.Method]; root != nil {
 		if handle, ps, tsr := root.getValue(path); handle != nil {
 			handle(w, req, ps)

@@ -40,6 +40,7 @@ type (
 		RegisterRoute(routeMethod string, path string, handle HttpHandle)
 		RegisterHandler(name string, handler HttpHandle)
 		GetHandler(name string) (HttpHandle, bool)
+		MatchPath(ctx *HttpContext, routePath string) bool
 	}
 	router struct {
 		router       *routers.Router
@@ -93,6 +94,10 @@ func (r *router) GetHandler(name string) (HttpHandle, bool) {
 //use router ServerHTTP
 func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.router.ServeHTTP(w, req)
+}
+
+func (r *router) MatchPath(ctx *HttpContext, routePath string) bool {
+	return r.router.MatchPath(ctx.Request, routePath)
 }
 
 // GET is a shortcut for router.Handle("GET", path, handle)
