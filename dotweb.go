@@ -5,6 +5,7 @@ import (
 	"github.com/devfeel/dotweb/cache"
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/core"
+	"github.com/devfeel/dotweb/framework/file"
 	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/framework/log"
 	"github.com/devfeel/dotweb/servers"
@@ -46,6 +47,7 @@ func New() *DotWeb {
 		OfflineServer: servers.NewOfflineServer(),
 		Modules:       make([]*HttpModule, 0, 10),
 		AppContext:    core.NewItemContext(),
+		logpath:       file.GetCurrentDirectory(),
 	}
 	app.HttpServer.setDotApp(app)
 	return app
