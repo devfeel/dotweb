@@ -166,7 +166,11 @@ func (server *HttpServer) Binder() Binder {
 }
 
 //get renderer interface in server
+//if no set, init InnerRenderer
 func (server *HttpServer) Renderer() Renderer {
+	if server.render == nil {
+		server.render = NewInnerRenderer()
+	}
 	return server.render
 }
 

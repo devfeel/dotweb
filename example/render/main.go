@@ -23,6 +23,11 @@ func main() {
 	//设置路由
 	InitRoute(app.HttpServer)
 
+	//set default template path, support multi path
+	//模板查找顺序从最后一个插入的元素开始往前找
+	//默认添加base、base/templates、base/views
+	app.HttpServer.Renderer().SetTemplatePath("d:/gotmp", "d:/tmp")
+
 	//启动 监控服务
 	//pprofport := 8081
 	//go app.StartPProfServer(pprofport)
@@ -44,6 +49,10 @@ type BookInfo struct {
 	Size int64
 }
 
+func NotExistView(ctx *dotweb.HttpContext) {
+	ctx.View("1.html")
+}
+
 func TestView(ctx *dotweb.HttpContext) {
 	ctx.ViewData().Set("data", "图书信息")
 	ctx.ViewData().Set("user", &UserInfo{UserName: "user1", Sex: true})
@@ -60,4 +69,5 @@ func TestView(ctx *dotweb.HttpContext) {
 
 func InitRoute(server *dotweb.HttpServer) {
 	server.Router().GET("/", TestView)
+	server.Router().GET("/noview", NotExistView)
 }

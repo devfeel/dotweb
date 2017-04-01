@@ -370,6 +370,9 @@ func (ctx *HttpContext) ReadCookie(name string) (*http.Cookie, error) {
 // write view content to response
 func (ctx *HttpContext) View(name string) error {
 	err := ctx.HttpServer.Renderer().Render(ctx.Response.Writer(), name, ctx.ViewData().GetCurrentMap(), ctx)
+	if err != nil {
+		panic(err.Error())
+	}
 	return err
 }
 

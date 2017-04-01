@@ -1,5 +1,11 @@
 ##dotweb版本记录：
 
+#### Version 0.3.9.2
+* Render增加SetTemplatePath接口，用于设置模板默认目录, 默认添加base、base/templates、base/views
+* 模板查找顺序从最后一个插入的元素开始往前找
+* SetTemplatePath(path ...string)
+* 2017-04-01 10:30
+
 #### Version 0.3.9.1
 * Router增加MatchPath接口，用于检查指定请求与指定路由是否匹配，一般用于HttpModule中
 * ctx.HttpServer.Router().MatchPath(ctx, "/user")
