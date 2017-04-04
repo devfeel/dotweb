@@ -24,6 +24,23 @@ func StartServer() error {
 }
 
 ```
+
+#### 通过配置文件启动
+dotweb.conf
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+<app logpath="d:/" enabledlog="true" runmode="development" />
+<offline offline="false" offlinetext="server is offline!" offlineurl="" />
+<server isrun="true" port="8080" enabledgzip="false" enabledlistdir="false" enabledautohead="true"/>
+<session enabled="true" mode="runtime" timeout="20"/>
+<routers>
+    <router method="GET" path="/index" handler="Index" isuse="true"></router>
+    <router method="GET" path="/redirect" handler="Redirect" isuse="true"></router>
+    <router method="GET" path="/error" handler="DefaultError" isuse="true"></router>
+</routers>
+</config>
+```
 #### 详细示例 - https://github.com/devfeel/dotweb-example
 
 ## 特性

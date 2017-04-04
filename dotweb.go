@@ -191,9 +191,9 @@ func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
 	app.HttpServer.SetEnabledGzip(config.Server.EnabledGzip)
 
 	//设置维护
-	if config.Server.Offline {
-		app.HttpServer.SetOffline(config.Server.Offline, config.Server.OfflineText, config.Server.OfflineUrl)
-		app.OfflineServer.SetOffline(config.Server.Offline, config.Server.OfflineText, config.Server.OfflineUrl)
+	if config.Offline.Offline {
+		app.HttpServer.SetOffline(config.Offline.Offline, config.Offline.OfflineText, config.Offline.OfflineUrl)
+		app.OfflineServer.SetOffline(config.Offline.Offline, config.Offline.OfflineText, config.Offline.OfflineUrl)
 	}
 
 	//设置session
