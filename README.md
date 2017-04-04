@@ -27,7 +27,7 @@ func StartServer() error {
 
 #### 通过配置文件启动
 dotweb.conf
-```
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
 <app logpath="d:/" enabledlog="true" runmode="development" />
