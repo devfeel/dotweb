@@ -49,10 +49,25 @@ type (
 	}
 )
 
+func NewConfig() *Config {
+	return &Config{
+		App:     NewAppConfig(),
+		Offline: NewOfflineConfig(),
+		Server:  NewServerConfig(),
+		Session: NewSessionConfig(),
+	}
+}
+
 func NewAppConfig() *AppConfig {
 	config := &AppConfig{}
 	return config
 }
+
+func NewOfflineConfig() *OfflineConfig {
+	config := &OfflineConfig{}
+	return config
+}
+
 func NewServerConfig() *ServerConfig {
 	config := &ServerConfig{}
 	return config

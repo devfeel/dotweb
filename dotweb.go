@@ -47,7 +47,7 @@ func New() *DotWeb {
 		OfflineServer: servers.NewOfflineServer(),
 		Modules:       make([]*HttpModule, 0, 10),
 		AppContext:    core.NewItemContext(),
-		Config:        &config.Config{},
+		Config:        config.NewConfig(),
 	}
 	app.HttpServer.setDotApp(app)
 	return app
