@@ -28,14 +28,18 @@ func main() {
 	//pprofport := 8081
 	//go app.StartPProfServer(pprofport)
 
-	app.SetCache(cache.NewRuntimeCache())
+	//app.SetCache(cache.NewRuntimeCache())
+	app.SetCache(cache.NewRedisCache("127.0.0.1:6379"))
 
-	app.Cache().Set("g", "gv", 20)
+	err := app.Cache().Set("g", "gv", 20)
+	if err != nil {
+		fmt.Println("Cache Set ", err)
+	}
 
 	// 开始服务
 	port := 8080
 	fmt.Println("dotweb.StartServer => " + strconv.Itoa(port))
-	err := app.StartServer(port)
+	err = app.StartServer(port)
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
@@ -45,15 +49,22 @@ type UserInfo struct {
 }
 
 func One(ctx *dotweb.HttpContext) {
-	g := ctx.Cache().GetString("g")
-	ctx.Cache().Incr("count")
-	ctx.WriteString("One [" + g + "] ")
+	g, err := ctx.Cache().GetString("g")
+	if err != nil {
+		g = err.Error()
+	}
+	_, err = ctx.Cache().Incr("count")
+	ctx.WriteString("One [" + g + "] " + fmt.Sprint(err))
 }
 
 func Two(ctx *dotweb.HttpContext) {
-	g := ctx.Cache().GetString("g")
-	ctx.Cache().Incr("count")
-	ctx.WriteString("Two [" + g + "] [" + ctx.Cache().GetString("count") + "]")
+	g, err := ctx.Cache().GetString("g")
+	if err != nil {
+		g = err.Error()
+	}
+	_, err = ctx.Cache().Incr("count")
+	c, _ := ctx.Cache().GetString("count")
+	ctx.WriteString("Two [" + g + "] [" + c + "] " + fmt.Sprint(err))
 }
 
 func InitRoute(server *dotweb.HttpServer) {

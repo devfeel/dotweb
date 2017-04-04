@@ -12,7 +12,7 @@ var (
 // RedisCache is redis cache adapter.
 // it contains serverIp for redis conn.
 type RedisCache struct {
-	serverIp string //connection string, like "redis://:password@10.0.1.11:6379/0"
+	serverIp string //connection string, like "10.0.1.11:6379"
 }
 
 // NewRedisCache returns a new *RedisCache.
@@ -22,13 +22,10 @@ func NewRedisCache(serverIp string) *RedisCache {
 }
 
 // Exists check item exist in redis cache.
-func (ca *RedisCache) Exists(key string) bool {
+func (ca *RedisCache) Exists(key string) (bool, error) {
 	redisClient := redisutil.GetRedisClient(ca.serverIp)
 	exists, err := redisClient.Exists(key)
-	if err != nil {
-		return false
-	}
-	return exists
+	return exists, err
 }
 
 // Incr increase int64 counter in redis cache.
@@ -53,56 +50,48 @@ func (ca *RedisCache) Decr(key string) (int64, error) {
 
 // Get cache from redis cache.
 // if non-existed or expired, return nil.
-func (ca *RedisCache) Get(key string) interface{} {
+func (ca *RedisCache) Get(key string) (interface{}, error) {
 	redisClient := redisutil.GetRedisClient(ca.serverIp)
 	reply, err := redisClient.GetObj(key)
-	if err != nil {
-		return nil
-	} else {
-		return reply
-	}
+	return reply, err
 }
 
 //  returns value string format by given key
 // if non-existed or expired, return "".
-func (ca *RedisCache) GetString(key string) string {
+func (ca *RedisCache) GetString(key string) (string, error) {
 	redisClient := redisutil.GetRedisClient(ca.serverIp)
 	reply, err := redisClient.Get(key)
-	if err != nil {
-		return ""
-	} else {
-		return reply
-	}
+	return reply, err
 }
 
 //  returns value int format by given key
 // if non-existed or expired, return nil.
-func (ca *RedisCache) GetInt(key string) int {
-	v := ca.GetString(key)
-	if v == "" {
-		return 0
+func (ca *RedisCache) GetInt(key string) (int, error) {
+	v, err := ca.GetString(key)
+	if err != nil || v == "" {
+		return 0, err
 	} else {
 		i, e := strconv.Atoi(v)
 		if e != nil {
-			return 0
+			return 0, err
 		} else {
-			return i
+			return i, nil
 		}
 	}
 }
 
 //  returns value int64 format by given key
 // if non-existed or expired, return nil.
-func (ca *RedisCache) GetInt64(key string) int64 {
-	v := ca.GetString(key)
-	if v == "" {
-		return ZeroInt64
+func (ca *RedisCache) GetInt64(key string) (int64, error) {
+	v, err := ca.GetString(key)
+	if err != nil || v == "" {
+		return ZeroInt64, err
 	} else {
 		i, e := strconv.ParseInt(v, 10, 64)
 		if e != nil {
-			return ZeroInt64
+			return ZeroInt64, err
 		} else {
-			return i
+			return i, nil
 		}
 	}
 }

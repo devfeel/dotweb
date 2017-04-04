@@ -7,15 +7,15 @@ import (
 
 type Cache interface {
 	// Exist return true if value cached by given key
-	Exists(key string) bool
+	Exists(key string) (bool, error)
 	// Get returns value by given key
-	Get(key string) interface{}
+	Get(key string) (interface{}, error)
 	// GetString returns value string format by given key
-	GetString(key string) string
+	GetString(key string) (string, error)
 	// GetInt returns value int format by given key
-	GetInt(key string) int
+	GetInt(key string) (int, error)
 	// GetInt64 returns value int64 format by given key
-	GetInt64(key string) int64
+	GetInt64(key string) (int64, error)
 	// Set cache value by given key
 	Set(key string, v interface{}, ttl int64) error
 	// Incr increases int64-type value by given key as a counter

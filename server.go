@@ -338,9 +338,9 @@ func (server *HttpServer) wrapWebSocketHandle(handle HttpHandle) websocket.Handl
 				errmsg = exception.CatchError("httpserver::WebsocketHandle", LogTarget_HttpServer, err)
 
 				//记录访问日志
-				headinfo := fmt.Sprintln(httpCtx.WebSocket.Conn.Request().Header)
+				headinfo := fmt.Sprintln(httpCtx.WebSocket.Request().Header)
 				logJson := LogJson{
-					RequestUrl: httpCtx.WebSocket.Conn.Request().RequestURI,
+					RequestUrl: httpCtx.WebSocket.Request().RequestURI,
 					HttpHeader: headinfo,
 					HttpBody:   errmsg,
 				}

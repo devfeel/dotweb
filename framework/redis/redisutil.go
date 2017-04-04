@@ -34,7 +34,7 @@ func newPool(redisIP string) *redis.Pool {
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", redisIP)
 			if err != nil {
-				panic(err)
+				//panic(err)
 			}
 			return c, err
 		},

@@ -47,57 +47,57 @@ func NewRuntimeCache() *RuntimeCache {
 
 // Get cache from runtime cache.
 // if non-existed or expired, return nil.
-func (ca *RuntimeCache) Get(key string) interface{} {
+func (ca *RuntimeCache) Get(key string) (interface{}, error) {
 	ca.RLock()
 	defer ca.RUnlock()
 	if item, ok := ca.items[key]; ok {
 		if item.isExpire() {
-			return nil
+			return nil, nil
 		}
-		return item.value
+		return item.value, nil
 	}
-	return nil
+	return nil, nil
 }
 
 // returns value string format by given key
 // if non-existed or expired, return "".
-func (ca *RuntimeCache) GetString(key string) string {
-	v := ca.Get(key)
-	if v == nil {
-		return ""
+func (ca *RuntimeCache) GetString(key string) (string, error) {
+	v, err := ca.Get(key)
+	if err != nil || v == nil {
+		return "", nil
 	} else {
-		return fmt.Sprint(v)
+		return fmt.Sprint(v), nil
 	}
 }
 
 // returns value int format by given key
 // if non-existed or expired, return 0.
-func (ca *RuntimeCache) GetInt(key string) int {
-	v := ca.GetString(key)
-	if v == "" {
-		return 0
+func (ca *RuntimeCache) GetInt(key string) (int, error) {
+	v, err := ca.GetString(key)
+	if err != nil || v == "" {
+		return 0, nil
 	} else {
 		i, e := strconv.Atoi(v)
 		if e != nil {
-			return 0
+			return 0, nil
 		} else {
-			return i
+			return i, nil
 		}
 	}
 }
 
 // returns value int64 format by given key
 // if non-existed or expired, return 0.
-func (ca *RuntimeCache) GetInt64(key string) int64 {
-	v := ca.GetString(key)
-	if v == "" {
-		return ZeroInt64
+func (ca *RuntimeCache) GetInt64(key string) (int64, error) {
+	v, err := ca.GetString(key)
+	if err != nil || v == "" {
+		return ZeroInt64, nil
 	} else {
 		i, e := strconv.ParseInt(v, 10, 64)
 		if e != nil {
-			return ZeroInt64
+			return ZeroInt64, nil
 		} else {
-			return i
+			return i, nil
 		}
 	}
 }
@@ -196,13 +196,13 @@ func (ca *RuntimeCache) Decr(key string) (int64, error) {
 }
 
 // Exist check item exist in runtime cache.
-func (ca *RuntimeCache) Exists(key string) bool {
+func (ca *RuntimeCache) Exists(key string) (bool, error) {
 	ca.RLock()
 	defer ca.RUnlock()
 	if v, ok := ca.items[key]; ok {
-		return !v.isExpire()
+		return !v.isExpire(), nil
 	}
-	return false
+	return false, nil
 }
 
 // Delete item in runtime cacha.

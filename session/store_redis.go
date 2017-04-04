@@ -35,6 +35,9 @@ func (store *RedisStore) SessionRead(sessionId string) (*SessionState, error) {
 	redisClient := redisutil.GetRedisClient(store.serverIp)
 	key := getRedisKey(sessionId)
 	kvs, err := redisClient.Get(key)
+	if err != nil {
+		return nil, err
+	}
 	var kv map[interface{}]interface{}
 	if len(kvs) == 0 {
 		kv = make(map[interface{}]interface{})

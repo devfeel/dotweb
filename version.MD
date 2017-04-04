@@ -1,5 +1,10 @@
 ##dotweb版本记录：
 
+#### Version 0.3.9.3
+* 调整Cache接口，Exists\Get\GetString\GetInt\GetInt64增加error返回值，影响Cache模块、Session模块
+* Redis无法连接信息将从接口error返回，取消原来的panic设计
+* 2017-04-04 16:00
+
 #### Version 0.3.9.2
 * Render增加SetTemplatePath接口，用于设置模板默认目录, 默认添加base、base/templates、base/views
 * 模板查找顺序从最后一个插入的元素开始往前找
