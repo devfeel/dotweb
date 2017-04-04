@@ -14,9 +14,6 @@ func main() {
 	//设置dotserver日志目录
 	app.SetLogPath(file.GetCurrentDirectory())
 
-	//设置Debug开关
-	app.SetEnabledDebug(true)
-
 	//设置路由
 	InitRoute(app.HttpServer)
 

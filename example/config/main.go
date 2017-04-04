@@ -30,7 +30,7 @@ func DefaultError(ctx *dotweb.HttpContext) {
 }
 
 func Redirect(ctx *dotweb.HttpContext) {
-	ctx.Redirect("http://www.baidu.com")
+	ctx.Redirect(200, "http://www.baidu.com")
 }
 
 func RegisterHandler(server *dotweb.HttpServer) {
