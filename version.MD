@@ -1,5 +1,11 @@
 ##dotweb版本记录：
 
+#### Version 0.3.9.4
+* 新增Logger接口，增加内置文件日志xlog实现
+* 日志新增app节点，支持LogPath、EnabledLog、RunMode
+* 新增RunMode，目前支持development、production，相关特性后续完善，默认为development
+* 2017-04-04 18:00
+
 #### Version 0.3.9.3
 * 调整Cache接口，Exists\Get\GetString\GetInt\GetInt64增加error返回值，影响Cache模块、Session模块
 * Redis连接异常信息将从接口error返回，取消原来的panic设计

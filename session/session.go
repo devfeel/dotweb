@@ -2,7 +2,7 @@ package session
 
 import (
 	"github.com/devfeel/dotweb/framework/crypto"
-	"github.com/devfeel/dotweb/framework/log"
+	"github.com/devfeel/dotweb/logger"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -134,7 +134,7 @@ func (manager *SessionManager) GetSessionState(sessionId string) (session *Sessi
 func (manager *SessionManager) GC() {
 	num := manager.store.SessionGC()
 	if num > 0 {
-		logger.Debug("SessionManger.GC => "+strconv.Itoa(num), LogTarget_Session)
+		logger.Logger().Debug("SessionManger.GC => "+strconv.Itoa(num), LogTarget_Session)
 	}
 	time.AfterFunc(time.Duration(manager.GCLifetime)*time.Second, func() { manager.GC() })
 }

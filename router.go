@@ -2,7 +2,7 @@ package dotweb
 
 import (
 	"github.com/devfeel/dotweb/core"
-	"github.com/devfeel/dotweb/framework/log"
+	"github.com/devfeel/dotweb/logger"
 	"github.com/devfeel/dotweb/routers"
 	"golang.org/x/net/websocket"
 	"net/http"
@@ -153,10 +153,10 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 	routeMethod = strings.ToUpper(routeMethod)
 
 	if _, exists := HttpMethodMap[routeMethod]; !exists {
-		logger.Log("Dotweb:Router:RegisterRoute failed [illegal method] ["+routeMethod+"] ["+path+"]", LogTarget_HttpServer, LogLevel_Warn)
+		logger.Logger().Log("Dotweb:Router:RegisterRoute failed [illegal method] ["+routeMethod+"] ["+path+"]", LogTarget_HttpServer, LogLevel_Warn)
 		return
 	} else {
-		logger.Log("Dotweb:Router:RegisterRoute success ["+routeMethod+"] ["+path+"]", LogTarget_HttpServer, LogLevel_Debug)
+		logger.Logger().Log("Dotweb:Router:RegisterRoute success ["+routeMethod+"] ["+path+"]", LogTarget_HttpServer, LogLevel_Debug)
 	}
 
 	//websocket mode,use default httpserver

@@ -5,7 +5,6 @@ import (
 	"github.com/devfeel/dotweb/framework/convert"
 	"github.com/devfeel/dotweb/framework/exception"
 	"github.com/devfeel/dotweb/framework/json"
-	"github.com/devfeel/dotweb/framework/log"
 	"github.com/devfeel/dotweb/session"
 	"net/http"
 	"strings"
@@ -14,6 +13,7 @@ import (
 
 	"compress/gzip"
 	"github.com/devfeel/dotweb/config"
+	"github.com/devfeel/dotweb/logger"
 	"github.com/devfeel/dotweb/routers"
 	"golang.org/x/net/websocket"
 	"io"
@@ -184,6 +184,27 @@ func (server *HttpServer) SetEnabledAutoHEAD(autoHEAD bool) {
 	server.ServerConfig.EnabledAutoHEAD = autoHEAD
 }
 
+/*
+设置是否允许目录浏览,默认为false
+*/
+func (server *HttpServer) SetEnabledListDir(isEnabled bool) {
+	server.ServerConfig.EnabledListDir = isEnabled
+}
+
+/*
+设置是否启用Session,默认为false
+*/
+func (server *HttpServer) SetEnabledSession(isEnabled bool) {
+	server.SessionConfig.EnabledSession = isEnabled
+}
+
+/*
+设置是否启用gzip,默认为false
+*/
+func (server *HttpServer) SetEnabledGzip(isEnabled bool) {
+	server.ServerConfig.EnabledGzip = isEnabled
+}
+
 type LogJson struct {
 	RequestUrl string
 	HttpHeader string
@@ -262,14 +283,14 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 					HttpBody:   errmsg,
 				}
 				logString := jsonutil.GetJsonString(logJson)
-				logger.Log(logString, LogTarget_HttpServer, LogLevel_Error)
+				logger.Logger().Log(logString, LogTarget_HttpServer, LogLevel_Error)
 
 				//增加错误计数
 				GlobalState.AddErrorCount(1)
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 			//HttpServer Logging
-			logger.Log(httpCtx.Url()+" "+logContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
+			logger.Logger().Log(httpCtx.Url()+" "+logContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
 
 			if server.ServerConfig.EnabledGzip {
 				var w io.Writer
@@ -316,7 +337,7 @@ func (server *HttpServer) wrapFileHandle(fileHandler http.Handler) routers.Handl
 		fileHandler.ServeHTTP(w, r)
 		timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 		//HttpServer Logging
-		logger.Log(r.URL.String()+" "+logRequest(r, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
+		logger.Logger().Log(r.URL.String()+" "+logRequest(r, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
 	}
 }
 
@@ -345,14 +366,14 @@ func (server *HttpServer) wrapWebSocketHandle(handle HttpHandle) websocket.Handl
 					HttpBody:   errmsg,
 				}
 				logString := jsonutil.GetJsonString(logJson)
-				logger.Log(logString, LogTarget_HttpServer, LogLevel_Error)
+				logger.Logger().Log(logString, LogTarget_HttpServer, LogLevel_Error)
 
 				//增加错误计数
 				GlobalState.AddErrorCount(1)
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 			//HttpServer Logging
-			logger.Log(httpCtx.Url()+" "+logContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
+			logger.Logger().Log(httpCtx.Url()+" "+logContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
 
 			// Return to pool
 			server.pool.context.Put(httpCtx)

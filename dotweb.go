@@ -5,9 +5,8 @@ import (
 	"github.com/devfeel/dotweb/cache"
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/core"
-	"github.com/devfeel/dotweb/framework/file"
 	"github.com/devfeel/dotweb/framework/json"
-	"github.com/devfeel/dotweb/framework/log"
+	"github.com/devfeel/dotweb/logger"
 	"github.com/devfeel/dotweb/servers"
 	"github.com/devfeel/dotweb/session"
 	"net/http"
@@ -24,9 +23,8 @@ type (
 		HttpServer       *HttpServer
 		cache            cache.Cache
 		OfflineServer    servers.Server
-		AppConfig        *config.AppConfig
+		Config           *config.Config
 		Modules          []*HttpModule
-		logpath          string
 		ExceptionHandler ExceptionHandle
 		AppContext       *core.ItemContext
 	}
@@ -35,7 +33,9 @@ type (
 )
 
 const (
-	DefaultHttpPort = 80 //default http port
+	DefaultHttpPort     = 80 //default http port
+	RunMode_Development = "development"
+	RunMode_Production  = "production"
 )
 
 /*
@@ -47,7 +47,7 @@ func New() *DotWeb {
 		OfflineServer: servers.NewOfflineServer(),
 		Modules:       make([]*HttpModule, 0, 10),
 		AppContext:    core.NewItemContext(),
-		logpath:       file.GetCurrentDirectory(),
+		Config:        &config.Config{},
 	}
 	app.HttpServer.setDotApp(app)
 	return app
@@ -56,151 +56,156 @@ func New() *DotWeb {
 /*
 * return cache interface
  */
-func (ds *DotWeb) Cache() cache.Cache {
-	return ds.cache
+func (app *DotWeb) Cache() cache.Cache {
+	return app.cache
 }
 
 /*
 * set cache interface
  */
-func (ds *DotWeb) SetCache(ca cache.Cache) {
-	ds.cache = ca
+func (app *DotWeb) SetCache(ca cache.Cache) {
+	app.cache = ca
+}
+
+//current app run mode, if not set, default set RunMode_Development
+func (app *DotWeb) RunMode() string {
+	if app.Config.App.RunMode != RunMode_Development && app.Config.App.RunMode != RunMode_Production {
+		app.Config.App.RunMode = RunMode_Development
+	}
+	return app.Config.App.RunMode
+}
+
+//check current run mode is development mode
+func (app *DotWeb) IsDevelopmentMode() bool {
+	return app.RunMode() == RunMode_Development
+}
+
+//set run mode on development mode
+func (app *DotWeb) SetDevelopmentMode() {
+	app.Config.App.RunMode = RunMode_Development
+}
+
+//set run mode on production mode
+func (app *DotWeb) SetProductionMode() {
+	app.Config.App.RunMode = RunMode_Production
 }
 
 /*
 * 添加处理模块
  */
-func (ds *DotWeb) RegisterModule(module *HttpModule) {
-	ds.Modules = append(ds.Modules, module)
-	module.Server = ds.HttpServer
-}
-
-/*
-设置是否允许目录浏览,默认为false
-*/
-func (ds *DotWeb) SetEnabledListDir(isEnabled bool) {
-	ds.HttpServer.ServerConfig.EnabledListDir = isEnabled
-}
-
-/*
-设置Debug模式,默认为false
-*/
-func (ds *DotWeb) SetEnabledDebug(isEnabled bool) {
-	ds.HttpServer.ServerConfig.EnabledDebug = isEnabled
-}
-
-/*
-设置是否启用Session,默认为false
-*/
-func (ds *DotWeb) SetEnabledSession(isEnabled bool) {
-	ds.HttpServer.SessionConfig.EnabledSession = isEnabled
-}
-
-/*
-设置是否启用gzip,默认为false
-*/
-func (ds *DotWeb) SetEnabledGzip(isEnabled bool) {
-	ds.HttpServer.ServerConfig.EnabledGzip = isEnabled
+func (app *DotWeb) RegisterModule(module *HttpModule) {
+	app.Modules = append(app.Modules, module)
+	module.Server = app.HttpServer
 }
 
 //set session store config
-func (ds *DotWeb) SetSessionConfig(storeConfig *session.StoreConfig) {
-	ds.HttpServer.SetSessionConfig(storeConfig)
+func (app *DotWeb) SetSessionConfig(storeConfig *session.StoreConfig) {
+	app.HttpServer.SetSessionConfig(storeConfig)
 }
 
 /*
 * 设置异常处理函数
  */
-func (ds *DotWeb) SetExceptionHandle(handler ExceptionHandle) {
-	ds.ExceptionHandler = handler
+func (app *DotWeb) SetExceptionHandle(handler ExceptionHandle) {
+	app.ExceptionHandler = handler
 }
 
 /*
 * 启动pprof服务，该端口号请不要与StartServer的端口号一致
  */
-func (ds *DotWeb) StartPProfServer(httpport int) error {
+func (app *DotWeb) StartPProfServer(httpport int) error {
 	port := ":" + strconv.Itoa(httpport)
 	err := http.ListenAndServe(port, nil)
 	return err
 }
 
-/*
-* 设置日志根目录
- */
-func (ds *DotWeb) SetLogPath(path string) {
-	ds.logpath = path
+//set log root path
+func (app *DotWeb) SetLogPath(path string) {
+	logger.Logger().SetLogPath(path)
+}
+
+//set enabled log flag
+func (app *DotWeb) SetEnabledLog(enabledLog bool) {
+	logger.Logger().SetEnabledLog(enabledLog)
 }
 
 /*启动WebServer
 * 需要初始化HttpRoute
 * httpPort := 80
  */
-func (ds *DotWeb) StartServer(httpport int) error {
-	//启动内部日志
-	logger.StartLogHandler(ds.logpath)
-
+func (app *DotWeb) StartServer(httpport int) error {
 	//添加框架默认路由规则
 	//默认支持pprof信息查看
-	ds.HttpServer.Router().GET("/dotweb/debug/pprof/:key", initPProf)
-	ds.HttpServer.Router().GET("/dotweb/debug/freemem", freeMemory)
-	ds.HttpServer.Router().GET("/dotweb/state", showServerState)
-	ds.HttpServer.Router().GET("/dotweb/query/:key", showQuery)
+	app.HttpServer.Router().GET("/dotweb/debug/pprof/:key", initPProf)
+	app.HttpServer.Router().GET("/dotweb/debug/freemem", freeMemory)
+	app.HttpServer.Router().GET("/dotweb/state", showServerState)
+	app.HttpServer.Router().GET("/dotweb/query/:key", showQuery)
 
-	if ds.ExceptionHandler == nil {
-		ds.SetExceptionHandle(ds.DefaultHTTPErrorHandler)
+	if app.ExceptionHandler == nil {
+		app.SetExceptionHandle(app.DefaultHTTPErrorHandler)
 	}
 
 	//init session manager
-	if ds.HttpServer.SessionConfig.EnabledSession {
-		if ds.HttpServer.SessionConfig.SessionMode == "" {
+	if app.HttpServer.SessionConfig.EnabledSession {
+		if app.HttpServer.SessionConfig.SessionMode == "" {
 			//panic("no set SessionConfig, but set enabledsession true")
-			logger.Warn("not set SessionMode, but set enabledsession true, now will use default runtime session", LogTarget_HttpServer)
-			ds.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
+			logger.Logger().Warn("not set SessionMode, but set enabledsession true, now will use default runtime session", LogTarget_HttpServer)
+			app.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
 		}
-		ds.HttpServer.InitSessionManager()
+		app.HttpServer.InitSessionManager()
 	}
 
 	//if cache not set, create default runtime cache
-	if ds.Cache() == nil {
-		ds.cache = cache.NewRuntimeCache()
+	if app.Cache() == nil {
+		app.cache = cache.NewRuntimeCache()
 	}
 
 	//if renderer not set, create inner renderer
-	if ds.HttpServer.Renderer() == nil {
-		ds.HttpServer.SetRenderer(NewInnerRenderer())
+	if app.HttpServer.Renderer() == nil {
+		app.HttpServer.SetRenderer(NewInnerRenderer())
 	}
 
 	port := ":" + strconv.Itoa(httpport)
-	logger.Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
-	err := http.ListenAndServe(port, ds.HttpServer)
+	logger.Logger().Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
+	err := http.ListenAndServe(port, app.HttpServer)
 	return err
 }
 
 //start server with appconfig
-func (ds *DotWeb) StartServerWithConfig(config *config.AppConfig) error {
-	ds.AppConfig = config
-	if config.Server.LogPath != "" {
-		ds.logpath = config.Server.LogPath
+func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
+	app.Config = config
+
+	//log config
+	if config.App.LogPath != "" {
+		logger.Logger().SetLogPath(config.App.LogPath)
 	}
-	ds.SetEnabledDebug(config.Server.EnabledDebug)
-	ds.SetEnabledGzip(config.Server.EnabledGzip)
+	logger.Logger().SetEnabledLog(config.App.EnabledLog)
+
+	//run mode config
+	if app.Config.App.RunMode != RunMode_Development && app.Config.App.RunMode != RunMode_Production {
+		app.Config.App.RunMode = RunMode_Development
+	} else {
+		app.Config.App.RunMode = RunMode_Development
+	}
+
+	app.HttpServer.SetEnabledGzip(config.Server.EnabledGzip)
 
 	//设置维护
 	if config.Server.Offline {
-		ds.HttpServer.SetOffline(config.Server.Offline, config.Server.OfflineText, config.Server.OfflineUrl)
-		ds.OfflineServer.SetOffline(config.Server.Offline, config.Server.OfflineText, config.Server.OfflineUrl)
+		app.HttpServer.SetOffline(config.Server.Offline, config.Server.OfflineText, config.Server.OfflineUrl)
+		app.OfflineServer.SetOffline(config.Server.Offline, config.Server.OfflineText, config.Server.OfflineUrl)
 	}
 
 	//设置session
 	if config.Session.EnabledSession {
-		ds.SetEnabledSession(config.Session.EnabledSession)
-		ds.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP))
+		app.HttpServer.SetEnabledSession(config.Session.EnabledSession)
+		app.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP))
 	}
 
 	//load router and register
 	for _, v := range config.Routers {
-		if h, isok := ds.HttpServer.Router().GetHandler(v.HandlerName); isok && v.IsUse {
-			ds.HttpServer.Router().RegisterRoute(strings.ToUpper(v.Method), v.Path, h)
+		if h, isok := app.HttpServer.Router().GetHandler(v.HandlerName); isok && v.IsUse {
+			app.HttpServer.Router().RegisterRoute(strings.ToUpper(v.Method), v.Path, h)
 		}
 	}
 
@@ -209,16 +214,17 @@ func (ds *DotWeb) StartServerWithConfig(config *config.AppConfig) error {
 	if port <= 0 {
 		port = DefaultHttpPort
 	}
-	return ds.StartServer(port)
+	return app.StartServer(port)
 
 }
 
-//默认异常处理
+//default exception handler
 func (ds *DotWeb) DefaultHTTPErrorHandler(ctx *HttpContext, errinfo interface{}) {
 	//输出内容
 	ctx.Response.WriteHeader(http.StatusInternalServerError)
 	ctx.Response.Header().Set(HeaderContentType, CharsetUTF8)
-	if ds.HttpServer.ServerConfig.EnabledDebug {
+	//if in development mode, output the error info
+	if ds.IsDevelopmentMode() {
 		ctx.WriteString(fmt.Sprintln(errinfo))
 	} else {
 		ctx.WriteString("Internal Server Error")
