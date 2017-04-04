@@ -162,12 +162,17 @@ ctx.Session().Set(key, value)
 ```
 
 ## Server Config
-目前支持5个选项：
-* EnabledDebug 设置是否开启debug模式，会输出server端的debug日志，默认不开启
-* EnabledSession 设置是否开启Session支持，目前支持runtime、redis两种模式，默认不开启
-* EnabledGzip 设置是否开启Gzip支持，默认不开启
-* EnabledListDir 设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
-* EnabledAutoHEAD 设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
+#### HttpServer：
+* HttpServer.EnabledSession 设置是否开启Session支持，目前支持runtime、redis两种模式，默认不开启
+* HttpServer.EnabledGzip 设置是否开启Gzip支持，默认不开启
+* HttpServer.EnabledListDir 设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
+* HttpServer.EnabledAutoHEAD 设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
+
+#### Run Mode
+* 新增development、production模式
+* 默认development，通过DotWeb.SetDevelopmentMode\DotWeb.SetProductionMode开启相关模式
+* 若设置development模式，未处理异常会输出异常详细信息
+* 未来会拓展更多运行模式的配置
 
 ## 外部依赖
 websocket - golang.org/x/net/websocket

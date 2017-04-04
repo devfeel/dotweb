@@ -2,8 +2,9 @@
 
 #### Version 0.3.9.4
 * 新增Logger接口，增加内置文件日志xlog实现
-* 日志新增app节点，支持LogPath、EnabledLog、RunMode
+* 日志新增app节点，支持LogPath、EnabledLog、RunMode，DotWeb增加SetEnabledLog方法；
 * 新增RunMode，目前支持development、production，相关特性后续完善，默认为development
+* 迁移：原DotWeb中SetEnabledListDir、SetEnabledSession、SetEnabledGzip函数迁移至HttpServer
 * 2017-04-04 18:00
 
 #### Version 0.3.9.3
