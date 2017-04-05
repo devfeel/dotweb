@@ -51,9 +51,6 @@ func (r *innerRenderer) parseFile(filename string) (*template.Template, error) {
 	if !file.Exist(filename) {
 		tmpFileName := filename
 		for i := len(r.templatePaths) - 1; i >= 0; i-- {
-			if r.templatePaths[i] == "" {
-				break
-			}
 			tmpFileName = r.templatePaths[i] + "/" + filename
 			findlog += "\r\n" + tmpFileName
 			if file.Exist(tmpFileName) {
@@ -97,8 +94,8 @@ func NewInnerRenderer() *innerRenderer {
 	r.templatePaths = make([]string, 3)
 	//添加基础路径
 	//base、base/templates、base/views
-	r.templatePaths = append(r.templatePaths, file.GetCurrentDirectory())
-	r.templatePaths = append(r.templatePaths, file.GetCurrentDirectory()+"/templates")
-	r.templatePaths = append(r.templatePaths, file.GetCurrentDirectory()+"/views")
+	r.templatePaths[0] = file.GetCurrentDirectory()
+	r.templatePaths[1] = file.GetCurrentDirectory() + "/templates"
+	r.templatePaths[2] = file.GetCurrentDirectory() + "/views"
 	return r
 }

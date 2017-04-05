@@ -105,6 +105,6 @@ func writeFile(logFile string, log string) {
 		fmt.Println(logFile, err)
 		return
 	}
-	fmt.Print(logstr)
+	//fmt.Print(logstr)
 	file.WriteString(logstr)
 }
