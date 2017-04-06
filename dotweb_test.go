@@ -24,3 +24,20 @@ func Test_RunMode_2(t *testing.T) {
 		t.Log("runModes value:", value, "RunMode:", runMode)
 	}
 }
+
+//测试IsDevelopmentMode函数
+func Test_IsDevelopmentMode_1(t *testing.T) {
+	app := New()
+	app.Config.App.RunMode = "development"
+	b := app.IsDevelopmentMode()
+	t.Log("Run IsDevelopmentMode :", b)
+}
+
+func Test_IsDevelopmentMode_2(t *testing.T) {
+	app := New()
+	app.Config.App.RunMode = "production"
+	b := app.IsDevelopmentMode()
+	t.Log("Run IsDevelopmentMode :", b)
+}
+
+//
