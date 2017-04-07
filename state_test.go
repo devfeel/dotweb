@@ -7,18 +7,40 @@ import (
 // 以下为功能测试
 
 func Test_AddRequestCount_1(t *testing.T) {
-	var num uint64 = 0
-	for i := 1; i < 100; i++ {
-		num = GlobalState.AddRequestCount(uint64(i))
+	var num uint64 = 1
+	var count uint64
+	for i := 0; i < 100; i++ {
+		count = GlobalState.AddRequestCount(num)
 	}
-	t.Log("TotalRequestCount:", num)
+	t.Log("TotalRequestCount:", count)
+}
 
+func Test_AddRequestCount_2(t *testing.T) {
+	var num uint64 = 1
+	var count uint64
+	for i := 0; i < 100; i++ {
+		count = GlobalState.AddRequestCount(num)
+		num++
+	}
+	t.Log("TotalRequestCount:", count)
 }
 
 func Test_AddErrorCount_1(t *testing.T) {
-	var num uint64 = 0
-	for i := 1; i < 100; i++ {
-		num = GlobalState.AddErrorCount(uint64(i))
+	var num, count uint64
+	for i := 0; i < 100; i++ {
+		num = 1
+		count = GlobalState.AddErrorCount(num)
 	}
-	t.Log("TotalErrorCount:", num)
+	t.Log("TotalErrorCount:", count)
 }
+
+func Test_AddErrorCount_2(t *testing.T) {
+	var num, count uint64
+	for i := 0; i < 100; i++ {
+		count = GlobalState.AddErrorCount(num)
+		num++
+	}
+	t.Log("TotalErrorCount:", count)
+}
+
+// 以下是性能测试
