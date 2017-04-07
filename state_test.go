@@ -44,3 +44,39 @@ func Test_AddErrorCount_2(t *testing.T) {
 }
 
 // 以下是性能测试
+
+//基准测试
+func Benchmark_AddErrorCount_1(b *testing.B) {
+	var num uint64 = 1
+	for i := 0; i < b.N; i++ {
+		GlobalState.AddErrorCount(num)
+	}
+}
+
+// 测试并发效率
+func Benchmark_AddErrorCount_Parallel(b *testing.B) {
+	b.RunParallel(func(pb *testing.PB) {
+		var num uint64 = 1
+		for pb.Next() {
+			GlobalState.AddErrorCount(num)
+		}
+	})
+}
+
+//基准测试
+func Benchmark_AddRequestCount_1(b *testing.B) {
+	var num uint64 = 1
+	for i := 0; i < b.N; i++ {
+		GlobalState.AddRequestCount(num)
+	}
+}
+
+// 测试并发效率
+func Benchmark_AddRequestCount_Parallel(b *testing.B) {
+	b.RunParallel(func(pb *testing.PB) {
+		var num uint64 = 1
+		for pb.Next() {
+			GlobalState.AddRequestCount(num)
+		}
+	})
+}
