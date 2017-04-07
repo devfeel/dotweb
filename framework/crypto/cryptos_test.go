@@ -20,9 +20,10 @@ func Test_GetUUID_1(t *testing.T) {
 func Test_GetRandString_1(t *testing.T) {
 	for i := 4; i < 9; i++ {
 		randStr := GetRandString(i)
-		t.Log("GetRandString: length-", i, "randStr-", randStr)
 		if len(randStr) != i {
 			t.Error("GetRandString: length:", i, "randStr-len:", len(randStr))
+		} else {
+			t.Log("GetRandString: length-", i, "randStr-", randStr)
 		}
 	}
 }

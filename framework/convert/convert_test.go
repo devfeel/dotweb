@@ -16,15 +16,21 @@ func Test_String2Bytes_1(t *testing.T) {
 func Test_String2Int_1(t *testing.T) {
 	str := "1234567890"
 	b, e := String2Int(str)
-	t.Error(e)
-	t.Log(str, " String to Int: ", b)
+	if e == nil {
+		t.Log(str, " String to Int: ", b)
+	} else {
+		t.Error(e)
+	}
 }
 
 func Test_String2Int_2(t *testing.T) {
 	str := "1234567890ssss"
 	b, e := String2Int(str)
-	t.Error(e)
-	t.Log(str, " String to Int: ", b)
+	if e == nil {
+		t.Log(str, " String to Int: ", b)
+	} else {
+		t.Error(e)
+	}
 }
 
 func Test_Int2String_1(t *testing.T) {
@@ -37,16 +43,22 @@ func Test_Int2String_1(t *testing.T) {
 func Test_String2Int64_1(t *testing.T) {
 	str := "0200000010"
 	b, e := String2Int64(str)
-	t.Error(e)
-	t.Log(str, "String to Int64: ", b)
+	if e != nil {
+		t.Error(e)
+	} else {
+		t.Log(str, "String to Int64: ", b)
+	}
 }
 
 //String2Int64
 func Test_String2Int64_2(t *testing.T) {
 	str := "a0200000010"
 	b, e := String2Int64(str)
-	t.Error(e)
-	t.Log(str, "String to Int64: ", b)
+	if e != nil {
+		t.Error(e)
+	} else {
+		t.Log(str, "String to Int64: ", b)
+	}
 }
 
 //Int642String
@@ -66,7 +78,9 @@ func Test_Int642String_2(t *testing.T) {
 func Test_NSToTime_1(t *testing.T) {
 	now := time.Now().UnixNano()
 	b, e := NSToTime(now)
-	t.Error(e)
+	if e != nil {
+		t.Error(e)
+	}
 	t.Log(now, "NSToTime: ", b)
 }
 
@@ -74,6 +88,8 @@ func Test_NSToTime_1(t *testing.T) {
 func Test_NSToTime_2(t *testing.T) {
 	now := time.Now().Unix()
 	b, e := NSToTime(now)
-	t.Error(e)
+	if e != nil {
+		t.Error(e)
+	}
 	t.Log(now, "NSToTime: ", b)
 }
