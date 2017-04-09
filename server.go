@@ -233,7 +233,7 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 		res := server.pool.response.Get().(*Response)
 		res.Reset(w)
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(res, r, server, NewRouterNode(vnode.Node), vnode.Params)
+		httpCtx.Reset(res, r, server, NewRouterNode(vnode.Node, vnode.Method), vnode.Params)
 
 		//gzip
 		if server.ServerConfig.EnabledGzip {

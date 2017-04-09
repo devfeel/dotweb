@@ -94,7 +94,8 @@ func init() {
 
 type ValueNode struct {
 	Params
-	Node *Node
+	Method string
+	Node   *Node
 }
 
 // Handle is a function that can be registered to a route to handle HTTP
@@ -194,41 +195,6 @@ func (r *Router) ANY(path string, handle Handle) {
 	r.Handle("PUT", path, handle)
 	r.Handle("PATCH", path, handle)
 	r.Handle("OPTIONS", path, handle)
-	r.Handle("DELETE", path, handle)
-}
-
-// GET is a shortcut for router.Handle("GET", path, handle)
-func (r *Router) GET(path string, handle Handle) {
-	r.Handle("GET", path, handle)
-}
-
-// HEAD is a shortcut for router.Handle("HEAD", path, handle)
-func (r *Router) HEAD(path string, handle Handle) {
-	r.Handle("HEAD", path, handle)
-}
-
-// OPTIONS is a shortcut for router.Handle("OPTIONS", path, handle)
-func (r *Router) OPTIONS(path string, handle Handle) {
-	r.Handle("OPTIONS", path, handle)
-}
-
-// POST is a shortcut for router.Handle("POST", path, handle)
-func (r *Router) POST(path string, handle Handle) {
-	r.Handle("POST", path, handle)
-}
-
-// PUT is a shortcut for router.Handle("PUT", path, handle)
-func (r *Router) PUT(path string, handle Handle) {
-	r.Handle("PUT", path, handle)
-}
-
-// PATCH is a shortcut for router.Handle("PATCH", path, handle)
-func (r *Router) PATCH(path string, handle Handle) {
-	r.Handle("PATCH", path, handle)
-}
-
-// DELETE is a shortcut for router.Handle("DELETE", path, handle)
-func (r *Router) DELETE(path string, handle Handle) {
 	r.Handle("DELETE", path, handle)
 }
 
@@ -342,10 +308,12 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			vn := valueNodePool.Get().(*ValueNode)
 			vn.Params = ps
 			vn.Node = node
+			vn.Method = req.Method
 			//user handle
 			handle(w, req, vn)
 			vn.Params = nil
 			vn.Node = nil
+			vn.Method = ""
 			valueNodePool.Put(vn)
 			return
 		} else if req.Method != "CONNECT" && path != "/" {

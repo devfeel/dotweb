@@ -74,13 +74,15 @@ type (
 	}
 
 	RouterNode struct {
-		node interface{}
+		Node   interface{}
+		Method string
 	}
 )
 
-func NewRouterNode(n interface{}) *RouterNode {
+func NewRouterNode(n interface{}, method string) *RouterNode {
 	return &RouterNode{
-		node: n,
+		Node:   n,
+		Method: method,
 	}
 }
 
@@ -88,16 +90,18 @@ func (n *RouterNode) SetEnabledCROS() *feature.CROSConfig {
 	var f *feature.Feature
 	var isok bool
 	lock_feature.RLock()
-	f, isok = featuresMap[n.node]
+	f, isok = featuresMap[n.Node]
 	lock_feature.RUnlock()
 	if !isok {
 		f = feature.NewFeature()
 		lock_feature.Lock()
-		featuresMap[n.node] = f
+		featuresMap[n.Node] = f
 		lock_feature.Unlock()
 	}
 	f.CROSConfig.EnabledCROS = true
 	f.CROSConfig.UseDefault()
+	//special set method use current router's http method
+	f.CROSConfig.SetMethod(n.Method)
 	return f.CROSConfig
 }
 
