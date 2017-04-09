@@ -18,8 +18,7 @@ func main() {
 	InitRoute(app.HttpServer)
 
 	//启动 监控服务
-	//pprofport := 8081
-	//go app.StartPProfServer(pprofport)
+	//app.SetPProfConfig(true, 8081)
 
 	//全局容器
 	app.AppContext.Set("gstring", "gvalue")

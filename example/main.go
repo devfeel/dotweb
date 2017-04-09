@@ -33,9 +33,9 @@ func main() {
 
 	//设置Session配置
 	//runtime mode
-	app.SetSessionConfig(session.NewDefaultRuntimeConfig())
+	app.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
 	//redis mode
-	//app.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6379", ""))
+	//app.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6379", ""))
 
 	//设置路由
 	InitRoute(app.HttpServer)
@@ -44,8 +44,6 @@ func main() {
 	//InitModule(app)
 
 	//启动 监控服务
-	//pprofport := 8081
-	//go app.StartPProfServer(pprofport)
 	app.SetPProfConfig(true, 8081)
 
 	//全局容器

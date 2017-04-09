@@ -215,7 +215,7 @@ func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
 	//设置session
 	if config.Session.EnabledSession {
 		app.HttpServer.SetEnabledSession(config.Session.EnabledSession)
-		app.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP))
+		app.HttpServer.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP))
 	}
 
 	//load router and register

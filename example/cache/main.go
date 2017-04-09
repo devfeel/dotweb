@@ -22,8 +22,7 @@ func main() {
 	InitRoute(app.HttpServer)
 
 	//启动 监控服务
-	//pprofport := 8081
-	//go app.StartPProfServer(pprofport)
+	//app.SetPProfConfig(true, 8081)
 
 	//app.SetCache(cache.NewRuntimeCache())
 	app.SetCache(cache.NewRedisCache("127.0.0.1:6379"))
