@@ -109,7 +109,7 @@ func (n *RouterNode) SetEnabledCROS() *feature.CROSConfig {
 func (n *RouterNode) doFeatures(ctx *HttpContext) *HttpContext {
 	//处理 cros feature
 	lock_feature.RLock()
-	f, isok := featuresMap[n.node]
+	f, isok := featuresMap[n.Node]
 	lock_feature.RUnlock()
 	if isok && f != nil {
 		c := f.CROSConfig
@@ -148,7 +148,7 @@ func (r *xRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *xRouter) MatchPath(ctx *HttpContext, routePath string) bool {
-	return r.router.MatchPath(ctx.Request, ctx.RouterNode.node.(*routers.Node), routePath)
+	return r.router.MatchPath(ctx.Request, ctx.RouterNode.Node.(*routers.Node), routePath)
 }
 
 // GET is a shortcut for router.Handle("GET", path, handle)
@@ -201,7 +201,7 @@ func (r *xRouter) HiJack(path string, handle HttpHandle) {
 // support GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS\HiJack\WebSocket\ANY
 func (r *xRouter) RegisterRoute(routeMethod string, path string, handle HttpHandle) *RouterNode {
 
-	rn := &RouterNode{node: new(routers.Node)}
+	rn := &RouterNode{Node: new(routers.Node)}
 
 	routeMethod = strings.ToUpper(routeMethod)
 
@@ -225,7 +225,7 @@ func (r *xRouter) RegisterRoute(routeMethod string, path string, handle HttpHand
 		r.router.ANY(path, r.server.wrapRouterHandle(handle, false))
 	} else {
 		//GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS mode
-		rn.node = r.router.Handle(routeMethod, path, r.server.wrapRouterHandle(handle, false))
+		rn.Node = r.router.Handle(routeMethod, path, r.server.wrapRouterHandle(handle, false))
 	}
 
 	//if set auto-head, add head router
@@ -243,7 +243,7 @@ func (r *xRouter) RegisterRoute(routeMethod string, path string, handle HttpHand
 // ServerFile is a shortcut for router.ServeFiles(path, filepath)
 // simple demo:server.ServerFile("/src/*filepath", "/var/www")
 func (r *xRouter) ServerFile(path string, fileroot string) *RouterNode {
-	rn := &RouterNode{node: new(routers.Node)}
+	rn := &RouterNode{Node: new(routers.Node)}
 	if len(path) < 10 || path[len(path)-10:] != "/*filepath" {
 		panic("path must end with /*filepath in path '" + path + "'")
 	}
@@ -253,6 +253,6 @@ func (r *xRouter) ServerFile(path string, fileroot string) *RouterNode {
 		root = &core.HideReaddirFS{root}
 	}
 	fileServer := http.FileServer(root)
-	rn.node = r.router.Handle(RouteMethod_GET, path, r.server.wrapFileHandle(fileServer))
+	rn.Node = r.router.Handle(RouteMethod_GET, path, r.server.wrapFileHandle(fileServer))
 	return rn
 }
