@@ -21,14 +21,17 @@ type (
 		OfflineUrl  string `xml:"offlineurl,attr"`  //当设置为维护，默认维护页地址，如果设置url，优先url
 	}
 	AppConfig struct {
-		LogPath    string `xml:"logpath,attr"`    //文件方式日志目录，如果为空，默认当前目录
-		EnabledLog bool   `xml:"enabledlog,attr"` //是否启用日志记录
-		RunMode    string `xml:"runmode,attr"`    //运行模式，目前支持development、production
+		LogPath      string `xml:"logpath,attr"`      //文件方式日志目录，如果为空，默认当前目录
+		EnabledLog   bool   `xml:"enabledlog,attr"`   //是否启用日志记录
+		RunMode      string `xml:"runmode,attr"`      //运行模式，目前支持development、production
+		PProfPort    int    `xml:"pprofport,attr"`    //pprof-server 端口，不能与主Server端口相同
+		EnabledPProf bool   `xml:"enabledpprof,attr"` //是否启用pprof server，默认不启用
 	}
 	ServerConfig struct {
 		EnabledListDir  bool `xml:"enabledlistdir,attr"`  //设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
 		EnabledGzip     bool `xml:"enabledgzip,attr"`     //是否启用gzip
 		EnabledAutoHEAD bool `xml:"enabledautohead,attr"` //设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
+		EnabledAutoCORS bool `xml:"enabledautocors,attr"` //设置是否自动跨域支持，若设置，默认“GET, POST, PUT, DELETE, OPTIONS”全部请求均支持跨域
 		Port            int  `xml:"port,attr"`            //端口
 	}
 

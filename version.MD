@@ -1,5 +1,14 @@
 ##dotweb版本记录：
 
+#### Version 0.3.9.5
+* 新增Feature模块，目前支持CROS特性，可通过HttpServer全局设置、RouterNode路由级别设置
+* 新增CROS设置，设置是否允许跨域访问，并可设置AllowedOrigins、、AllowedMethods、AllowedHeaders、AllowCredentials、AllowedP3P属性
+* PProfServer调整为属性设置，通过SetPProfConfig设置，移除StartPProf方法
+* HttpContext新增RouterNode属性，可通过该属性获取路由信息
+* 迁移：原DotWeb中SetSessionConfig函数迁移至HttpServer
+* 完善配置文件与代码，完善代码，完善example
+* 2017-04-09 20:00
+
 #### Version 0.3.9.4
 * 新增Logger接口，增加内置文件日志xlog实现
 * 配置新增app节点，支持LogPath、EnabledLog、RunMode，DotWeb增加SetEnabledLog方法；

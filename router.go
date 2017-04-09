@@ -1,7 +1,10 @@
 package dotweb
 
 import (
+	"fmt"
 	"github.com/devfeel/dotweb/core"
+	"github.com/devfeel/dotweb/feature"
+	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/logger"
 	"github.com/devfeel/dotweb/routers"
 	"golang.org/x/net/websocket"
@@ -23,35 +26,10 @@ const (
 	RouteMethod_WebSocket = "WebSocket"
 )
 
-type (
-	// Router is the interface that wraps the router method.
-	Router interface {
-		ServeHTTP(w http.ResponseWriter, req *http.Request)
-		ServerFile(path string, fileRoot string)
-		GET(path string, handle HttpHandle)
-		HEAD(path string, handle HttpHandle)
-		OPTIONS(path string, handle HttpHandle)
-		POST(path string, handle HttpHandle)
-		PUT(path string, handle HttpHandle)
-		PATCH(path string, handle HttpHandle)
-		DELETE(path string, handle HttpHandle)
-		HiJack(path string, handle HttpHandle)
-		Any(path string, handle HttpHandle)
-		RegisterRoute(routeMethod string, path string, handle HttpHandle)
-		RegisterHandler(name string, handler HttpHandle)
-		GetHandler(name string) (HttpHandle, bool)
-		MatchPath(ctx *HttpContext, routePath string) bool
-	}
-	router struct {
-		router       *routers.Router
-		server       *HttpServer
-		handlerMap   map[string]HttpHandle
-		handlerMutex *sync.RWMutex
-	}
-)
-
 var (
 	HttpMethodMap map[string]string
+	featuresMap   map[interface{}]*feature.Feature
+	lock_feature  *sync.RWMutex
 )
 
 func init() {
@@ -67,10 +45,81 @@ func init() {
 	HttpMethodMap["HiJack"] = RouteMethod_HiJack
 	HttpMethodMap["WebSocket"] = RouteMethod_WebSocket
 
+	featuresMap = make(map[interface{}]*feature.Feature)
+	lock_feature = new(sync.RWMutex)
+}
+
+type (
+	// Router is the interface that wraps the router method.
+	Router interface {
+		ServeHTTP(w http.ResponseWriter, req *http.Request)
+		ServerFile(path string, fileRoot string) *RouterNode
+		GET(path string, handle HttpHandle) *RouterNode
+		HEAD(path string, handle HttpHandle) *RouterNode
+		OPTIONS(path string, handle HttpHandle) *RouterNode
+		POST(path string, handle HttpHandle) *RouterNode
+		PUT(path string, handle HttpHandle) *RouterNode
+		PATCH(path string, handle HttpHandle) *RouterNode
+		DELETE(path string, handle HttpHandle) *RouterNode
+		HiJack(path string, handle HttpHandle)
+		Any(path string, handle HttpHandle)
+		RegisterRoute(routeMethod string, path string, handle HttpHandle) *RouterNode
+		RegisterHandler(name string, handler HttpHandle)
+		GetHandler(name string) (HttpHandle, bool)
+		MatchPath(ctx *HttpContext, routePath string) bool
+	}
+	xRouter struct {
+		router       *routers.Router
+		server       *HttpServer
+		handlerMap   map[string]HttpHandle
+		handlerMutex *sync.RWMutex
+	}
+
+	RouterNode struct {
+		node interface{}
+	}
+)
+
+func NewRouterNode(n interface{}) *RouterNode {
+	return &RouterNode{
+		node: n,
+	}
+}
+
+func (n *RouterNode) SetEnabledCROS() *feature.CROSConfig {
+	var f *feature.Feature
+	var isok bool
+	lock_feature.RLock()
+	f, isok = featuresMap[n.node]
+	lock_feature.RUnlock()
+	if !isok {
+		f = feature.NewFeature()
+		lock_feature.Lock()
+		featuresMap[n.node] = f
+		lock_feature.Unlock()
+	}
+	f.CROSConfig.EnabledCROS = true
+	f.CROSConfig.UseDefault()
+	return f.CROSConfig
+}
+
+//do features...
+func (n *RouterNode) doFeatures(ctx *HttpContext) *HttpContext {
+	//处理 cros feature
+	lock_feature.RLock()
+	f, isok := featuresMap[n.node]
+	lock_feature.RUnlock()
+	if isok && f != nil {
+		c := f.CROSConfig
+		if c.EnabledCROS {
+			FeatureTools.SetCROSConfig(ctx, c)
+		}
+	}
+	return ctx
 }
 
 func NewRouter(server *HttpServer) Router {
-	r := new(router)
+	r := new(xRouter)
 	r.router = routers.New()
 	r.server = server
 	r.handlerMap = make(map[string]HttpHandle)
@@ -78,13 +127,13 @@ func NewRouter(server *HttpServer) Router {
 	return r
 }
 
-func (r *router) RegisterHandler(name string, handler HttpHandle) {
+func (r *xRouter) RegisterHandler(name string, handler HttpHandle) {
 	r.handlerMutex.Lock()
 	r.handlerMap[name] = handler
 	r.handlerMutex.Unlock()
 }
 
-func (r *router) GetHandler(name string) (HttpHandle, bool) {
+func (r *xRouter) GetHandler(name string) (HttpHandle, bool) {
 	r.handlerMutex.RLock()
 	v, exists := r.handlerMap[name]
 	r.handlerMutex.RUnlock()
@@ -92,69 +141,71 @@ func (r *router) GetHandler(name string) (HttpHandle, bool) {
 }
 
 //use router ServerHTTP
-func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (r *xRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.router.ServeHTTP(w, req)
 }
 
-func (r *router) MatchPath(ctx *HttpContext, routePath string) bool {
-	return r.router.MatchPath(ctx.Request, routePath)
+func (r *xRouter) MatchPath(ctx *HttpContext, routePath string) bool {
+	return r.router.MatchPath(ctx.Request, ctx.RouterNode.node.(*routers.Node), routePath)
 }
 
 // GET is a shortcut for router.Handle("GET", path, handle)
-func (r *router) GET(path string, handle HttpHandle) {
-	r.RegisterRoute(RouteMethod_GET, path, handle)
+func (r *xRouter) GET(path string, handle HttpHandle) *RouterNode {
+	return r.RegisterRoute(RouteMethod_GET, path, handle)
 }
 
 // ANY is a shortcut for router.Handle("Any", path, handle)
 // it support GET\HEAD\POST\PUT\PATCH\OPTIONS\DELETE
-func (r *router) Any(path string, handle HttpHandle) {
+func (r *xRouter) Any(path string, handle HttpHandle) {
 	r.RegisterRoute(RouteMethod_Any, path, handle)
 }
 
 // HEAD is a shortcut for router.Handle("HEAD", path, handle)
-func (r *router) HEAD(path string, handle HttpHandle) {
-	r.RegisterRoute(RouteMethod_HEAD, path, handle)
+func (r *xRouter) HEAD(path string, handle HttpHandle) *RouterNode {
+	return r.RegisterRoute(RouteMethod_HEAD, path, handle)
 }
 
 // OPTIONS is a shortcut for router.Handle("OPTIONS", path, handle)
-func (r *router) OPTIONS(path string, handle HttpHandle) {
-	r.RegisterRoute(RouteMethod_OPTIONS, path, handle)
+func (r *xRouter) OPTIONS(path string, handle HttpHandle) *RouterNode {
+	return r.RegisterRoute(RouteMethod_OPTIONS, path, handle)
 }
 
 // POST is a shortcut for router.Handle("POST", path, handle)
-func (r *router) POST(path string, handle HttpHandle) {
-	r.RegisterRoute(RouteMethod_POST, path, handle)
+func (r *xRouter) POST(path string, handle HttpHandle) *RouterNode {
+	return r.RegisterRoute(RouteMethod_POST, path, handle)
 }
 
 // PUT is a shortcut for router.Handle("PUT", path, handle)
-func (r *router) PUT(path string, handle HttpHandle) {
-	r.RegisterRoute(RouteMethod_PUT, path, handle)
+func (r *xRouter) PUT(path string, handle HttpHandle) *RouterNode {
+	return r.RegisterRoute(RouteMethod_PUT, path, handle)
 }
 
 // PATCH is a shortcut for router.Handle("PATCH", path, handle)
-func (r *router) PATCH(path string, handle HttpHandle) {
-	r.RegisterRoute(RouteMethod_PATCH, path, handle)
+func (r *xRouter) PATCH(path string, handle HttpHandle) *RouterNode {
+	return r.RegisterRoute(RouteMethod_PATCH, path, handle)
 }
 
 // DELETE is a shortcut for router.Handle("DELETE", path, handle)
-func (r *router) DELETE(path string, handle HttpHandle) {
-	r.RegisterRoute(RouteMethod_DELETE, path, handle)
+func (r *xRouter) DELETE(path string, handle HttpHandle) *RouterNode {
+	return r.RegisterRoute(RouteMethod_DELETE, path, handle)
 }
 
 // DELETE is a shortcut for router.Handle("DELETE", path, handle)
-func (r *router) HiJack(path string, handle HttpHandle) {
+func (r *xRouter) HiJack(path string, handle HttpHandle) {
 	r.RegisterRoute(RouteMethod_GET, path, handle)
 }
 
 // shortcut for router.Handle(httpmethod, path, handle)
 // support GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS\HiJack\WebSocket\ANY
-func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandle) {
+func (r *xRouter) RegisterRoute(routeMethod string, path string, handle HttpHandle) *RouterNode {
+
+	rn := &RouterNode{node: new(routers.Node)}
 
 	routeMethod = strings.ToUpper(routeMethod)
 
 	if _, exists := HttpMethodMap[routeMethod]; !exists {
 		logger.Logger().Log("Dotweb:Router:RegisterRoute failed [illegal method] ["+routeMethod+"] ["+path+"]", LogTarget_HttpServer, LogLevel_Warn)
-		return
+		return rn
 	} else {
 		logger.Logger().Log("Dotweb:Router:RegisterRoute success ["+routeMethod+"] ["+path+"]", LogTarget_HttpServer, LogLevel_Debug)
 	}
@@ -162,7 +213,7 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 	//websocket mode,use default httpserver
 	if routeMethod == RouteMethod_WebSocket {
 		http.Handle(path, websocket.Handler(r.server.wrapWebSocketHandle(handle)))
-		return
+		return rn
 	}
 
 	//hijack mode,use get and isHijack = true
@@ -172,7 +223,7 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 		r.router.ANY(path, r.server.wrapRouterHandle(handle, false))
 	} else {
 		//GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS mode
-		r.router.Handle(routeMethod, path, r.server.wrapRouterHandle(handle, false))
+		rn.node = r.router.Handle(routeMethod, path, r.server.wrapRouterHandle(handle, false))
 	}
 
 	//if set auto-head, add head router
@@ -184,12 +235,13 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 			r.router.Handle(RouteMethod_HEAD, path, r.server.wrapRouterHandle(handle, false))
 		}
 	}
-	return
+	return rn
 }
 
 // ServerFile is a shortcut for router.ServeFiles(path, filepath)
 // simple demo:server.ServerFile("/src/*filepath", "/var/www")
-func (r *router) ServerFile(path string, fileroot string) {
+func (r *xRouter) ServerFile(path string, fileroot string) *RouterNode {
+	rn := &RouterNode{node: new(routers.Node)}
 	if len(path) < 10 || path[len(path)-10:] != "/*filepath" {
 		panic("path must end with /*filepath in path '" + path + "'")
 	}
@@ -199,6 +251,6 @@ func (r *router) ServerFile(path string, fileroot string) {
 		root = &core.HideReaddirFS{root}
 	}
 	fileServer := http.FileServer(root)
-	r.router.Handle(RouteMethod_GET, path, r.server.wrapFileHandle(fileServer))
-	return
+	rn.node = r.router.Handle(RouteMethod_GET, path, r.server.wrapFileHandle(fileServer))
+	return rn
 }

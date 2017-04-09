@@ -30,6 +30,7 @@ type (
 	}
 
 	ExceptionHandle func(*HttpContext, interface{})
+	NotFoundHandle  func(*HttpContext)
 )
 
 const (
@@ -98,11 +99,6 @@ func (app *DotWeb) RegisterModule(module *HttpModule) {
 	module.Server = app.HttpServer
 }
 
-//set session store config
-func (app *DotWeb) SetSessionConfig(storeConfig *session.StoreConfig) {
-	app.HttpServer.SetSessionConfig(storeConfig)
-}
-
 /*
 * 设置异常处理函数
  */
@@ -110,13 +106,10 @@ func (app *DotWeb) SetExceptionHandle(handler ExceptionHandle) {
 	app.ExceptionHandler = handler
 }
 
-/*
-* 启动pprof服务，该端口号请不要与StartServer的端口号一致
- */
-func (app *DotWeb) StartPProfServer(httpport int) error {
-	port := ":" + strconv.Itoa(httpport)
-	err := http.ListenAndServe(port, nil)
-	return err
+//设置pprofserver启动配置，默认不启动，且该端口号请不要与StartServer的端口号一致
+func (app *DotWeb) SetPProfConfig(enabledPProf bool, httpport int) {
+	app.Config.App.EnabledPProf = enabledPProf
+	app.Config.App.PProfPort = httpport
 }
 
 //set log root path
@@ -165,8 +158,26 @@ func (app *DotWeb) StartServer(httpport int) error {
 		app.HttpServer.SetRenderer(NewInnerRenderer())
 	}
 
+	//start pprof server
+	if app.Config.App.EnabledPProf {
+		if app.Config.App.PProfPort == httpport {
+			errStr := "PProf Server and HttpServer have the same port"
+			logger.Logger().Warn("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] failed: "+errStr, LogTarget_HttpServer)
+		} else {
+			logger.Logger().Debug("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] Begin", LogTarget_HttpServer)
+			go func() {
+				err := http.ListenAndServe(":"+strconv.Itoa(app.Config.App.PProfPort), nil)
+				if err != nil {
+					logger.Logger().Warn("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] error: "+err.Error(), LogTarget_HttpServer)
+				}
+			}()
+		}
+	}
+
 	port := ":" + strconv.Itoa(httpport)
-	logger.Logger().Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
+	if app.Config.App.EnabledLog {
+		logger.Logger().Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
+	}
 	err := http.ListenAndServe(port, app.HttpServer)
 	return err
 }
@@ -186,6 +197,11 @@ func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
 		app.Config.App.RunMode = RunMode_Development
 	} else {
 		app.Config.App.RunMode = RunMode_Development
+	}
+
+	//CROS Config
+	if config.Server.EnabledAutoCORS {
+		app.HttpServer.Features.SetEnabledCROS()
 	}
 
 	app.HttpServer.SetEnabledGzip(config.Server.EnabledGzip)

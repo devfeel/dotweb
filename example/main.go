@@ -26,6 +26,11 @@ func main() {
 	//设置Session开关
 	app.HttpServer.SetEnabledSession(true)
 
+	//1.use default config
+	//app.HttpServer.Features.SetEnabledCROS()
+	//2.use user config
+	//app.HttpServer.Features.SetEnabledCROS(true).SetOrigin("*").SetMethod("GET")
+
 	//设置Session配置
 	//runtime mode
 	app.SetSessionConfig(session.NewDefaultRuntimeConfig())
@@ -41,6 +46,7 @@ func main() {
 	//启动 监控服务
 	//pprofport := 8081
 	//go app.StartPProfServer(pprofport)
+	app.SetPProfConfig(true, 8081)
 
 	//全局容器
 	app.AppContext.Set("gstring", "gvalue")
@@ -55,7 +61,7 @@ func main() {
 
 func Index(ctx *dotweb.HttpContext) {
 	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	ctx.WriteString("index")
+	ctx.WriteString("index => ", ctx.RouterParams)
 }
 
 func IndexReg(ctx *dotweb.HttpContext) {
@@ -83,7 +89,7 @@ func Redirect(ctx *dotweb.HttpContext) {
 }
 
 func InitRoute(server *dotweb.HttpServer) {
-	server.Router().GET("/", Index)
+	server.Router().GET("/", Index).SetEnabledCROS()
 	server.Router().POST("/keypost", KeyPost)
 	server.Router().POST("/jsonpost", JsonPost)
 	server.Router().GET("/error", DefaultError)

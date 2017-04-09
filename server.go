@@ -13,6 +13,7 @@ import (
 
 	"compress/gzip"
 	"github.com/devfeel/dotweb/config"
+	"github.com/devfeel/dotweb/feature"
 	"github.com/devfeel/dotweb/logger"
 	"github.com/devfeel/dotweb/routers"
 	"golang.org/x/net/websocket"
@@ -47,6 +48,7 @@ type (
 		binder         Binder
 		render         Renderer
 		offline        bool
+		Features       *feature.Feature
 	}
 
 	//pool定义
@@ -79,6 +81,7 @@ func NewHttpServer() *HttpServer {
 		SessionConfig: config.NewSessionConfig(),
 		lock_session:  new(sync.RWMutex),
 		binder:        newBinder(),
+		Features:      &feature.Feature{},
 	}
 	//设置router
 	server.router = NewRouter(server)
@@ -205,6 +208,18 @@ func (server *HttpServer) SetEnabledGzip(isEnabled bool) {
 	server.ServerConfig.EnabledGzip = isEnabled
 }
 
+//do features...
+func (server *HttpServer) doFeatures(ctx *HttpContext) *HttpContext {
+	//处理 cros feature
+	if server.Features.CROSConfig != nil {
+		c := server.Features.CROSConfig
+		if c.EnabledCROS {
+			FeatureTools.SetCROSConfig(ctx, c)
+		}
+	}
+	return ctx
+}
+
 type LogJson struct {
 	RequestUrl string
 	HttpHeader string
@@ -213,12 +228,12 @@ type LogJson struct {
 
 //wrap HttpHandle to httprouter.Handle
 func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) routers.Handle {
-	return func(w http.ResponseWriter, r *http.Request, params routers.Params) {
+	return func(w http.ResponseWriter, r *http.Request, vnode *routers.ValueNode) {
 		//get from pool
 		res := server.pool.response.Get().(*Response)
 		res.Reset(w)
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(res, r, server, params)
+		httpCtx.Reset(res, r, server, NewRouterNode(vnode.Node), vnode.Params)
 
 		//gzip
 		if server.ServerConfig.EnabledGzip {
@@ -249,7 +264,6 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 				}
 				httpCtx.SetCookie(cookie)
 			}
-
 		}
 
 		//hijack处理
@@ -270,27 +284,33 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 			if err := recover(); err != nil {
 				errmsg = exception.CatchError("httpserver::RouterHandle", LogTarget_HttpServer, err)
 
-				//默认异常处理
+				//handler the exception
 				if server.DotApp.ExceptionHandler != nil {
 					server.DotApp.ExceptionHandler(httpCtx, err)
 				}
 
-				//记录访问日志
-				headinfo := fmt.Sprintln(httpCtx.Response.Header)
-				logJson := LogJson{
-					RequestUrl: httpCtx.Request.RequestURI,
-					HttpHeader: headinfo,
-					HttpBody:   errmsg,
+				//if set enabledLog, take the error log
+				if server.DotApp.Config.App.EnabledLog {
+					//记录访问日志
+					headinfo := fmt.Sprintln(httpCtx.Response.Header)
+					logJson := LogJson{
+						RequestUrl: httpCtx.Request.RequestURI,
+						HttpHeader: headinfo,
+						HttpBody:   errmsg,
+					}
+					logString := jsonutil.GetJsonString(logJson)
+					logger.Logger().Log(logString, LogTarget_HttpServer, LogLevel_Error)
 				}
-				logString := jsonutil.GetJsonString(logJson)
-				logger.Logger().Log(logString, LogTarget_HttpServer, LogLevel_Error)
 
 				//增加错误计数
 				GlobalState.AddErrorCount(1)
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
-			//HttpServer Logging
-			logger.Logger().Log(httpCtx.Url()+" "+logContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
+
+			//if set enabledLog, take the request log
+			if server.DotApp.Config.App.EnabledLog {
+				logger.Logger().Log(httpCtx.Url()+" "+logContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
+			}
 
 			if server.ServerConfig.EnabledGzip {
 				var w io.Writer
@@ -303,6 +323,12 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 			httpCtx.release()
 			server.pool.context.Put(httpCtx)
 		}()
+
+		//do features
+		httpCtx = server.doFeatures(httpCtx)
+
+		//do RouterNode features
+		httpCtx = httpCtx.RouterNode.doFeatures(httpCtx)
 
 		//处理前置Module集合
 		for _, module := range server.DotApp.Modules {
@@ -329,11 +355,11 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 
 //wrap fileHandler to httprouter.Handle
 func (server *HttpServer) wrapFileHandle(fileHandler http.Handler) routers.Handle {
-	return func(w http.ResponseWriter, r *http.Request, params routers.Params) {
+	return func(w http.ResponseWriter, r *http.Request, vnode *routers.ValueNode) {
 		//增加状态计数
 		GlobalState.AddRequestCount(1)
 		startTime := time.Now()
-		r.URL.Path = params.ByName("filepath")
+		r.URL.Path = vnode.ByName("filepath")
 		fileHandler.ServeHTTP(w, r)
 		timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 		//HttpServer Logging
@@ -346,7 +372,7 @@ func (server *HttpServer) wrapWebSocketHandle(handle HttpHandle) websocket.Handl
 	return func(ws *websocket.Conn) {
 		//get from pool
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(nil, ws.Request(), server, nil)
+		httpCtx.Reset(nil, ws.Request(), server, nil, nil)
 		httpCtx.WebSocket = &WebSocket{
 			Conn: ws,
 		}
