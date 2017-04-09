@@ -6,6 +6,7 @@
 * PProfServer调整为属性设置，通过SetPProfConfig设置，移除StartPProf方法
 * HttpContext新增RouterNode属性，可通过该属性获取路由信息
 * 迁移：原DotWeb中SetSessionConfig函数迁移至HttpServer
+* 废弃：DotWeb.SetSessionConfig、DotWeb.StartPProfServer
 * 配置App节点新增EnabledPProf\PProfPort设置，用于设置PProfServer
 * 完善配置文件与代码，完善代码，完善example
 * 2017-04-09 20:00
