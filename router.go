@@ -201,10 +201,8 @@ func (r *xRouter) HiJack(path string, handle HttpHandle) {
 // support GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS\HiJack\WebSocket\ANY
 func (r *xRouter) RegisterRoute(routeMethod string, path string, handle HttpHandle) *RouterNode {
 
-	rn := &RouterNode{Node: new(routers.Node)}
-
 	routeMethod = strings.ToUpper(routeMethod)
-
+	rn := &RouterNode{Node: new(routers.Node), Method: routeMethod}
 	if _, exists := HttpMethodMap[routeMethod]; !exists {
 		logger.Logger().Log("Dotweb:Router:RegisterRoute failed [illegal method] ["+routeMethod+"] ["+path+"]", LogTarget_HttpServer, LogLevel_Warn)
 		return rn
