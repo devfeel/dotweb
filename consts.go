@@ -69,6 +69,7 @@ const (
 	HeaderAccessControlAllowCredentials = "Access-Control-Allow-Credentials"
 	HeaderAccessControlExposeHeaders    = "Access-Control-Expose-Headers"
 	HeaderAccessControlMaxAge           = "Access-Control-Max-Age"
+	HeaderP3P                           = "P3P"
 	HeaderCacheControl                  = "Cache-control"
 
 	// Security

@@ -22,6 +22,7 @@ const (
 
 type HttpContext struct {
 	Request      *http.Request
+	RouterNode   *RouterNode
 	RouterParams routers.Params
 	Response     *Response
 	WebSocket    *WebSocket
@@ -33,24 +34,28 @@ type HttpContext struct {
 	SessionID    string
 	items        *core.ItemContext
 	viewData     *core.ItemContext
+	Features     *xFeatureTools
 }
 
 //reset response attr
-func (ctx *HttpContext) Reset(res *Response, r *http.Request, server *HttpServer, params routers.Params) {
+func (ctx *HttpContext) Reset(res *Response, r *http.Request, server *HttpServer, node *RouterNode, params routers.Params) {
 	ctx.Request = r
 	ctx.Response = res
+	ctx.RouterNode = node
 	ctx.RouterParams = params
 	ctx.IsHijack = false
 	ctx.IsWebSocket = false
 	ctx.HttpServer = server
 	ctx.items = nil
 	ctx.isEnd = false
+	ctx.Features = FeatureTools
 }
 
 //release all field
 func (ctx *HttpContext) release() {
 	ctx.Request = nil
 	ctx.Response = nil
+	ctx.RouterNode = nil
 	ctx.RouterParams = nil
 	ctx.IsHijack = false
 	ctx.IsWebSocket = false

@@ -47,6 +47,7 @@ dotweb.conf
 * 支持静态路由、参数路由
 * 路由支持文件/目录服务，支持设置是否允许目录浏览
 * 中间件支持
+* Feature支持，可绑定HttpServer全局启用，绑定RouterNode路由级别启用
 * 支持JSON/JSONP/HTML格式输出
 * 统一的HTTP错误处理
 * 统一的日志处理
@@ -92,7 +93,7 @@ import (
 
 func main() {
     dotapp := dotweb.New()
-    dotapp.HttpServer.Router().Get("/hello", func(ctx *dotweb.HttpContext) {
+    dotapp.HttpServer.Router().GET("/hello", func(ctx *dotweb.HttpContext) {
         ctx.WriteString("hello world!")
     })
     dotapp.StartServer(80)
@@ -111,10 +112,10 @@ import (
 
 func main() {
     dotapp := dotweb.New()
-    dotapp.HttpServer.Router().Get("/hello/:name", func(ctx *dotweb.HttpContext) {
+    dotapp.HttpServer.Router().GET("/hello/:name", func(ctx *dotweb.HttpContext) {
         ctx.WriteString("hello " + ctx.GetRouterName("name"))
     })
-    dotapp.HttpServer.Router().Get("/news/:category/:newsid", func(ctx *dotweb.HttpContext) {
+    dotapp.HttpServer.Router().GET("/news/:category/:newsid", func(ctx *dotweb.HttpContext) {
     	category := ctx.GetRouterName("category")
 	    newsid := ctx.GetRouterName("newsid")
         ctx.WriteString("news info: category=" + category + " newsid=" + newsid)
@@ -169,11 +170,11 @@ type ExceptionHandle func(*HttpContext, interface{})
 * redis:基于Redis存储实现session模块,其中redis key以dotweb:session:xxxxxxxxxxxx组成
 ```go
 //设置session支持
-dotapp.SetEnabledSession(true)
+dotapp.HttpServer.SetEnabledSession(true)
 //使用runtime模式
-dotapp.SetSessionConfig(session.NewDefaultRuntimeConfig())
+dotapp.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
 //使用redis模式
-dotapp.SetSessionConfig(session.NewDefaultRedisConfig("127.0.0.1:6379"))
+dotapp.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("127.0.0.1:6379"))
 //HttpContext使用
 ctx.Session().Set(key, value)
 ```

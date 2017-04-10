@@ -79,12 +79,29 @@ package routers
 import (
 	_ "fmt"
 	"net/http"
+	"sync"
 )
+
+var valueNodePool sync.Pool
+
+func init() {
+	valueNodePool = sync.Pool{
+		New: func() interface{} {
+			return &ValueNode{}
+		},
+	}
+}
+
+type ValueNode struct {
+	Params
+	Method string
+	Node   *Node
+}
 
 // Handle is a function that can be registered to a route to handle HTTP
 // requests. Like http.HandlerFunc, but has a third parameter for the values of
 // wildcards (variables).
-type Handle func(http.ResponseWriter, *http.Request, Params)
+type Handle func(http.ResponseWriter, *http.Request, *ValueNode)
 
 // Param is a single URL parameter, consisting of a key and a value.
 type Param struct {
@@ -111,7 +128,7 @@ func (ps Params) ByName(name string) string {
 // Router is a http.Handler which can be used to dispatch requests to different
 // handler functions via configurable routes
 type Router struct {
-	trees map[string]*node
+	Nodes map[string]*Node
 
 	// Enables automatic redirection if the current route can't be matched but a
 	// handler for the path with (without) the trailing slash exists.
@@ -153,13 +170,6 @@ type Router struct {
 	// The "Allow" header with allowed request methods is set before the handler
 	// is called.
 	MethodNotAllowed http.Handler
-
-	// Function to handle panics recovered from http handlers.
-	// It should be used to generate a error page and return the http error code
-	// 500 (Internal Server Error).
-	// The handler can be used to keep your server from crashing because of
-	// unrecovered panics.
-	PanicHandler func(http.ResponseWriter, *http.Request, interface{})
 }
 
 // Make sure the Router conforms with the http.Handler interface
@@ -188,41 +198,6 @@ func (r *Router) ANY(path string, handle Handle) {
 	r.Handle("DELETE", path, handle)
 }
 
-// GET is a shortcut for router.Handle("GET", path, handle)
-func (r *Router) GET(path string, handle Handle) {
-	r.Handle("GET", path, handle)
-}
-
-// HEAD is a shortcut for router.Handle("HEAD", path, handle)
-func (r *Router) HEAD(path string, handle Handle) {
-	r.Handle("HEAD", path, handle)
-}
-
-// OPTIONS is a shortcut for router.Handle("OPTIONS", path, handle)
-func (r *Router) OPTIONS(path string, handle Handle) {
-	r.Handle("OPTIONS", path, handle)
-}
-
-// POST is a shortcut for router.Handle("POST", path, handle)
-func (r *Router) POST(path string, handle Handle) {
-	r.Handle("POST", path, handle)
-}
-
-// PUT is a shortcut for router.Handle("PUT", path, handle)
-func (r *Router) PUT(path string, handle Handle) {
-	r.Handle("PUT", path, handle)
-}
-
-// PATCH is a shortcut for router.Handle("PATCH", path, handle)
-func (r *Router) PATCH(path string, handle Handle) {
-	r.Handle("PATCH", path, handle)
-}
-
-// DELETE is a shortcut for router.Handle("DELETE", path, handle)
-func (r *Router) DELETE(path string, handle Handle) {
-	r.Handle("DELETE", path, handle)
-}
-
 // Handle registers a new request handle with the given path and method.
 //
 // For GET, POST, PUT, PATCH and DELETE requests the respective shortcut
@@ -231,29 +206,30 @@ func (r *Router) DELETE(path string, handle Handle) {
 // This function is intended for bulk loading and to allow the usage of less
 // frequently used, non-standardized or custom methods (e.g. for internal
 // communication with a proxy).
-func (r *Router) Handle(method, path string, handle Handle) {
+func (r *Router) Handle(method, path string, handle Handle) (outnode *Node) {
 	if path[0] != '/' {
 		panic("path must begin with '/' in path '" + path + "'")
 	}
 
-	if r.trees == nil {
-		r.trees = make(map[string]*node)
+	if r.Nodes == nil {
+		r.Nodes = make(map[string]*Node)
 	}
 
-	root := r.trees[method]
+	root := r.Nodes[method]
 	if root == nil {
-		root = new(node)
-		r.trees[method] = root
+		root = new(Node)
+		r.Nodes[method] = root
 	}
 	//fmt.Println("Handle => ", method, " - ", *root, " - ", path)
-	root.addRoute(path, handle)
+	outnode = root.addRoute(path, handle)
+	return
 }
 
 // Handler is an adapter which allows the usage of an http.Handler as a
 // request handle.
 func (r *Router) Handler(method, path string, handler http.Handler) {
 	r.Handle(method, path,
-		func(w http.ResponseWriter, req *http.Request, _ Params) {
+		func(w http.ResponseWriter, req *http.Request, _ *ValueNode) {
 			handler.ServeHTTP(w, req)
 		},
 	)
@@ -265,27 +241,21 @@ func (r *Router) HandlerFunc(method, path string, handler http.HandlerFunc) {
 	r.Handler(method, path, handler)
 }
 
-func (r *Router) recv(w http.ResponseWriter, req *http.Request) {
-	if rcv := recover(); rcv != nil {
-		r.PanicHandler(w, req, rcv)
-	}
-}
-
 // Lookup allows the manual lookup of a method + path combo.
 // This is e.g. useful to build a framework around this router.
 // If the path was found, it returns the handle function and the path parameter
 // values. Otherwise the third return value indicates whether a redirection to
 // the same path with an extra / without the trailing slash should be performed.
-func (r *Router) Lookup(method, path string) (Handle, Params, bool) {
-	if root := r.trees[method]; root != nil {
+func (r *Router) Lookup(method, path string) (Handle, Params, *Node, bool) {
+	if root := r.Nodes[method]; root != nil {
 		return root.getValue(path)
 	}
-	return nil, nil, false
+	return nil, nil, nil, false
 }
 
 func (r *Router) allowed(path, reqMethod string) (allow string) {
 	if path == "*" { // server-wide
-		for method := range r.trees {
+		for method := range r.Nodes {
 			if method == "OPTIONS" {
 				continue
 			}
@@ -298,13 +268,13 @@ func (r *Router) allowed(path, reqMethod string) (allow string) {
 			}
 		}
 	} else { // specific path
-		for method := range r.trees {
+		for method := range r.Nodes {
 			// Skip the requested method - we already tried this one
 			if method == reqMethod || method == "OPTIONS" {
 				continue
 			}
 
-			handle, _, _ := r.trees[method].getValue(path)
+			handle, _, _, _ := r.Nodes[method].getValue(path)
 			if handle != nil {
 				// add request method to list of allowed methods
 				if len(allow) == 0 {
@@ -322,27 +292,29 @@ func (r *Router) allowed(path, reqMethod string) (allow string) {
 }
 
 // MatchPath match request path and target path is same router
-func (r *Router) MatchPath(req *http.Request, routePath string) bool {
-	path := req.URL.Path
-	var n1, n2 *node
-	if root := r.trees[req.Method]; root != nil {
-		n1 = root.getNode(path)
-		n2 = root.getNode(routePath)
-		return n1 == n2
+func (r *Router) MatchPath(req *http.Request, node *Node, routePath string) bool {
+	if root := r.Nodes[req.Method]; root != nil {
+		n := root.getNode(routePath)
+		return n == node
 	}
 	return false
 }
 
 // ServeHTTP makes the router implement the http.Handler interface.
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	if r.PanicHandler != nil {
-		defer r.recv(w, req)
-	}
-
 	path := req.URL.Path
-	if root := r.trees[req.Method]; root != nil {
-		if handle, ps, tsr := root.getValue(path); handle != nil {
-			handle(w, req, ps)
+	if root := r.Nodes[req.Method]; root != nil {
+		if handle, ps, node, tsr := root.getValue(path); handle != nil {
+			vn := valueNodePool.Get().(*ValueNode)
+			vn.Params = ps
+			vn.Node = node
+			vn.Method = req.Method
+			//user handle
+			handle(w, req, vn)
+			vn.Params = nil
+			vn.Node = nil
+			vn.Method = ""
+			valueNodePool.Put(vn)
 			return
 		} else if req.Method != "CONNECT" && path != "/" {
 			code := 301 // Permanent redirect, request with GET method
