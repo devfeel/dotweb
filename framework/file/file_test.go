@@ -31,6 +31,15 @@ func Test_GetFileExt_2(t *testing.T) {
 	}
 }
 
-func Test_Exist_1(t *testing.T) {}
+func Test_Exist_1(t *testing.T) {
+	fn := "/Users/kevin/Downloads/vagrant_1.9.2.dmg"
+	//	fn := "/Users/kevin/Downloads/commdownload.dmg"
+	isExist := Exist(fn)
+	if isExist {
+		t.Log(isExist)
+	} else {
+		t.Log("请修改测试代码中文件的路径！")
+	}
+}
 
 // 以下是性能测试
