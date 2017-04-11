@@ -2,13 +2,6 @@ package dotweb
 
 import (
 	"fmt"
-	"github.com/devfeel/dotweb/cache"
-	"github.com/devfeel/dotweb/config"
-	"github.com/devfeel/dotweb/core"
-	"github.com/devfeel/dotweb/framework/json"
-	"github.com/devfeel/dotweb/logger"
-	"github.com/devfeel/dotweb/servers"
-	"github.com/devfeel/dotweb/session"
 	"net/http"
 	_ "net/http/pprof"
 	"runtime"
@@ -16,6 +9,14 @@ import (
 	"runtime/pprof"
 	"strconv"
 	"strings"
+
+	"github.com/devfeel/dotweb/cache"
+	"github.com/devfeel/dotweb/config"
+	"github.com/devfeel/dotweb/core"
+	"github.com/devfeel/dotweb/framework/json"
+	"github.com/devfeel/dotweb/logger"
+	"github.com/devfeel/dotweb/servers"
+	"github.com/devfeel/dotweb/session"
 )
 
 type (
