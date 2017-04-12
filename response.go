@@ -107,9 +107,18 @@ func (r *Response) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 }
 
 //reset response attr
-func (r *Response) Reset(w http.ResponseWriter) {
+func (r *Response) reset(w http.ResponseWriter) {
 	r.writer = w
 	r.header = w.Header()
+	r.Status = http.StatusOK
+	r.Size = 0
+	r.committed = false
+}
+
+//reset response attr
+func (r *Response) release() {
+	r.writer = nil
+	r.header = nil
 	r.Status = http.StatusOK
 	r.Size = 0
 	r.committed = false

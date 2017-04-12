@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/devfeel/dotweb"
-	"github.com/devfeel/dotweb/framework/file"
 	"github.com/devfeel/dotweb/session"
 	"net/http"
 	"strconv"
@@ -14,7 +13,7 @@ func main() {
 	app := dotweb.New()
 
 	//设置dotserver日志目录
-	app.SetLogPath(file.GetCurrentDirectory())
+	//如果不设置，默认不启用，且默认为当前目录
 	app.SetEnabledLog(true)
 
 	//开启development模式

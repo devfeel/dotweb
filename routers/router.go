@@ -292,8 +292,8 @@ func (r *Router) allowed(path, reqMethod string) (allow string) {
 }
 
 // MatchPath match request path and target path is same router
-func (r *Router) MatchPath(req *http.Request, node *Node, routePath string) bool {
-	if root := r.Nodes[req.Method]; root != nil {
+func (r *Router) MatchPath(method string, node *Node, routePath string) bool {
+	if root := r.Nodes[method]; root != nil {
 		n := root.getNode(routePath)
 		return n == node
 	}

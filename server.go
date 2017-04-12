@@ -53,6 +53,7 @@ type (
 
 	//pool定义
 	pool struct {
+		request  sync.Pool
 		response sync.Pool
 		context  sync.Pool
 	}
@@ -69,6 +70,11 @@ func NewHttpServer() *HttpServer {
 			response: sync.Pool{
 				New: func() interface{} {
 					return &Response{}
+				},
+			},
+			request: sync.Pool{
+				New: func() interface{} {
+					return &Request{}
 				},
 			},
 			context: sync.Pool{
@@ -231,9 +237,11 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 	return func(w http.ResponseWriter, r *http.Request, vnode *routers.ValueNode) {
 		//get from pool
 		res := server.pool.response.Get().(*Response)
-		res.Reset(w)
+		res.reset(w)
+		req := server.pool.request.Get().(*Request)
+		req.reset(r)
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(res, r, server, NewRouterNode(vnode.Node, vnode.Method), vnode.Params)
+		httpCtx.Reset(res, req, server, NewRouterNode(vnode.Node, vnode.Method), vnode.Params)
 
 		//gzip
 		if server.ServerConfig.EnabledGzip {
@@ -242,7 +250,7 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 				panic("use gzip error -> " + err.Error())
 			}
 			grw := &gzipResponseWriter{Writer: gw, ResponseWriter: w}
-			res.Reset(grw)
+			res.reset(grw)
 			httpCtx.SetHeader(HeaderContentEncoding, gzipScheme)
 		}
 		//增加状态计数
@@ -317,8 +325,12 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 				w = res.Writer().(*gzipResponseWriter).Writer
 				w.(*gzip.Writer).Close()
 			}
-			// Return to pool
+			//release response
+			res.release()
 			server.pool.response.Put(res)
+			//release request
+			req.release()
+			server.pool.request.Put(req)
 			//release context
 			httpCtx.release()
 			server.pool.context.Put(httpCtx)
@@ -371,8 +383,10 @@ func (server *HttpServer) wrapFileHandle(fileHandler http.Handler) routers.Handl
 func (server *HttpServer) wrapWebSocketHandle(handle HttpHandle) websocket.Handler {
 	return func(ws *websocket.Conn) {
 		//get from pool
+		req := server.pool.request.Get().(*Request)
+		req.reset(ws.Request())
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(nil, ws.Request(), server, nil, nil)
+		httpCtx.Reset(nil, req, server, nil, nil)
 		httpCtx.WebSocket = &WebSocket{
 			Conn: ws,
 		}
@@ -401,7 +415,11 @@ func (server *HttpServer) wrapWebSocketHandle(handle HttpHandle) websocket.Handl
 			//HttpServer Logging
 			logger.Logger().Log(httpCtx.Url()+" "+logContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
 
-			// Return to pool
+			//release request
+			req.release()
+			server.pool.request.Put(req)
+			//release context
+			httpCtx.release()
 			server.pool.context.Put(httpCtx)
 		}()
 

@@ -3,10 +3,8 @@ package dotweb
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
 
 	"fmt"
 	"github.com/devfeel/dotweb/cache"
@@ -21,7 +19,7 @@ const (
 )
 
 type HttpContext struct {
-	Request      *http.Request
+	Request      *Request
 	RouterNode   *RouterNode
 	RouterParams routers.Params
 	Response     *Response
@@ -38,7 +36,7 @@ type HttpContext struct {
 }
 
 //reset response attr
-func (ctx *HttpContext) Reset(res *Response, r *http.Request, server *HttpServer, node *RouterNode, params routers.Params) {
+func (ctx *HttpContext) Reset(res *Response, r *Request, server *HttpServer, node *RouterNode, params routers.Params) {
 	ctx.Request = r
 	ctx.Response = res
 	ctx.RouterNode = node
@@ -151,21 +149,21 @@ func (ctx *HttpContext) Redirect(code int, targetUrl string) {
 * 返回查询字符串map表示
  */
 func (ctx *HttpContext) QueryStrings() url.Values {
-	return ctx.Request.URL.Query()
+	return ctx.Request.QueryStrings()
 }
 
 /*
 * 获取原始查询字符串
  */
 func (ctx *HttpContext) RawQuery() string {
-	return ctx.Request.URL.RawQuery
+	return ctx.Request.RawQuery()
 }
 
 /*
 * 根据指定key获取对应value
  */
 func (ctx *HttpContext) QueryString(key string) string {
-	return ctx.Request.URL.Query().Get(key)
+	return ctx.Request.QueryString(key)
 }
 
 /*
@@ -176,33 +174,14 @@ func (ctx *HttpContext) FormValue(key string) string {
 }
 
 func (ctx *HttpContext) FormFile(key string) (*UploadFile, error) {
-	file, header, err := ctx.Request.FormFile(key)
-	if err != nil {
-		return nil, err
-	} else {
-		return NewUploadFile(file, header), nil
-	}
+	return ctx.Request.FormFile(key)
 }
 
 /*
 * 获取包括post、put和get内的值
  */
 func (ctx *HttpContext) FormValues() map[string][]string {
-	ctx.parseForm()
-	return map[string][]string(ctx.Request.Form)
-}
-
-func (ctx *HttpContext) parseForm() error {
-	if strings.HasPrefix(ctx.QueryHeader(HeaderContentType), MIMEMultipartForm) {
-		if err := ctx.Request.ParseMultipartForm(defaultMemory); err != nil {
-			return err
-		}
-	} else {
-		if err := ctx.Request.ParseForm(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return ctx.Request.FormValues()
 }
 
 /*
@@ -224,12 +203,7 @@ func (ctx *HttpContext) PostString(key string) string {
 * 获取post提交的字节数组
  */
 func (ctx *HttpContext) PostBody() []byte {
-	bts, err := ioutil.ReadAll(ctx.Request.Body)
-	if err != nil {
-		return []byte{}
-	} else {
-		return bts
-	}
+	return ctx.Request.PostBody()
 }
 
 /*
@@ -268,60 +242,9 @@ func (ctx *HttpContext) GetRouterName(key string) string {
 	return ctx.RouterParams.ByName(key)
 }
 
-// IsAJAX returns if it is a ajax request
-func (ctx *HttpContext) IsAJAX() bool {
-	return ctx.Request.Header.Get(HeaderXRequestedWith) == "XMLHttpRequest"
-}
-
-func (ctx *HttpContext) Proto() string {
-	return ctx.Request.Proto
-}
-
-func (ctx *HttpContext) Method() string {
-	return ctx.Request.Method
-}
-
 //RemoteAddr to an "IP" address
 func (ctx *HttpContext) RemoteIP() string {
-	fullIp := ctx.Request.RemoteAddr
-	s := strings.Split(fullIp, ":")
-	if len(s) > 1 {
-		return s[0]
-	} else {
-		return fullIp
-	}
-}
-
-//RemoteAddr to an "IP:port" address
-func (ctx *HttpContext) FullRemoteIP() string {
-	fullIp := ctx.Request.RemoteAddr
-	return fullIp
-}
-
-// Referer returns request referer.
-//
-// The referer is valid until returning from RequestHandler.
-func (ctx *HttpContext) Referer() string {
-	return ctx.Request.Referer()
-}
-
-// UserAgent returns User-Agent header value from the request.
-func (ctx *HttpContext) UserAgent() string {
-	return ctx.Request.UserAgent()
-}
-
-// Path returns requested path.
-//
-// The path is valid until returning from RequestHandler.
-func (ctx *HttpContext) Path() string {
-	return ctx.Request.URL.Path
-}
-
-// Host returns requested host.
-//
-// The host is valid until returning from RequestHandler.
-func (ctx *HttpContext) Host() string {
-	return ctx.Request.Host
+	return ctx.Request.RemoteIP()
 }
 
 func (ctx *HttpContext) SetContentType(contenttype string) {

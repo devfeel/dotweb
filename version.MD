@@ -1,5 +1,13 @@
 ##dotweb版本记录：
 
+
+#### Version 0.3.9.6
+* 优化精简HttpContext，移除部分非常用冗余方法，迁移至新增Request类型
+* Request增加PostBody缓存，可通过Request.PostBody()重复获取
+* 迁移：HttpContext.Proto()\Method()\FullRemoteIP()\Referer()\UserAgent()\Path()\Host()\IsAJAX 迁移至HttpContext.Request
+* BUG修复：修复HttpContext释放时，Response释放不彻底问题
+* 2017-04-12 09:00
+
 #### Version 0.3.9.5
 * 新增Feature模块，目前支持CROS特性，可通过HttpServer全局设置、RouterNode路由级别设置
 * 新增CROS设置，设置是否允许跨域访问，并可设置AllowedOrigins、、AllowedMethods、AllowedHeaders、AllowCredentials、AllowedP3P属性

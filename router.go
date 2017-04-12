@@ -148,7 +148,7 @@ func (r *xRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *xRouter) MatchPath(ctx *HttpContext, routePath string) bool {
-	return r.router.MatchPath(ctx.Request, ctx.RouterNode.Node.(*routers.Node), routePath)
+	return r.router.MatchPath(ctx.Request.Method, ctx.RouterNode.Node.(*routers.Node), routePath)
 }
 
 // GET is a shortcut for router.Handle("GET", path, handle)
