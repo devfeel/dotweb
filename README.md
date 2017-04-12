@@ -48,7 +48,7 @@ dotweb.conf
 * 路由支持文件/目录服务，支持设置是否允许目录浏览
 * 中间件支持
 * Feature支持，可绑定HttpServer全局启用，绑定RouterNode路由级别启用
-* 支持JSON/JSONP/HTML格式输出
+* 支持STRING/JSON/JSONP/HTML格式输出
 * 统一的HTTP错误处理
 * 统一的日志处理
 * 支持Hijack与websocket
