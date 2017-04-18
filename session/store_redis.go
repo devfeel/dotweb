@@ -64,15 +64,15 @@ func (store *RedisStore) SessionExist(sessionId string) bool {
 }
 
 //SessionUpdate update session state in store
-func (store *RedisStore) SessionUpdate(state *SessionState) bool {
+func (store *RedisStore) SessionUpdate(state *SessionState) error {
 	redisClient := redisutil.GetRedisClient(store.serverIp)
 	bytes, err := gob.EncodeMap(state.values)
 	if err != nil {
-		return false
+		return err
 	}
 	key := getRedisKey(state.SessionID())
 	_, err = redisClient.SetWithExpire(key, string(bytes), store.maxlifetime)
-	return err == nil
+	return err
 }
 
 // SessionRemove delete session state in store

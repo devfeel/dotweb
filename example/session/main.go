@@ -23,9 +23,9 @@ func main() {
 
 	//设置Session配置
 	//runtime mode
-	app.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
+	//app.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
 	//redis mode
-	//app.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6379", ""))
+	app.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6381"))
 
 	//设置路由
 	InitRoute(app.HttpServer)
@@ -53,12 +53,22 @@ func TestSession(ctx *dotweb.HttpContext) {
 		NickName string
 	}
 	user := UserInfo{UserName: "test", NickName: "testName"}
-	ctx.Session().Set("username", user)
-	userRead := ctx.Session().Get("username").(UserInfo)
+	var userRead UserInfo
 
-	ctx.WriteString("welcome to dotweb - sessionid=> " + ctx.SessionID +
-		", session-len=>" + strconv.Itoa(ctx.Session().Count()) +
-		",username=>" + fmt.Sprintln(userRead))
+	ctx.WriteString("welcome to dotweb - sessionid=> "+ctx.SessionID, "\r\n")
+	err := ctx.Session().Set("username", user)
+	if err != nil {
+		ctx.WriteString("session set error => ", err, "\r\n")
+	}
+	c := ctx.Session().Get("username")
+	if c != nil {
+		userRead = c.(UserInfo)
+	} else {
+		ctx.WriteString("session read failed, get nil", "\r\n")
+	}
+
+	ctx.WriteString("userinfo=>" + fmt.Sprintln(userRead))
+
 }
 
 func InitRoute(server *dotweb.HttpServer) {

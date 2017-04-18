@@ -98,7 +98,7 @@ func (ctx *HttpContext) ViewData() *core.ItemContext {
 }
 
 //get session state in current context
-func (ctx *HttpContext) Session() (session *session.SessionState) {
+func (ctx *HttpContext) Session() (state *session.SessionState) {
 	if ctx.HttpServer == nil {
 		//return nil, errors.New("no effective http-server")
 		panic("no effective http-server")
@@ -107,10 +107,7 @@ func (ctx *HttpContext) Session() (session *session.SessionState) {
 		//return nil, errors.New("http-server not enabled session")
 		panic("http-server not enabled session")
 	}
-	state, err := ctx.HttpServer.sessionManager.GetSessionState(ctx.SessionID)
-	if err != nil {
-		panic(err.Error())
-	}
+	state, _ = ctx.HttpServer.sessionManager.GetSessionState(ctx.SessionID)
 	return state
 }
 

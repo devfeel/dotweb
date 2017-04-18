@@ -51,8 +51,8 @@ func (store *RuntimeStore) SessionExist(sessionId string) bool {
 }
 
 //SessionUpdate update session state in store
-func (store *RuntimeStore) SessionUpdate(state *SessionState) bool {
-	return true
+func (store *RuntimeStore) SessionUpdate(state *SessionState) error {
+	return nil
 }
 
 // SessionRemove delete session state in store
