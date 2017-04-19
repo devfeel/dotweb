@@ -41,6 +41,56 @@ dotweb.conf
 </routers>
 </config>
 ```
+dotweb.json.conf
+```json
+{
+    "app": {
+        "logpath": "d:/",
+        "enabledlog": false,
+        "runmode": "development",
+        "pprofport": 8081,
+        "enabledpprof": true
+    },
+    "offline": {
+        "offline": false,
+        "offlinetext": "",
+        "offlineurl": ""
+    },
+    "server": {
+        "enabledlistdir": false,
+        "enabledgzip": false,
+        "enabledautohead": true,
+        "enabledautocors": false,
+        "port": 8080
+    },
+    "session": {
+        "enabled": true,
+        "mode": "runtime",
+        "timeout": 20,
+        "serverip": ""
+    },
+    "routers": [
+        {
+            "method": "get",
+            "path": "/index",
+            "HandlerName": "Index",
+            "isuse": true
+        },
+        {
+            "method": "get",
+            "path": "/redirect",
+            "HandlerName": "Redirect",
+            "isuse": true
+        },
+        {
+            "method": "get",
+            "path": "/error",
+            "HandlerName": "DefaultError",
+            "isuse": true
+        }
+    ]
+}
+```
 #### 详细示例 - https://github.com/devfeel/dotweb-example
 
 ## 特性

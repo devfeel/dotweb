@@ -9,7 +9,7 @@ import (
 
 type (
 	Config struct {
-		XMLName xml.Name        `xml:"config"`
+		XMLName xml.Name        `xml:"config" json:"-"`
 		App     *AppConfig      `xml:"app"`
 		Offline *OfflineConfig  `xml:"offline"`
 		Server  *ServerConfig   `xml:"server"`
