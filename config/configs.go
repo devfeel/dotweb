@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"io/ioutil"
 	"os"
@@ -52,6 +53,11 @@ type (
 	}
 )
 
+const (
+	ConfigType_Xml  = "xml"
+	ConfigType_Json = "json"
+)
+
 func NewConfig() *Config {
 	return &Config{
 		App:     NewAppConfig(),
@@ -82,18 +88,17 @@ func NewSessionConfig() *SessionConfig {
 }
 
 //初始化配置文件
-func InitConfig(configFile string) *Config {
-	content, err := ioutil.ReadFile(configFile)
-	if err != nil {
-		panic("DotWeb:Config:InitConfig 配置文件[" + configFile + "]无法解析 - " + err.Error())
-		os.Exit(1)
+func InitConfig(configFile string, confType ...interface{}) *Config {
+	cType := ConfigType_Xml
+	if len(confType) > 0 && confType[0] == ConfigType_Json {
+		cType = ConfigType_Json
 	}
 
-	var config Config
-	err = xml.Unmarshal(content, &config)
-	if err != nil {
-		panic("DotWeb:Config:InitConfig 配置文件[" + configFile + "]解析失败 - " + err.Error())
-		os.Exit(1)
+	var config *Config
+	if cType == ConfigType_Xml {
+		config = initXmlConfig(configFile)
+	} else {
+		config = initJsonConfig(configFile)
 	}
 
 	if config.App == nil {
@@ -111,5 +116,39 @@ func InitConfig(configFile string) *Config {
 	if config.Offline == nil {
 		config.Offline = &OfflineConfig{}
 	}
-	return &config
+	return config
+}
+
+//初始化配置文件（xml）
+func initXmlConfig(configFile string) *Config {
+	content, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		panic("DotWeb:Config:InitXmlConfig 配置文件[" + configFile + "]无法解析 - " + err.Error())
+		os.Exit(1)
+	}
+
+	var config *Config
+	err = xml.Unmarshal(content, &config)
+	if err != nil {
+		panic("DotWeb:Config:InitXmlConfig 配置文件[" + configFile + "]解析失败 - " + err.Error())
+		os.Exit(1)
+	}
+	return config
+}
+
+//初始化配置文件（json）
+func initJsonConfig(configFile string) *Config {
+	content, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		panic("DotWeb:Config:InitJsonConfig 配置文件[" + configFile + "]无法解析 - " + err.Error())
+		os.Exit(1)
+	}
+
+	var config *Config
+	err = json.Unmarshal(content, &config)
+	if err != nil {
+		panic("DotWeb:Config:InitJsonConfig 配置文件[" + configFile + "]解析失败 - " + err.Error())
+		os.Exit(1)
+	}
+	return config
 }

@@ -1,5 +1,9 @@
 ##dotweb版本记录：
 
+#### Version 0.3.9.7
+* 新增Json格式配置文件支持
+* 更新 example/config 目录
+* 2017-04-19 09:00
 
 #### Version 0.3.9.6
 * 优化精简HttpContext，移除部分非常用冗余方法，迁移至新增Request类型

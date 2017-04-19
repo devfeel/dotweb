@@ -1,6 +1,7 @@
 package main
 
 import (
+	"datapipe/datapipe.web/framework/json"
 	"fmt"
 	"github.com/devfeel/dotweb"
 	"github.com/devfeel/dotweb/config"
@@ -13,7 +14,11 @@ func main() {
 	//注册HttpHandler
 	RegisterHandler(app.HttpServer)
 
-	appConfig := config.InitConfig("d:/dotweb.conf")
+	//appConfig := config.InitConfig("d:/dotweb.conf")
+	//json config
+	appConfig := config.InitConfig("d:/gotmp/dotweb.json.conf", "json")
+
+	fmt.Println(jsonutil.GetJsonString(appConfig))
 
 	fmt.Println("dotweb.StartServer => " + fmt.Sprint(appConfig))
 	err := app.StartServerWithConfig(appConfig)
