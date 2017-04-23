@@ -1,5 +1,12 @@
 ##dotweb版本记录：
 
+#### Version 0.3.10
+* 新增Middleware支持，通过DotWeb.Use引入中间件，处理请求顺序在HttpModule之后，响应请求顺序在HttpModule之前
+* 用户实现Middleware interface开发自定义middleware，为简化代码，可基于BaseMiddlware开发
+* 优化路由注册日志，添加Handler名称，例如：main.Index
+* 更新 example/middleware 目录
+* 2017-04-23 09:00
+
 #### Version 0.3.9.7
 * 新增Json格式配置文件支持
 * 更新 example/config 目录

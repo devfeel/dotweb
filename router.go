@@ -7,6 +7,8 @@ import (
 	"github.com/devfeel/dotweb/routers"
 	"golang.org/x/net/websocket"
 	"net/http"
+	"reflect"
+	"runtime"
 	"strings"
 	"sync"
 )
@@ -201,13 +203,14 @@ func (r *xRouter) HiJack(path string, handle HttpHandle) {
 // support GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS\HiJack\WebSocket\ANY
 func (r *xRouter) RegisterRoute(routeMethod string, path string, handle HttpHandle) *RouterNode {
 
+	handleName := handlerName(handle)
 	routeMethod = strings.ToUpper(routeMethod)
 	rn := &RouterNode{Node: new(routers.Node), Method: routeMethod}
 	if _, exists := HttpMethodMap[routeMethod]; !exists {
-		logger.Logger().Log("Dotweb:Router:RegisterRoute failed [illegal method] ["+routeMethod+"] ["+path+"]", LogTarget_HttpServer, LogLevel_Warn)
+		logger.Logger().Log("Dotweb:Router:RegisterRoute failed [illegal method] ["+routeMethod+"] ["+path+"] ["+handleName+"]", LogTarget_HttpServer, LogLevel_Warn)
 		return rn
 	} else {
-		logger.Logger().Log("Dotweb:Router:RegisterRoute success ["+routeMethod+"] ["+path+"]", LogTarget_HttpServer, LogLevel_Debug)
+		logger.Logger().Log("Dotweb:Router:RegisterRoute success ["+routeMethod+"] ["+path+"] ["+handleName+"]", LogTarget_HttpServer, LogLevel_Debug)
 	}
 
 	//websocket mode,use default httpserver
@@ -253,4 +256,12 @@ func (r *xRouter) ServerFile(path string, fileroot string) *RouterNode {
 	fileServer := http.FileServer(root)
 	rn.Node = r.router.Handle(RouteMethod_GET, path, r.server.wrapFileHandle(fileServer))
 	return rn
+}
+
+func handlerName(h HttpHandle) string {
+	t := reflect.ValueOf(h).Type()
+	if t.Kind() == reflect.Func {
+		return runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name()
+	}
+	return t.String()
 }

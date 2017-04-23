@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/devfeel/dotweb"
-	"github.com/devfeel/dotweb/session"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func main() {
@@ -22,25 +22,16 @@ func main() {
 	//设置gzip开关
 	//app.SetEnabledGzip(true)
 
-	//设置Session开关
-	app.HttpServer.SetEnabledSession(true)
-
-	//1.use default config
-	//app.HttpServer.Features.SetEnabledCROS()
-	//2.use user config
-	//app.HttpServer.Features.SetEnabledCROS(true).SetOrigin("*").SetMethod("GET")
-
-	//设置Session配置
-	//runtime mode
-	app.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
-	//redis mode
-	//app.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6379", ""))
-
 	//设置路由
 	InitRoute(app.HttpServer)
 
-	//设置HttpModule
-	//InitModule(app)
+	InitModule(app)
+
+	app.Use(
+		NewAccessFmtLog(1),
+		NewSimpleAuth("admin"),
+		NewAccessFmtLog(2),
+	)
 
 	//启动 监控服务
 	app.SetPProfConfig(true, 8081)
@@ -58,23 +49,8 @@ func main() {
 
 func Index(ctx *dotweb.HttpContext) {
 	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
+	fmt.Println(time.Now(), "Index Handler")
 	ctx.WriteString("index => ", ctx.RouterParams)
-}
-
-func IndexReg(ctx *dotweb.HttpContext) {
-	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	ctx.WriteString("welcome to dotweb")
-}
-
-func KeyPost(ctx *dotweb.HttpContext) {
-	username1 := ctx.PostString("username")
-	username2 := ctx.FormValue("username")
-	username3 := ctx.PostFormValue("username")
-	ctx.WriteString("username:" + username1 + " - " + username2 + " - " + username3)
-}
-
-func JsonPost(ctx *dotweb.HttpContext) {
-	ctx.WriteString("body:" + string(ctx.PostBody()))
 }
 
 func DefaultError(ctx *dotweb.HttpContext) {
@@ -87,31 +63,65 @@ func Redirect(ctx *dotweb.HttpContext) {
 
 func InitRoute(server *dotweb.HttpServer) {
 	server.Router().GET("/", Index).SetEnabledCROS().SetOrigin("*")
-	server.Router().POST("/keypost", KeyPost)
-	server.Router().POST("/jsonpost", JsonPost)
 	server.Router().GET("/error", DefaultError)
 	server.Router().GET("/redirect", Redirect)
-	server.Router().RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
 }
 
 func InitModule(dotserver *dotweb.DotWeb) {
 	dotserver.RegisterModule(&dotweb.HttpModule{
 		OnBeginRequest: func(ctx *dotweb.HttpContext) {
-			fmt.Println("BeginRequest1:", ctx)
+			fmt.Println(time.Now(), "HttpModule BeginRequest1:", ctx.Request.RequestURI)
 		},
 		OnEndRequest: func(ctx *dotweb.HttpContext) {
-			fmt.Println("EndRequest1:", ctx)
+			fmt.Println(time.Now(), "HttpModule EndRequest1:", ctx.Request.RequestURI)
 		},
 	})
 
 	dotserver.RegisterModule(&dotweb.HttpModule{
 		OnBeginRequest: func(ctx *dotweb.HttpContext) {
-			fmt.Println("BeginRequest2:", ctx)
+			fmt.Println(time.Now(), "HttpModule BeginRequest2:", ctx.Request.RequestURI)
 		},
 	})
 	dotserver.RegisterModule(&dotweb.HttpModule{
 		OnEndRequest: func(ctx *dotweb.HttpContext) {
-			fmt.Println("EndRequest3:", ctx)
+			fmt.Println(time.Now(), "HttpModule EndRequest3:", ctx.Request.RequestURI)
 		},
 	})
+}
+
+type AccessFmtLog struct {
+	dotweb.BaseMiddlware
+	Index int
+}
+
+func (m *AccessFmtLog) Handle(ctx *dotweb.HttpContext) error {
+	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] begin request -> ", ctx.Request.RequestURI)
+	err := m.Next(ctx)
+	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] finish request ", err, " -> ", ctx.Request.RequestURI)
+	return err
+}
+
+func NewAccessFmtLog(index int) *AccessFmtLog {
+	return &AccessFmtLog{Index: index}
+}
+
+type SimpleAuth struct {
+	dotweb.BaseMiddlware
+	exactToken string
+}
+
+func (m *SimpleAuth) Handle(ctx *dotweb.HttpContext) error {
+	fmt.Println(time.Now(), "[SimpleAuth] begin request -> ", ctx.Request.RequestURI)
+	var err error
+	if ctx.QueryString("token") != m.exactToken {
+		ctx.Write(http.StatusUnauthorized, []byte("sorry, Unauthorized"))
+	} else {
+		err = m.Next(ctx)
+	}
+	fmt.Println(time.Now(), "[SimpleAuth] finish request ", err, " -> ", ctx.Request.RequestURI)
+	return err
+}
+
+func NewSimpleAuth(exactToken string) *SimpleAuth {
+	return &SimpleAuth{exactToken: exactToken}
 }

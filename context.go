@@ -33,10 +33,11 @@ type HttpContext struct {
 	items        *core.ItemContext
 	viewData     *core.ItemContext
 	Features     *xFeatureTools
+	handle       HttpHandle
 }
 
 //reset response attr
-func (ctx *HttpContext) Reset(res *Response, r *Request, server *HttpServer, node *RouterNode, params routers.Params) {
+func (ctx *HttpContext) Reset(res *Response, r *Request, server *HttpServer, node *RouterNode, params routers.Params, handler HttpHandle) {
 	ctx.Request = r
 	ctx.Response = res
 	ctx.RouterNode = node
@@ -47,6 +48,7 @@ func (ctx *HttpContext) Reset(res *Response, r *Request, server *HttpServer, nod
 	ctx.items = nil
 	ctx.isEnd = false
 	ctx.Features = FeatureTools
+	ctx.handle = handler
 }
 
 //release all field
@@ -62,6 +64,7 @@ func (ctx *HttpContext) release() {
 	ctx.items = nil
 	ctx.viewData = nil
 	ctx.SessionID = ""
+	ctx.handle = nil
 }
 
 //get application's global appcontext

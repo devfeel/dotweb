@@ -59,11 +59,6 @@ type (
 	}
 )
 
-// Handle is a function that can be registered to a route to handle HTTP
-// requests. Like http.HandlerFunc, but has a third parameter for the values of
-// wildcards (variables).
-type HttpHandle func(*HttpContext)
-
 func NewHttpServer() *HttpServer {
 	server := &HttpServer{
 		pool: &pool{
@@ -233,7 +228,7 @@ type LogJson struct {
 }
 
 //wrap HttpHandle to httprouter.Handle
-func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) routers.Handle {
+func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) routers.Handle {
 	return func(w http.ResponseWriter, r *http.Request, vnode *routers.ValueNode) {
 		//get from pool
 		res := server.pool.response.Get().(*Response)
@@ -241,7 +236,7 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 		req := server.pool.request.Get().(*Request)
 		req.reset(r)
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(res, req, server, NewRouterNode(vnode.Node, vnode.Method), vnode.Params)
+		httpCtx.Reset(res, req, server, NewRouterNode(vnode.Node, vnode.Method), vnode.Params, handler)
 
 		//gzip
 		if server.ServerConfig.EnabledGzip {
@@ -352,7 +347,11 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 		//处理用户handle
 		//if already set HttpContext.End,ignore user handler - fixed issue #5
 		if !httpCtx.IsEnd() {
-			handle(httpCtx)
+			if len(server.DotApp.Middlewares) > 0 {
+				server.DotApp.Middlewares[0].Handle(httpCtx)
+			} else {
+				handler(httpCtx)
+			}
 		}
 
 		//处理后置Module集合
@@ -380,13 +379,13 @@ func (server *HttpServer) wrapFileHandle(fileHandler http.Handler) routers.Handl
 }
 
 //wrap HttpHandle to websocket.Handle
-func (server *HttpServer) wrapWebSocketHandle(handle HttpHandle) websocket.Handler {
+func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 	return func(ws *websocket.Conn) {
 		//get from pool
 		req := server.pool.request.Get().(*Request)
 		req.reset(ws.Request())
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(nil, req, server, nil, nil)
+		httpCtx.Reset(nil, req, server, nil, nil, handler)
 		httpCtx.WebSocket = &WebSocket{
 			Conn: ws,
 		}
@@ -423,7 +422,7 @@ func (server *HttpServer) wrapWebSocketHandle(handle HttpHandle) websocket.Handl
 			server.pool.context.Put(httpCtx)
 		}()
 
-		handle(httpCtx)
+		handler(httpCtx)
 
 		//增加状态计数
 		GlobalState.AddRequestCount(1)

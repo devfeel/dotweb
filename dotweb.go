@@ -26,12 +26,17 @@ type (
 		OfflineServer    servers.Server
 		Config           *config.Config
 		Modules          []*HttpModule
+		Middlewares      []Middleware
 		ExceptionHandler ExceptionHandle
 		AppContext       *core.ItemContext
 	}
 
 	ExceptionHandle func(*HttpContext, interface{})
-	NotFoundHandle  func(*HttpContext)
+	NotFoundHandle  HttpHandle
+
+	// Handle is a function that can be registered to a route to handle HTTP
+	// requests. Like http.HandlerFunc, but has a special parameter *HttpContext contain all request and response data.
+	HttpHandle func(*HttpContext)
 )
 
 const (
@@ -47,7 +52,8 @@ func New() *DotWeb {
 	app := &DotWeb{
 		HttpServer:    NewHttpServer(),
 		OfflineServer: servers.NewOfflineServer(),
-		Modules:       make([]*HttpModule, 0, 10),
+		Modules:       make([]*HttpModule, 0),
+		Middlewares:   make([]Middleware, 0),
 		AppContext:    core.NewItemContext(),
 		Config:        config.NewConfig(),
 	}
@@ -90,6 +96,20 @@ func (app *DotWeb) SetDevelopmentMode() {
 //set run mode on production mode
 func (app *DotWeb) SetProductionMode() {
 	app.Config.App.RunMode = RunMode_Production
+}
+
+//Use registers a middleware
+func (app *DotWeb) Use(m ...Middleware) {
+	step := len(app.Middlewares) - 1
+	for i := range m {
+		if m[i] != nil {
+			if step >= 0 {
+				app.Middlewares[step].SetNext(m[i])
+			}
+			app.Middlewares = append(app.Middlewares, m[i])
+			step++
+		}
+	}
 }
 
 /*
@@ -174,6 +194,9 @@ func (app *DotWeb) StartServer(httpport int) error {
 			}()
 		}
 	}
+
+	//add default httphandler with middlewares
+	app.Use(&xMiddleware{})
 
 	port := ":" + strconv.Itoa(httpport)
 	if app.Config.App.EnabledLog {
