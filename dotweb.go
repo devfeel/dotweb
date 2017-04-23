@@ -112,6 +112,11 @@ func (app *DotWeb) Use(m ...Middleware) {
 	}
 }
 
+//UseRequestLog register RequestLog middleware
+func (app *DotWeb) UseRequestLog() {
+	app.Use(&RequestLogMiddleware{})
+}
+
 /*
 * 添加处理模块
  */

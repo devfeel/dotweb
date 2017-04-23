@@ -281,7 +281,6 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) ro
 			}
 		}
 
-		startTime := time.Now()
 		defer func() {
 			var errmsg string
 			if err := recover(); err != nil {
@@ -307,12 +306,6 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) ro
 
 				//增加错误计数
 				GlobalState.AddErrorCount(1)
-			}
-			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
-
-			//if set enabledLog, take the request log
-			if server.DotApp.Config.App.EnabledLog {
-				logger.Logger().Log(httpCtx.Url()+" "+logContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
 			}
 
 			if server.ServerConfig.EnabledGzip {
@@ -412,7 +405,7 @@ func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Hand
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 			//HttpServer Logging
-			logger.Logger().Log(httpCtx.Url()+" "+logContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
+			logger.Logger().Log(httpCtx.Url()+" "+logWebsocketContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
 
 			//release request
 			req.release()
@@ -430,24 +423,15 @@ func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Hand
 }
 
 //get default log string
-func logContext(ctx *HttpContext, timetaken int64) string {
+func logWebsocketContext(ctx *HttpContext, timetaken int64) string {
 	var reqbytelen, resbytelen, method, proto, status, userip string
 	if ctx != nil {
-		if !ctx.IsWebSocket {
-			reqbytelen = convert.Int642String(ctx.Request.ContentLength)
-			resbytelen = convert.Int642String(ctx.Response.Size)
-			method = ctx.Request.Method
-			proto = ctx.Request.Proto
-			status = convert.Int2String(ctx.Response.Status)
-			userip = ctx.RemoteIP()
-		} else {
-			reqbytelen = convert.Int642String(ctx.Request.ContentLength)
-			resbytelen = "0"
-			method = ctx.Request.Method
-			proto = ctx.Request.Proto
-			status = "0"
-			userip = ctx.RemoteIP()
-		}
+		reqbytelen = convert.Int642String(ctx.Request.ContentLength)
+		resbytelen = "0"
+		method = ctx.Request.Method
+		proto = ctx.Request.Proto
+		status = "0"
+		userip = ctx.RemoteIP()
 	}
 
 	log := method + " "

@@ -3,6 +3,7 @@
 #### Version 0.3.10
 * 新增Middleware支持，通过DotWeb.Use引入中间件，处理请求顺序在HttpModule之后，响应请求顺序在HttpModule之前
 * 用户实现Middleware interface开发自定义middleware，为简化代码，可基于BaseMiddlware开发
+* 内建支持RequestLogMiddleware，通过DotWeb.UseRequestLog()引入
 * 优化路由注册日志，添加Handler名称，例如：main.Index
 * 更新 example/middleware 目录
 * 2017-04-23 09:00

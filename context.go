@@ -11,6 +11,7 @@ import (
 	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/routers"
 	"github.com/devfeel/dotweb/session"
+	"time"
 )
 
 const (
@@ -34,6 +35,7 @@ type HttpContext struct {
 	viewData     *core.ItemContext
 	Features     *xFeatureTools
 	handle       HttpHandle
+	startTime    time.Time
 }
 
 //reset response attr
@@ -49,6 +51,7 @@ func (ctx *HttpContext) Reset(res *Response, r *Request, server *HttpServer, nod
 	ctx.isEnd = false
 	ctx.Features = FeatureTools
 	ctx.handle = handler
+	ctx.startTime = time.Now()
 }
 
 //release all field
@@ -65,6 +68,7 @@ func (ctx *HttpContext) release() {
 	ctx.viewData = nil
 	ctx.SessionID = ""
 	ctx.handle = nil
+	ctx.startTime = time.Time{}
 }
 
 //get application's global appcontext

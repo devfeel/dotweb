@@ -27,10 +27,10 @@ func main() {
 
 	InitModule(app)
 
+	app.UseRequestLog()
 	app.Use(
 		NewAccessFmtLog(1),
 		NewSimpleAuth("admin"),
-		NewAccessFmtLog(2),
 	)
 
 	//启动 监控服务
