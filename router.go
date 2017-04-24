@@ -42,8 +42,8 @@ func init() {
 	HttpMethodMap["PATCH"] = RouteMethod_PATCH
 	HttpMethodMap["OPTIONS"] = RouteMethod_OPTIONS
 	HttpMethodMap["DELETE"] = RouteMethod_DELETE
-	HttpMethodMap["HiJack"] = RouteMethod_HiJack
-	HttpMethodMap["WebSocket"] = RouteMethod_WebSocket
+	HttpMethodMap["HIJACK"] = RouteMethod_HiJack
+	HttpMethodMap["WEBSOCKET"] = RouteMethod_WebSocket
 
 	featuresMap = make(map[interface{}]*feature.Feature)
 	lock_feature = new(sync.RWMutex)
@@ -196,7 +196,7 @@ func (r *xRouter) DELETE(path string, handle HttpHandle) *RouterNode {
 }
 
 func (r *xRouter) HiJack(path string, handle HttpHandle) {
-	r.RegisterRoute(RouteMethod_GET, path, handle)
+	r.RegisterRoute(RouteMethod_HiJack, path, handle)
 }
 
 func (r *xRouter) WebSocket(path string, handle HttpHandle) {
