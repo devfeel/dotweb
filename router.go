@@ -62,6 +62,7 @@ type (
 		PATCH(path string, handle HttpHandle) *RouterNode
 		DELETE(path string, handle HttpHandle) *RouterNode
 		HiJack(path string, handle HttpHandle)
+		WebSocket(path string, handle HttpHandle)
 		Any(path string, handle HttpHandle)
 		RegisterRoute(routeMethod string, path string, handle HttpHandle) *RouterNode
 		RegisterHandler(name string, handler HttpHandle)
@@ -122,7 +123,7 @@ func (n *RouterNode) doFeatures(ctx *HttpContext) *HttpContext {
 	return ctx
 }
 
-func NewRouter(server *HttpServer) Router {
+func NewRouter(server *HttpServer) *xRouter {
 	r := new(xRouter)
 	r.router = routers.New()
 	r.server = server
@@ -194,9 +195,12 @@ func (r *xRouter) DELETE(path string, handle HttpHandle) *RouterNode {
 	return r.RegisterRoute(RouteMethod_DELETE, path, handle)
 }
 
-// DELETE is a shortcut for router.Handle("DELETE", path, handle)
 func (r *xRouter) HiJack(path string, handle HttpHandle) {
 	r.RegisterRoute(RouteMethod_GET, path, handle)
+}
+
+func (r *xRouter) WebSocket(path string, handle HttpHandle) {
+	r.RegisterRoute(RouteMethod_WebSocket, path, handle)
 }
 
 // shortcut for router.Handle(httpmethod, path, handle)
