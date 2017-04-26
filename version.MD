@@ -1,5 +1,36 @@
 ##dotweb版本记录：
 
+#### Version 0.3.10
+* 新增Middleware支持，通过DotWeb.Use引入中间件，处理请求顺序在HttpModule之后，响应请求顺序在HttpModule之前
+* 用户实现Middleware interface开发自定义middleware，为简化代码，可基于BaseMiddlware开发
+* 内建支持RequestLogMiddleware，通过DotWeb.UseRequestLog()引入
+* 优化路由注册日志，添加Handler名称，例如：main.Index
+* 更新 example/middleware 目录
+* 2017-04-23 09:00
+
+#### Version 0.3.9.7
+* 新增Json格式配置文件支持
+* 更新 example/config 目录
+* 2017-04-19 09:00
+
+#### Version 0.3.9.6
+* 优化精简HttpContext，移除部分非常用冗余方法，迁移至新增Request类型
+* Request增加PostBody缓存，可通过Request.PostBody()重复获取
+* 迁移：HttpContext.Proto()\Method()\FullRemoteIP()\Referer()\UserAgent()\Path()\Host()\IsAJAX 迁移至HttpContext.Request
+* BUG修复：修复HttpContext释放时，Response释放不彻底问题
+* 2017-04-12 09:00
+
+#### Version 0.3.9.5
+* 新增Feature模块，目前支持CROS特性，可通过HttpServer全局设置、RouterNode路由级别设置
+* 新增CROS设置，设置是否允许跨域访问，并可设置AllowedOrigins、、AllowedMethods、AllowedHeaders、AllowCredentials、AllowedP3P属性
+* PProfServer调整为属性设置，通过SetPProfConfig设置，移除StartPProf方法
+* HttpContext新增RouterNode属性，可通过该属性获取路由信息
+* 迁移：原DotWeb中SetSessionConfig函数迁移至HttpServer
+* 废弃：DotWeb.SetSessionConfig、DotWeb.StartPProfServer
+* 配置App节点新增EnabledPProf\PProfPort设置，用于设置PProfServer
+* 完善配置文件与代码，完善代码，完善example
+* 2017-04-09 20:00
+
 #### Version 0.3.9.4
 * 新增Logger接口，增加内置文件日志xlog实现
 * 配置新增app节点，支持LogPath、EnabledLog、RunMode，DotWeb增加SetEnabledLog方法；

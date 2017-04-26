@@ -26,8 +26,7 @@ func main() {
 	app.HttpServer.Renderer().SetTemplatePath("d:/gotmp", "d:/tmp")
 
 	//启动 监控服务
-	//pprofport := 8081
-	//go app.StartPProfServer(pprofport)
+	//app.SetPProfConfig(true, 8081)
 
 	// 开始服务
 	port := 8080

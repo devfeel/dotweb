@@ -24,7 +24,7 @@ type (
 	SessionStore interface {
 		SessionRead(sessionId string) (*SessionState, error)
 		SessionExist(sessionId string) bool
-		SessionUpdate(state *SessionState) bool
+		SessionUpdate(state *SessionState) error
 		SessionRemove(sessionId string) error
 		SessionCount() int //get all active session length
 		SessionGC() int    //gc session and return out of date state num
@@ -127,7 +127,10 @@ func (manager *SessionManager) GetClientSessionID(req *http.Request) (string, er
 
 func (manager *SessionManager) GetSessionState(sessionId string) (session *SessionState, err error) {
 	session, err = manager.store.SessionRead(sessionId)
-	return
+	if err != nil {
+		session = NewSessionState(manager.store, sessionId, make(map[interface{}]interface{}))
+	}
+	return session, nil
 }
 
 //GC loop gc session data

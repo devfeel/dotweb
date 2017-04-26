@@ -24,8 +24,7 @@ func main() {
 	InitRoute(app.HttpServer)
 
 	//启动 监控服务
-	//pprofport := 8081
-	//go app.StartPProfServer(pprofport)
+	//app.SetPProfConfig(true, 8081)
 
 	// 开始服务
 	port := 8080

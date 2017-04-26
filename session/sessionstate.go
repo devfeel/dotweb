@@ -46,8 +46,8 @@ func (state *SessionState) Set(key, value interface{}) error {
 	state.lock.Lock()
 	defer state.lock.Unlock()
 	state.values[key] = value
-	state.store.SessionUpdate(state)
-	return nil
+	return state.store.SessionUpdate(state)
+
 }
 
 // Get get value by key in current state

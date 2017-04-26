@@ -13,6 +13,7 @@ import (
 
 	"compress/gzip"
 	"github.com/devfeel/dotweb/config"
+	"github.com/devfeel/dotweb/feature"
 	"github.com/devfeel/dotweb/logger"
 	"github.com/devfeel/dotweb/routers"
 	"golang.org/x/net/websocket"
@@ -47,19 +48,16 @@ type (
 		binder         Binder
 		render         Renderer
 		offline        bool
+		Features       *feature.Feature
 	}
 
 	//pool定义
 	pool struct {
+		request  sync.Pool
 		response sync.Pool
 		context  sync.Pool
 	}
 )
-
-// Handle is a function that can be registered to a route to handle HTTP
-// requests. Like http.HandlerFunc, but has a third parameter for the values of
-// wildcards (variables).
-type HttpHandle func(*HttpContext)
 
 func NewHttpServer() *HttpServer {
 	server := &HttpServer{
@@ -67,6 +65,11 @@ func NewHttpServer() *HttpServer {
 			response: sync.Pool{
 				New: func() interface{} {
 					return &Response{}
+				},
+			},
+			request: sync.Pool{
+				New: func() interface{} {
+					return &Request{}
 				},
 			},
 			context: sync.Pool{
@@ -79,6 +82,7 @@ func NewHttpServer() *HttpServer {
 		SessionConfig: config.NewSessionConfig(),
 		lock_session:  new(sync.RWMutex),
 		binder:        newBinder(),
+		Features:      &feature.Feature{},
 	}
 	//设置router
 	server.router = NewRouter(server)
@@ -205,6 +209,18 @@ func (server *HttpServer) SetEnabledGzip(isEnabled bool) {
 	server.ServerConfig.EnabledGzip = isEnabled
 }
 
+//do features...
+func (server *HttpServer) doFeatures(ctx *HttpContext) *HttpContext {
+	//处理 cros feature
+	if server.Features.CROSConfig != nil {
+		c := server.Features.CROSConfig
+		if c.EnabledCROS {
+			FeatureTools.SetCROSConfig(ctx, c)
+		}
+	}
+	return ctx
+}
+
 type LogJson struct {
 	RequestUrl string
 	HttpHeader string
@@ -212,13 +228,15 @@ type LogJson struct {
 }
 
 //wrap HttpHandle to httprouter.Handle
-func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) routers.Handle {
-	return func(w http.ResponseWriter, r *http.Request, params routers.Params) {
+func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) routers.Handle {
+	return func(w http.ResponseWriter, r *http.Request, vnode *routers.ValueNode) {
 		//get from pool
 		res := server.pool.response.Get().(*Response)
-		res.Reset(w)
+		res.reset(w)
+		req := server.pool.request.Get().(*Request)
+		req.reset(r)
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(res, r, server, params)
+		httpCtx.Reset(res, req, server, NewRouterNode(vnode.Node, vnode.Method), vnode.Params, handler)
 
 		//gzip
 		if server.ServerConfig.EnabledGzip {
@@ -227,7 +245,7 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 				panic("use gzip error -> " + err.Error())
 			}
 			grw := &gzipResponseWriter{Writer: gw, ResponseWriter: w}
-			res.Reset(grw)
+			res.reset(grw)
 			httpCtx.SetHeader(HeaderContentEncoding, gzipScheme)
 		}
 		//增加状态计数
@@ -249,7 +267,6 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 				}
 				httpCtx.SetCookie(cookie)
 			}
-
 		}
 
 		//hijack处理
@@ -264,45 +281,54 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 			}
 		}
 
-		startTime := time.Now()
 		defer func() {
 			var errmsg string
 			if err := recover(); err != nil {
 				errmsg = exception.CatchError("httpserver::RouterHandle", LogTarget_HttpServer, err)
 
-				//默认异常处理
+				//handler the exception
 				if server.DotApp.ExceptionHandler != nil {
 					server.DotApp.ExceptionHandler(httpCtx, err)
 				}
 
-				//记录访问日志
-				headinfo := fmt.Sprintln(httpCtx.Response.Header)
-				logJson := LogJson{
-					RequestUrl: httpCtx.Request.RequestURI,
-					HttpHeader: headinfo,
-					HttpBody:   errmsg,
+				//if set enabledLog, take the error log
+				if server.DotApp.Config.App.EnabledLog {
+					//记录访问日志
+					headinfo := fmt.Sprintln(httpCtx.Response.Header)
+					logJson := LogJson{
+						RequestUrl: httpCtx.Request.RequestURI,
+						HttpHeader: headinfo,
+						HttpBody:   errmsg,
+					}
+					logString := jsonutil.GetJsonString(logJson)
+					logger.Logger().Log(logString, LogTarget_HttpServer, LogLevel_Error)
 				}
-				logString := jsonutil.GetJsonString(logJson)
-				logger.Logger().Log(logString, LogTarget_HttpServer, LogLevel_Error)
 
 				//增加错误计数
 				GlobalState.AddErrorCount(1)
 			}
-			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
-			//HttpServer Logging
-			logger.Logger().Log(httpCtx.Url()+" "+logContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
 
 			if server.ServerConfig.EnabledGzip {
 				var w io.Writer
 				w = res.Writer().(*gzipResponseWriter).Writer
 				w.(*gzip.Writer).Close()
 			}
-			// Return to pool
+			//release response
+			res.release()
 			server.pool.response.Put(res)
+			//release request
+			req.release()
+			server.pool.request.Put(req)
 			//release context
 			httpCtx.release()
 			server.pool.context.Put(httpCtx)
 		}()
+
+		//do features
+		httpCtx = server.doFeatures(httpCtx)
+
+		//do RouterNode features
+		httpCtx = httpCtx.RouterNode.doFeatures(httpCtx)
 
 		//处理前置Module集合
 		for _, module := range server.DotApp.Modules {
@@ -314,7 +340,11 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 		//处理用户handle
 		//if already set HttpContext.End,ignore user handler - fixed issue #5
 		if !httpCtx.IsEnd() {
-			handle(httpCtx)
+			if len(server.DotApp.Middlewares) > 0 {
+				server.DotApp.Middlewares[0].Handle(httpCtx)
+			} else {
+				handler(httpCtx)
+			}
 		}
 
 		//处理后置Module集合
@@ -329,11 +359,11 @@ func (server *HttpServer) wrapRouterHandle(handle HttpHandle, isHijack bool) rou
 
 //wrap fileHandler to httprouter.Handle
 func (server *HttpServer) wrapFileHandle(fileHandler http.Handler) routers.Handle {
-	return func(w http.ResponseWriter, r *http.Request, params routers.Params) {
+	return func(w http.ResponseWriter, r *http.Request, vnode *routers.ValueNode) {
 		//增加状态计数
 		GlobalState.AddRequestCount(1)
 		startTime := time.Now()
-		r.URL.Path = params.ByName("filepath")
+		r.URL.Path = vnode.ByName("filepath")
 		fileHandler.ServeHTTP(w, r)
 		timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 		//HttpServer Logging
@@ -342,11 +372,13 @@ func (server *HttpServer) wrapFileHandle(fileHandler http.Handler) routers.Handl
 }
 
 //wrap HttpHandle to websocket.Handle
-func (server *HttpServer) wrapWebSocketHandle(handle HttpHandle) websocket.Handler {
+func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 	return func(ws *websocket.Conn) {
 		//get from pool
+		req := server.pool.request.Get().(*Request)
+		req.reset(ws.Request())
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(nil, ws.Request(), server, nil)
+		httpCtx.Reset(nil, req, server, nil, nil, handler)
 		httpCtx.WebSocket = &WebSocket{
 			Conn: ws,
 		}
@@ -373,13 +405,17 @@ func (server *HttpServer) wrapWebSocketHandle(handle HttpHandle) websocket.Handl
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 			//HttpServer Logging
-			logger.Logger().Log(httpCtx.Url()+" "+logContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
+			logger.Logger().Log(httpCtx.Url()+" "+logWebsocketContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
 
-			// Return to pool
+			//release request
+			req.release()
+			server.pool.request.Put(req)
+			//release context
+			httpCtx.release()
 			server.pool.context.Put(httpCtx)
 		}()
 
-		handle(httpCtx)
+		handler(httpCtx)
 
 		//增加状态计数
 		GlobalState.AddRequestCount(1)
@@ -387,24 +423,15 @@ func (server *HttpServer) wrapWebSocketHandle(handle HttpHandle) websocket.Handl
 }
 
 //get default log string
-func logContext(ctx *HttpContext, timetaken int64) string {
+func logWebsocketContext(ctx *HttpContext, timetaken int64) string {
 	var reqbytelen, resbytelen, method, proto, status, userip string
 	if ctx != nil {
-		if !ctx.IsWebSocket {
-			reqbytelen = convert.Int642String(ctx.Request.ContentLength)
-			resbytelen = convert.Int642String(ctx.Response.Size)
-			method = ctx.Request.Method
-			proto = ctx.Request.Proto
-			status = convert.Int2String(ctx.Response.Status)
-			userip = ctx.RemoteIP()
-		} else {
-			reqbytelen = convert.Int642String(ctx.Request.ContentLength)
-			resbytelen = "0"
-			method = ctx.Request.Method
-			proto = ctx.Request.Proto
-			status = "0"
-			userip = ctx.RemoteIP()
-		}
+		reqbytelen = convert.Int642String(ctx.Request.ContentLength)
+		resbytelen = "0"
+		method = ctx.Request.Method
+		proto = ctx.Request.Proto
+		status = "0"
+		userip = ctx.RemoteIP()
 	}
 
 	log := method + " "

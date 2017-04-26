@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/devfeel/dotweb"
-	"github.com/devfeel/dotweb/framework/file"
 	"github.com/devfeel/dotweb/session"
 	"net/http"
 	"strconv"
@@ -14,7 +13,7 @@ func main() {
 	app := dotweb.New()
 
 	//设置dotserver日志目录
-	app.SetLogPath(file.GetCurrentDirectory())
+	//如果不设置，默认不启用，且默认为当前目录
 	app.SetEnabledLog(true)
 
 	//开启development模式
@@ -26,11 +25,16 @@ func main() {
 	//设置Session开关
 	app.HttpServer.SetEnabledSession(true)
 
+	//1.use default config
+	//app.HttpServer.Features.SetEnabledCROS()
+	//2.use user config
+	//app.HttpServer.Features.SetEnabledCROS(true).SetOrigin("*").SetMethod("GET")
+
 	//设置Session配置
 	//runtime mode
-	app.SetSessionConfig(session.NewDefaultRuntimeConfig())
+	app.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
 	//redis mode
-	//app.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6379", ""))
+	//app.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6379", ""))
 
 	//设置路由
 	InitRoute(app.HttpServer)
@@ -39,8 +43,7 @@ func main() {
 	//InitModule(app)
 
 	//启动 监控服务
-	//pprofport := 8081
-	//go app.StartPProfServer(pprofport)
+	app.SetPProfConfig(true, 8081)
 
 	//全局容器
 	app.AppContext.Set("gstring", "gvalue")
@@ -55,7 +58,7 @@ func main() {
 
 func Index(ctx *dotweb.HttpContext) {
 	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	ctx.WriteString("index")
+	ctx.WriteString("index => ", ctx.RouterParams)
 }
 
 func IndexReg(ctx *dotweb.HttpContext) {
@@ -79,11 +82,11 @@ func DefaultError(ctx *dotweb.HttpContext) {
 }
 
 func Redirect(ctx *dotweb.HttpContext) {
-	ctx.Redirect(http.StatusNotFound, "http://www.baidu.com")
+	ctx.Redirect(http.StatusMovedPermanently, "http://www.baidu.com")
 }
 
 func InitRoute(server *dotweb.HttpServer) {
-	server.Router().GET("/", Index)
+	server.Router().GET("/", Index).SetEnabledCROS().SetOrigin("*")
 	server.Router().POST("/keypost", KeyPost)
 	server.Router().POST("/jsonpost", JsonPost)
 	server.Router().GET("/error", DefaultError)

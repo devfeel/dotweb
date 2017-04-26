@@ -2,13 +2,6 @@ package dotweb
 
 import (
 	"fmt"
-	"github.com/devfeel/dotweb/cache"
-	"github.com/devfeel/dotweb/config"
-	"github.com/devfeel/dotweb/core"
-	"github.com/devfeel/dotweb/framework/json"
-	"github.com/devfeel/dotweb/logger"
-	"github.com/devfeel/dotweb/servers"
-	"github.com/devfeel/dotweb/session"
 	"net/http"
 	_ "net/http/pprof"
 	"runtime"
@@ -16,6 +9,14 @@ import (
 	"runtime/pprof"
 	"strconv"
 	"strings"
+
+	"github.com/devfeel/dotweb/cache"
+	"github.com/devfeel/dotweb/config"
+	"github.com/devfeel/dotweb/core"
+	"github.com/devfeel/dotweb/framework/json"
+	"github.com/devfeel/dotweb/logger"
+	"github.com/devfeel/dotweb/servers"
+	"github.com/devfeel/dotweb/session"
 )
 
 type (
@@ -25,11 +26,17 @@ type (
 		OfflineServer    servers.Server
 		Config           *config.Config
 		Modules          []*HttpModule
+		Middlewares      []Middleware
 		ExceptionHandler ExceptionHandle
 		AppContext       *core.ItemContext
 	}
 
 	ExceptionHandle func(*HttpContext, interface{})
+	NotFoundHandle  HttpHandle
+
+	// Handle is a function that can be registered to a route to handle HTTP
+	// requests. Like http.HandlerFunc, but has a special parameter *HttpContext contain all request and response data.
+	HttpHandle func(*HttpContext)
 )
 
 const (
@@ -45,7 +52,8 @@ func New() *DotWeb {
 	app := &DotWeb{
 		HttpServer:    NewHttpServer(),
 		OfflineServer: servers.NewOfflineServer(),
-		Modules:       make([]*HttpModule, 0, 10),
+		Modules:       make([]*HttpModule, 0),
+		Middlewares:   make([]Middleware, 0),
 		AppContext:    core.NewItemContext(),
 		Config:        config.NewConfig(),
 	}
@@ -90,17 +98,31 @@ func (app *DotWeb) SetProductionMode() {
 	app.Config.App.RunMode = RunMode_Production
 }
 
+//Use registers a middleware
+func (app *DotWeb) Use(m ...Middleware) {
+	step := len(app.Middlewares) - 1
+	for i := range m {
+		if m[i] != nil {
+			if step >= 0 {
+				app.Middlewares[step].SetNext(m[i])
+			}
+			app.Middlewares = append(app.Middlewares, m[i])
+			step++
+		}
+	}
+}
+
+//UseRequestLog register RequestLog middleware
+func (app *DotWeb) UseRequestLog() {
+	app.Use(&RequestLogMiddleware{})
+}
+
 /*
 * 添加处理模块
  */
 func (app *DotWeb) RegisterModule(module *HttpModule) {
 	app.Modules = append(app.Modules, module)
 	module.Server = app.HttpServer
-}
-
-//set session store config
-func (app *DotWeb) SetSessionConfig(storeConfig *session.StoreConfig) {
-	app.HttpServer.SetSessionConfig(storeConfig)
 }
 
 /*
@@ -110,13 +132,10 @@ func (app *DotWeb) SetExceptionHandle(handler ExceptionHandle) {
 	app.ExceptionHandler = handler
 }
 
-/*
-* 启动pprof服务，该端口号请不要与StartServer的端口号一致
- */
-func (app *DotWeb) StartPProfServer(httpport int) error {
-	port := ":" + strconv.Itoa(httpport)
-	err := http.ListenAndServe(port, nil)
-	return err
+//设置pprofserver启动配置，默认不启动，且该端口号请不要与StartServer的端口号一致
+func (app *DotWeb) SetPProfConfig(enabledPProf bool, httpport int) {
+	app.Config.App.EnabledPProf = enabledPProf
+	app.Config.App.PProfPort = httpport
 }
 
 //set log root path
@@ -165,8 +184,29 @@ func (app *DotWeb) StartServer(httpport int) error {
 		app.HttpServer.SetRenderer(NewInnerRenderer())
 	}
 
+	//start pprof server
+	if app.Config.App.EnabledPProf {
+		if app.Config.App.PProfPort == httpport {
+			errStr := "PProf Server and HttpServer have the same port"
+			logger.Logger().Warn("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] failed: "+errStr, LogTarget_HttpServer)
+		} else {
+			logger.Logger().Debug("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] Begin", LogTarget_HttpServer)
+			go func() {
+				err := http.ListenAndServe(":"+strconv.Itoa(app.Config.App.PProfPort), nil)
+				if err != nil {
+					logger.Logger().Warn("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] error: "+err.Error(), LogTarget_HttpServer)
+				}
+			}()
+		}
+	}
+
+	//add default httphandler with middlewares
+	app.Use(&xMiddleware{})
+
 	port := ":" + strconv.Itoa(httpport)
-	logger.Logger().Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
+	if app.Config.App.EnabledLog {
+		logger.Logger().Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
+	}
 	err := http.ListenAndServe(port, app.HttpServer)
 	return err
 }
@@ -188,6 +228,11 @@ func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
 		app.Config.App.RunMode = RunMode_Development
 	}
 
+	//CROS Config
+	if config.Server.EnabledAutoCORS {
+		app.HttpServer.Features.SetEnabledCROS()
+	}
+
 	app.HttpServer.SetEnabledGzip(config.Server.EnabledGzip)
 
 	//设置维护
@@ -199,7 +244,7 @@ func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
 	//设置session
 	if config.Session.EnabledSession {
 		app.HttpServer.SetEnabledSession(config.Session.EnabledSession)
-		app.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP))
+		app.HttpServer.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP))
 	}
 
 	//load router and register

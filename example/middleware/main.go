@@ -1,0 +1,127 @@
+package main
+
+import (
+	"fmt"
+	"github.com/devfeel/dotweb"
+	"net/http"
+	"strconv"
+	"time"
+)
+
+func main() {
+	//初始化DotServer
+	app := dotweb.New()
+
+	//设置dotserver日志目录
+	//如果不设置，默认不启用，且默认为当前目录
+	app.SetEnabledLog(true)
+
+	//开启development模式
+	app.SetDevelopmentMode()
+
+	//设置gzip开关
+	//app.SetEnabledGzip(true)
+
+	//设置路由
+	InitRoute(app.HttpServer)
+
+	InitModule(app)
+
+	app.UseRequestLog()
+	app.Use(
+		NewAccessFmtLog(1),
+		NewSimpleAuth("admin"),
+	)
+
+	//启动 监控服务
+	app.SetPProfConfig(true, 8081)
+
+	//全局容器
+	app.AppContext.Set("gstring", "gvalue")
+	app.AppContext.Set("gint", 1)
+
+	// 开始服务
+	port := 8080
+	fmt.Println("dotweb.StartServer => " + strconv.Itoa(port))
+	err := app.StartServer(port)
+	fmt.Println("dotweb.StartServer error => ", err)
+}
+
+func Index(ctx *dotweb.HttpContext) {
+	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
+	fmt.Println(time.Now(), "Index Handler")
+	ctx.WriteString("index => ", ctx.RouterParams)
+}
+
+func DefaultError(ctx *dotweb.HttpContext) {
+	panic("my panic error!")
+}
+
+func Redirect(ctx *dotweb.HttpContext) {
+	ctx.Redirect(http.StatusMovedPermanently, "http://www.baidu.com")
+}
+
+func InitRoute(server *dotweb.HttpServer) {
+	server.Router().GET("/", Index).SetEnabledCROS().SetOrigin("*")
+	server.Router().GET("/error", DefaultError)
+	server.Router().GET("/redirect", Redirect)
+}
+
+func InitModule(dotserver *dotweb.DotWeb) {
+	dotserver.RegisterModule(&dotweb.HttpModule{
+		OnBeginRequest: func(ctx *dotweb.HttpContext) {
+			fmt.Println(time.Now(), "HttpModule BeginRequest1:", ctx.Request.RequestURI)
+		},
+		OnEndRequest: func(ctx *dotweb.HttpContext) {
+			fmt.Println(time.Now(), "HttpModule EndRequest1:", ctx.Request.RequestURI)
+		},
+	})
+
+	dotserver.RegisterModule(&dotweb.HttpModule{
+		OnBeginRequest: func(ctx *dotweb.HttpContext) {
+			fmt.Println(time.Now(), "HttpModule BeginRequest2:", ctx.Request.RequestURI)
+		},
+	})
+	dotserver.RegisterModule(&dotweb.HttpModule{
+		OnEndRequest: func(ctx *dotweb.HttpContext) {
+			fmt.Println(time.Now(), "HttpModule EndRequest3:", ctx.Request.RequestURI)
+		},
+	})
+}
+
+type AccessFmtLog struct {
+	dotweb.BaseMiddlware
+	Index int
+}
+
+func (m *AccessFmtLog) Handle(ctx *dotweb.HttpContext) error {
+	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] begin request -> ", ctx.Request.RequestURI)
+	err := m.Next(ctx)
+	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] finish request ", err, " -> ", ctx.Request.RequestURI)
+	return err
+}
+
+func NewAccessFmtLog(index int) *AccessFmtLog {
+	return &AccessFmtLog{Index: index}
+}
+
+type SimpleAuth struct {
+	dotweb.BaseMiddlware
+	exactToken string
+}
+
+func (m *SimpleAuth) Handle(ctx *dotweb.HttpContext) error {
+	fmt.Println(time.Now(), "[SimpleAuth] begin request -> ", ctx.Request.RequestURI)
+	var err error
+	if ctx.QueryString("token") != m.exactToken {
+		ctx.Write(http.StatusUnauthorized, []byte("sorry, Unauthorized"))
+	} else {
+		err = m.Next(ctx)
+	}
+	fmt.Println(time.Now(), "[SimpleAuth] finish request ", err, " -> ", ctx.Request.RequestURI)
+	return err
+}
+
+func NewSimpleAuth(exactToken string) *SimpleAuth {
+	return &SimpleAuth{exactToken: exactToken}
+}
