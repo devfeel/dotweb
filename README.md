@@ -199,11 +199,18 @@ func(ctx *dotweb.HttpContext) TestBind{
 
 ```
 
-## 中间件(拦截器)
-#### RegisterModule
+## 中间件
+#### RegisterModule - 拦截器
 * 支持OnBeginRequest、OnEndRequest两类中间件
 * 通过实现HttpModule.OnBeginRequest、HttpModule.OnEndRequest接口实现自定义中间件
 * 通过设置HttpContext.End()提前终止请求
+
+#### Middleware - 中间件
+* 支持粒度：App、Group、RouterNode
+* DotWeb.Use(m ...Middleware)
+* Group.Use(m ...Middleware)
+* RouterNode.Use(m ...Middleware)
+* 启用顺序：App -> Group -> RouterNode
 
 ## 异常
 #### 500错误
