@@ -222,6 +222,22 @@ func InitRoute(server *dotweb.HttpServer) {
 	g.GET("/", Index)
 	g.GET("/use", Index).Use(NewAccessFmtLog("group-use"))
 }
+
+type AccessFmtLog struct {
+	dotweb.BaseMiddlware
+	Index string
+}
+
+func (m *AccessFmtLog) Handle(ctx *dotweb.HttpContext) error {
+	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] begin request -> ", ctx.Request.RequestURI)
+	err := m.Next(ctx)
+	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] finish request ", err, " -> ", ctx.Request.RequestURI)
+	return err
+}
+
+func NewAccessFmtLog(index string) *AccessFmtLog {
+	return &AccessFmtLog{Index: index}
+}
 ```
 
 ## 异常
