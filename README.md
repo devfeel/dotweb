@@ -210,9 +210,9 @@ func(ctx *dotweb.HttpContext) TestBind{
 * DotWeb.Use(m ...Middleware)
 * Group.Use(m ...Middleware)
 * RouterNode.Use(m ...Middleware)
-* 启用顺序：App -> Group -> RouterNode
+* 启用顺序：App -> Group -> RouterNode，同级别下按Use的引入顺序执行
 ```go
-app.UseRequestLog()
+app.Use(NewAccessFmtLog("app"))
 
 func InitRoute(server *dotweb.HttpServer) {
 	server.Router().GET("/", Index)
