@@ -211,6 +211,18 @@ func(ctx *dotweb.HttpContext) TestBind{
 * Group.Use(m ...Middleware)
 * RouterNode.Use(m ...Middleware)
 * 启用顺序：App -> Group -> RouterNode
+```go
+app.UseRequestLog()
+
+func InitRoute(server *dotweb.HttpServer) {
+	server.Router().GET("/", Index)
+	server.Router().GET("/use", Index).Use(NewAccessFmtLog("Router-use"))
+
+	g := server.Group("/group").Use(NewAccessFmtLog("group"))
+	g.GET("/", Index)
+	g.GET("/use", Index).Use(NewAccessFmtLog("group-use"))
+}
+```
 
 ## 异常
 #### 500错误
