@@ -1,10 +1,10 @@
 package main
 
 import (
-	"datapipe/datapipe.web/framework/json"
 	"fmt"
 	"github.com/devfeel/dotweb"
 	"github.com/devfeel/dotweb/config"
+	"github.com/devfeel/dotweb/framework/json"
 )
 
 func main() {

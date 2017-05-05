@@ -25,12 +25,12 @@ func main() {
 	//设置路由
 	InitRoute(app.HttpServer)
 
-	InitModule(app)
+	//InitModule(app)
 
 	app.UseRequestLog()
 	app.Use(
-		NewAccessFmtLog(1),
-		NewSimpleAuth("admin"),
+		NewAccessFmtLog("app"),
+	//NewSimpleAuth("admin"),
 	)
 
 	//启动 监控服务
@@ -62,9 +62,12 @@ func Redirect(ctx *dotweb.HttpContext) {
 }
 
 func InitRoute(server *dotweb.HttpServer) {
-	server.Router().GET("/", Index).SetEnabledCROS().SetOrigin("*")
-	server.Router().GET("/error", DefaultError)
-	server.Router().GET("/redirect", Redirect)
+	server.Router().GET("/", Index)
+	server.Router().GET("/use", Index).Use(NewAccessFmtLog("Router-use"))
+
+	g := server.Group("/group").Use(NewAccessFmtLog("group"))
+	g.GET("/", Index)
+	g.GET("/use", Index).Use(NewAccessFmtLog("group-use"))
 }
 
 func InitModule(dotserver *dotweb.DotWeb) {
@@ -91,7 +94,7 @@ func InitModule(dotserver *dotweb.DotWeb) {
 
 type AccessFmtLog struct {
 	dotweb.BaseMiddlware
-	Index int
+	Index string
 }
 
 func (m *AccessFmtLog) Handle(ctx *dotweb.HttpContext) error {
@@ -101,7 +104,7 @@ func (m *AccessFmtLog) Handle(ctx *dotweb.HttpContext) error {
 	return err
 }
 
-func NewAccessFmtLog(index int) *AccessFmtLog {
+func NewAccessFmtLog(index string) *AccessFmtLog {
 	return &AccessFmtLog{Index: index}
 }
 

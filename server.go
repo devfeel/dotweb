@@ -15,7 +15,6 @@ import (
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/feature"
 	"github.com/devfeel/dotweb/logger"
-	"github.com/devfeel/dotweb/routers"
 	"golang.org/x/net/websocket"
 	"io"
 	"net/url"
@@ -164,6 +163,11 @@ func (server *HttpServer) Router() Router {
 	return server.router
 }
 
+//create new group with current HttpServer
+func (server *HttpServer) Group(prefix string) Group {
+	return NewGroup(prefix, server)
+}
+
 //get binder interface in server
 func (server *HttpServer) Binder() Binder {
 	return server.binder
@@ -227,16 +231,16 @@ type LogJson struct {
 	HttpBody   string
 }
 
-//wrap HttpHandle to httprouter.Handle
-func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) routers.Handle {
-	return func(w http.ResponseWriter, r *http.Request, vnode *routers.ValueNode) {
+//wrap HttpHandle to Handle
+func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandle {
+	return func(w http.ResponseWriter, r *http.Request, vnode *ValueNode) {
 		//get from pool
 		res := server.pool.response.Get().(*Response)
 		res.reset(w)
 		req := server.pool.request.Get().(*Request)
 		req.reset(r)
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(res, req, server, NewRouterNode(vnode.Node, vnode.Method), vnode.Params, handler)
+		httpCtx.Reset(res, req, server, vnode.Node, vnode.Params, handler)
 
 		//gzip
 		if server.ServerConfig.EnabledGzip {
@@ -327,9 +331,6 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) ro
 		//do features
 		httpCtx = server.doFeatures(httpCtx)
 
-		//do RouterNode features
-		httpCtx = httpCtx.RouterNode.doFeatures(httpCtx)
-
 		//处理前置Module集合
 		for _, module := range server.DotApp.Modules {
 			if module.OnBeginRequest != nil {
@@ -358,8 +359,8 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) ro
 }
 
 //wrap fileHandler to httprouter.Handle
-func (server *HttpServer) wrapFileHandle(fileHandler http.Handler) routers.Handle {
-	return func(w http.ResponseWriter, r *http.Request, vnode *routers.ValueNode) {
+func (server *HttpServer) wrapFileHandle(fileHandler http.Handler) RouterHandle {
+	return func(w http.ResponseWriter, r *http.Request, vnode *ValueNode) {
 		//增加状态计数
 		GlobalState.AddRequestCount(1)
 		startTime := time.Now()

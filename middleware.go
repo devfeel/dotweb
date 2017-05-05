@@ -28,15 +28,27 @@ func (bm *BaseMiddlware) Next(ctx *HttpContext) error {
 
 type xMiddleware struct {
 	BaseMiddlware
+	IsEnd bool
 }
 
 func (x *xMiddleware) Handle(ctx *HttpContext) error {
-	if x.next == nil {
+	if x.IsEnd {
 		ctx.handle(ctx)
 		return nil
 	} else {
-		return x.Next(ctx)
+		if x.next == nil {
+			if len(ctx.RouterNode.Middlewares()) <= 0 {
+				ctx.handle(ctx)
+			} else {
+				ctx.RouterNode.Use(&xMiddleware{IsEnd: true})
+				ctx.RouterNode.Middlewares()[0].Handle(ctx)
+			}
+			return nil
+		} else {
+			return x.Next(ctx)
+		}
 	}
+
 }
 
 //请求日志中间件

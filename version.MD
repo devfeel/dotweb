@@ -1,5 +1,23 @@
 ##dotweb版本记录：
 
+#### Version 0.3.11
+* 新增Group支持，可通过HttpServer.Group()或者NewGroup()创建，目前Group支持HEAD\GET\POST\PUT\OPTIONS\PATCH\DELETE路由方法
+* Middleware支持三个级别Use：DotWeb.Use\Group.Use\RouterNode.Use
+* 优化Router实现，移除router目录，整合xRouter和router.Router
+* 废弃：移除RouterNode级别的Feature支持，原RouterNode.Features.SetEnabledCROS 可通过自实现Middleware实现
+* 更新 example/middleware 目录
+```go
+func InitRoute(server *dotweb.HttpServer) {
+	server.Router().GET("/", Index)
+	server.Router().GET("/use", Index).Use(NewAccessFmtLog("Router-use"))
+
+	g := server.Group("/group").Use(NewAccessFmtLog("group"))
+	g.GET("/", Index)
+	g.GET("/use", Index).Use(NewAccessFmtLog("group-use"))
+}
+```
+* 2017-05-6 00:30
+
 #### Version 0.3.10
 * 新增Middleware支持，通过DotWeb.Use引入中间件，处理请求顺序在HttpModule之后，响应请求顺序在HttpModule之前
 * 用户实现Middleware interface开发自定义middleware，为简化代码，可基于BaseMiddlware开发

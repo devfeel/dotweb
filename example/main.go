@@ -86,7 +86,7 @@ func Redirect(ctx *dotweb.HttpContext) {
 }
 
 func InitRoute(server *dotweb.HttpServer) {
-	server.Router().GET("/", Index).SetEnabledCROS().SetOrigin("*")
+	server.Router().GET("/", Index)
 	server.Router().POST("/keypost", KeyPost)
 	server.Router().POST("/jsonpost", JsonPost)
 	server.Router().GET("/error", DefaultError)

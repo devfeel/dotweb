@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"github.com/devfeel/dotweb/cache"
 	"github.com/devfeel/dotweb/core"
-	"github.com/devfeel/dotweb/routers"
 	"github.com/devfeel/dotweb/session"
 	"time"
 )
@@ -21,8 +20,8 @@ const (
 
 type HttpContext struct {
 	Request      *Request
-	RouterNode   *RouterNode
-	RouterParams routers.Params
+	RouterNode   RouterNode
+	RouterParams Params
 	Response     *Response
 	WebSocket    *WebSocket
 	HijackConn   *HijackConn
@@ -39,7 +38,7 @@ type HttpContext struct {
 }
 
 //reset response attr
-func (ctx *HttpContext) Reset(res *Response, r *Request, server *HttpServer, node *RouterNode, params routers.Params, handler HttpHandle) {
+func (ctx *HttpContext) Reset(res *Response, r *Request, server *HttpServer, node RouterNode, params Params, handler HttpHandle) {
 	ctx.Request = r
 	ctx.Response = res
 	ctx.RouterNode = node
