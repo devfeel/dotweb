@@ -467,8 +467,9 @@ func logRequest(req *http.Request, timetaken int64) string {
 }
 
 //check request is the websocket request
+//check Connection contains upgrade
 func checkIsWebSocketRequest(req *http.Request) bool {
-	if req.Header.Get("Connection") == "Upgrade" {
+	if strings.Index(strings.ToLower(req.Header.Get("Connection")), "upgrade") >= 0 {
 		return true
 	}
 	return false
