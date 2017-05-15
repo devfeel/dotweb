@@ -39,6 +39,12 @@ dotweb.conf
     <router method="GET" path="/redirect" handler="Redirect" isuse="true"></router>
     <router method="GET" path="/error" handler="DefaultError" isuse="true"></router>
 </routers>
+<groups>
+    <group path="/admin" isuse="true">
+        <router method="GET" path="/login" handler="Login" isuse="true"></router>
+        <router method="GET" path="/logout" handler="Logout" isuse="true"></router>
+    </group>
+</groups>
 </config>
 ```
 dotweb.json.conf
@@ -87,6 +93,26 @@ dotweb.json.conf
             "path": "/error",
             "HandlerName": "DefaultError",
             "isuse": true
+        }
+    ],
+    "Groups": [
+        {
+            "Path": "/admin",
+            "Routers": [
+                {
+                    "Method": "GET",
+                    "Path": "/login",
+                    "HandlerName": "Login",
+                    "IsUse": true
+                },
+                {
+                    "Method": "GET",
+                    "Path": "/logout",
+                    "HandlerName": "Logout",
+                    "IsUse": true
+                }
+            ],
+            "IsUse": true
         }
     ]
 }
