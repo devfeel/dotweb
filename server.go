@@ -28,7 +28,6 @@ const (
 type (
 	//HttpModule定义
 	HttpModule struct {
-		Server *HttpServer
 		//响应请求时作为 HTTP 执行管线链中的第一个事件发生
 		OnBeginRequest func(*HttpContext)
 		//响应请求时作为 HTTP 执行管线链中的最后一个事件发生。
@@ -264,7 +263,7 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 				httpCtx.SessionID = sessionId
 			} else {
 				httpCtx.SessionID = server.GetSessionManager().NewSessionID()
-				cookie := http.Cookie{
+				cookie := &http.Cookie{
 					Name:  server.sessionManager.CookieName,
 					Value: url.QueryEscape(httpCtx.SessionID),
 					Path:  "/",
@@ -292,7 +291,7 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 
 				//handler the exception
 				if server.DotApp.ExceptionHandler != nil {
-					server.DotApp.ExceptionHandler(httpCtx, err)
+					server.DotApp.ExceptionHandler(httpCtx, fmt.Errorf("%v", err))
 				}
 
 				//if set enabledLog, take the error log

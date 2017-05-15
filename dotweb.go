@@ -32,7 +32,7 @@ type (
 		AppContext       *core.ItemContext
 	}
 
-	ExceptionHandle func(*HttpContext, interface{})
+	ExceptionHandle func(*HttpContext, error)
 	NotFoundHandle  http.Handler
 
 	// Handle is a function that can be registered to a route to handle HTTP
@@ -123,7 +123,6 @@ func (app *DotWeb) UseRequestLog() {
  */
 func (app *DotWeb) RegisterModule(module *HttpModule) {
 	app.Modules = append(app.Modules, module)
-	module.Server = app.HttpServer
 }
 
 /*
@@ -255,6 +254,18 @@ func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
 		}
 	}
 
+	//support group
+	for _, v := range config.Groups {
+		if v.IsUse {
+			g := app.HttpServer.Group(v.Path)
+			for _, r := range v.Routers {
+				if h, isok := app.HttpServer.Router().GetHandler(r.HandlerName); isok && r.IsUse {
+					g.RegisterRoute(strings.ToUpper(r.Method), r.Path, h)
+				}
+			}
+		}
+	}
+
 	//start server
 	port := config.Server.Port
 	if port <= 0 {
@@ -265,13 +276,13 @@ func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
 }
 
 //default exception handler
-func (ds *DotWeb) DefaultHTTPErrorHandler(ctx *HttpContext, errinfo interface{}) {
+func (ds *DotWeb) DefaultHTTPErrorHandler(ctx *HttpContext, err error) {
 	//输出内容
 	ctx.Response.WriteHeader(http.StatusInternalServerError)
 	ctx.Response.Header().Set(HeaderContentType, CharsetUTF8)
 	//if in development mode, output the error info
 	if ds.IsDevelopmentMode() {
-		ctx.WriteString(fmt.Sprintln(errinfo))
+		ctx.WriteString(fmt.Sprintln(err))
 	} else {
 		ctx.WriteString("Internal Server Error")
 	}

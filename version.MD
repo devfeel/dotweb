@@ -1,5 +1,14 @@
 ##dotweb版本记录：
 
+#### Version 0.3.12
+* ExceptionHandle定义由ExceptionHandle func(*HttpContext, interface{})调整为ExceptionHandle func(*HttpContext, error)
+* HttpContext.SetCookie定义由SetCookie(cookie http.Cookie)调整为SetCookie(cookie *http.Cookie)
+* HttpModule去除*Server属性
+* Group新增RegisterRoute(method, path string, h HttpHandle) 方法
+* 配置文件增加Group支持，可参考 example/config目录下xml与json示例配置文件
+* 更新 example/main 文件、example/config 目录
+* 2017-05-15 22:10
+
 #### Version 0.3.11
 * 新增Group支持，可通过HttpServer.Group()或者NewGroup()创建，目前Group支持HEAD\GET\POST\PUT\OPTIONS\PATCH\DELETE路由方法
 * Middleware支持三个级别Use：DotWeb.Use\Group.Use\RouterNode.Use

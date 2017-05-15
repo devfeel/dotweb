@@ -15,6 +15,7 @@ type (
 		Server  *ServerConfig   `xml:"server"`
 		Session *SessionConfig  `xml:"session"`
 		Routers []*RouterConfig `xml:"routers>router"`
+		Groups  []*GroupConfig  `xml:"groups>group"`
 	}
 	OfflineConfig struct {
 		Offline     bool   `xml:"offline,attr"`     //是否维护，默认false
@@ -50,6 +51,12 @@ type (
 		Path        string `xml:"path,attr"`
 		HandlerName string `xml:"handler,attr"`
 		IsUse       bool   `xml:"isuse,attr"` //是否启用，默认false
+	}
+
+	GroupConfig struct {
+		Path    string          `xml:"path,attr"`
+		Routers []*RouterConfig `xml:"router"`
+		IsUse   bool            `xml:"isuse,attr"` //是否启用，默认false
 	}
 )
 

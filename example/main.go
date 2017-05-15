@@ -78,7 +78,10 @@ func JsonPost(ctx *dotweb.HttpContext) {
 }
 
 func DefaultError(ctx *dotweb.HttpContext) {
-	panic("my panic error!")
+	//panic("my panic error!")
+	i := 0
+	b := 2 / i
+	ctx.WriteString(b)
 }
 
 func Redirect(ctx *dotweb.HttpContext) {

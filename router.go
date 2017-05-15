@@ -22,8 +22,8 @@ const (
 	RouteMethod_PUT       = "PUT"
 	RouteMethod_PATCH     = "PATCH"
 	RouteMethod_DELETE    = "DELETE"
-	RouteMethod_HiJack    = "HiJack"
-	RouteMethod_WebSocket = "WebSocket"
+	RouteMethod_HiJack    = "HIJACK"
+	RouteMethod_WebSocket = "WEBSOCKET"
 )
 
 var (
@@ -339,8 +339,8 @@ func (r *router) WebSocket(path string, handle HttpHandle) {
 func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandle) RouterNode {
 	var node *Node
 	handleName := handlerName(handle)
-	checkMethod := strings.ToUpper(routeMethod)
-	if _, exists := HttpMethodMap[checkMethod]; !exists {
+	routeMethod = strings.ToUpper(routeMethod)
+	if _, exists := HttpMethodMap[routeMethod]; !exists {
 		logger.Logger().Log("Dotweb:Router:RegisterRoute failed [illegal method] ["+routeMethod+"] ["+path+"] ["+handleName+"]", LogTarget_HttpServer, LogLevel_Warn)
 		return nil
 	} else {

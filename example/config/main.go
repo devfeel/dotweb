@@ -14,7 +14,7 @@ func main() {
 	//注册HttpHandler
 	RegisterHandler(app.HttpServer)
 
-	//appConfig := config.InitConfig("d:/dotweb.conf")
+	//appConfig := config.InitConfig("d:/gotmp/dotweb.conf")
 	//json config
 	appConfig := config.InitConfig("d:/gotmp/dotweb.json.conf", "json")
 
@@ -38,8 +38,18 @@ func Redirect(ctx *dotweb.HttpContext) {
 	ctx.Redirect(200, "http://www.baidu.com")
 }
 
+func Login(ctx *dotweb.HttpContext) {
+	ctx.WriteString("login")
+}
+
+func Logout(ctx *dotweb.HttpContext) {
+	ctx.WriteString("logout")
+}
+
 func RegisterHandler(server *dotweb.HttpServer) {
 	server.Router().RegisterHandler("Index", Index)
 	server.Router().RegisterHandler("DefaultError", DefaultError)
 	server.Router().RegisterHandler("Redirect", Redirect)
+	server.Router().RegisterHandler("Login", Login)
+	server.Router().RegisterHandler("Logout", Logout)
 }

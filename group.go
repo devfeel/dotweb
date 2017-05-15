@@ -11,6 +11,7 @@ type (
 		PATCH(path string, h HttpHandle) RouterNode
 		POST(path string, h HttpHandle) RouterNode
 		PUT(path string, h HttpHandle) RouterNode
+		RegisterRoute(method, path string, h HttpHandle) RouterNode
 	}
 	xGroup struct {
 		prefix      string
@@ -68,6 +69,10 @@ func (g *xGroup) PUT(path string, h HttpHandle) RouterNode {
 // Group creates a new sub-group with prefix and optional sub-group-level middleware.
 func (g *xGroup) Group(prefix string, m ...Middleware) Group {
 	return NewGroup(g.prefix+prefix, g.server).Use(g.middlewares...).Use(m...)
+}
+
+func (g *xGroup) RegisterRoute(method, path string, handler HttpHandle) RouterNode {
+	return g.server.Router().RegisterRoute(method, g.prefix+path, handler).Use(g.middlewares...)
 }
 
 func (g *xGroup) add(method, path string, handler HttpHandle) RouterNode {
