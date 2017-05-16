@@ -72,9 +72,10 @@ func (g *xGroup) Group(prefix string, m ...Middleware) Group {
 }
 
 func (g *xGroup) RegisterRoute(method, path string, handler HttpHandle) RouterNode {
-	return g.server.Router().RegisterRoute(method, g.prefix+path, handler).Use(g.middlewares...)
+	return g.add(method, path, handler)
 }
 
 func (g *xGroup) add(method, path string, handler HttpHandle) RouterNode {
-	return g.server.Router().RegisterRoute(method, g.prefix+path, handler).Use(g.middlewares...)
+	node := g.server.Router().RegisterRoute(method, g.prefix+path, handler).Use(g.middlewares...)
+	return node
 }
