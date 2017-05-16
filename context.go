@@ -144,8 +144,8 @@ func (ctx *HttpContext) IsEnd() bool {
 
 //redirect replies to the request with a redirect to url and with httpcode
 //default you can use http.StatusFound
-func (ctx *HttpContext) Redirect(code int, targetUrl string) {
-	ctx.Response.Redirect(code, targetUrl)
+func (ctx *HttpContext) Redirect(code int, targetUrl string) error {
+	return ctx.Response.Redirect(code, targetUrl)
 }
 
 /*
@@ -300,6 +300,12 @@ func (ctx *HttpContext) ReadCookie(name string) (*http.Cookie, error) {
 
 // write view content to response
 func (ctx *HttpContext) View(name string) error {
+	return ctx.ViewC(defaultHttpCode, name)
+}
+
+// write (httpCode, view content) to response
+func (ctx *HttpContext) ViewC(code int, name string) error {
+	ctx.SetStatusCode(code)
 	err := ctx.HttpServer.Renderer().Render(ctx.Response.Writer(), name, ctx.ViewData().GetCurrentMap(), ctx)
 	if err != nil {
 		panic(err.Error())
@@ -319,40 +325,60 @@ func (ctx *HttpContext) Write(code int, content []byte) (int, error) {
 
 // write string content to response
 func (ctx *HttpContext) WriteString(contents ...interface{}) (int, error) {
+	return ctx.WriteStringC(defaultHttpCode, contents...)
+}
+
+// write (httpCode, string) to response
+func (ctx *HttpContext) WriteStringC(code int, contents ...interface{}) (int, error) {
 	content := fmt.Sprint(contents...)
 	if ctx.IsHijack {
 		return ctx.HijackConn.WriteString(content)
 	} else {
-		return ctx.Response.Write(defaultHttpCode, []byte(content))
+		return ctx.Response.Write(code, []byte(content))
 	}
 }
 
 // write []byte content to response
 func (ctx *HttpContext) WriteBlob(contentType string, b []byte) (int, error) {
+	return ctx.WriteBlobC(defaultHttpCode, contentType, b)
+}
+
+// write (httpCode, []byte) to response
+func (ctx *HttpContext) WriteBlobC(code int, contentType string, b []byte) (int, error) {
 	if contentType != "" {
 		ctx.SetContentType(contentType)
 	}
 	if ctx.IsHijack {
 		return ctx.HijackConn.WriteBlob(b)
 	} else {
-		return ctx.Response.Write(defaultHttpCode, b)
+		return ctx.Response.Write(code, b)
 	}
 }
 
-// write json string to response
-//
+// write (httpCode, json string) to response
 // auto convert interface{} to json string
 func (ctx *HttpContext) WriteJson(i interface{}) (int, error) {
+	return ctx.WriteJsonC(defaultHttpCode, i)
+}
+
+// write (httpCode, json string) to response
+// auto convert interface{} to json string
+func (ctx *HttpContext) WriteJsonC(code int, i interface{}) (int, error) {
 	b, err := json.Marshal(i)
 	if err != nil {
 		return 0, err
 	}
-	return ctx.WriteJsonBlob(b)
+	return ctx.WriteJsonBlobC(code, b)
 }
 
-// write json string as []byte to response
+// write json []byte to response
 func (ctx *HttpContext) WriteJsonBlob(b []byte) (int, error) {
-	return ctx.WriteBlob(MIMEApplicationJSONCharsetUTF8, b)
+	return ctx.WriteJsonBlobC(defaultHttpCode, b)
+}
+
+// write (httpCode, json []byte) to response
+func (ctx *HttpContext) WriteJsonBlobC(code int, b []byte) (int, error) {
+	return ctx.WriteBlobC(code, MIMEApplicationJSONCharsetUTF8, b)
 }
 
 // write jsonp string to response

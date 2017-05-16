@@ -1,5 +1,12 @@
 ##dotweb版本记录：
 
+#### Version 0.3.13
+1、HttpContext增加ViewC、WriteStringC、WriteBlobC、WriteJsonC、WriteJsonBlobC方法，以支持传入指定HttpCode
+2、调整Redirect(code int, targetUrl string) 为 Redirect(code int, targetUrl string) error，增加error返回值
+3、DotWeb增加SetLogger方法，支持接入第三方Logger，需实现logger.AppLog接口
+4、新增 example/logger 目录
+* 2017-05-16 09:00
+
 #### Version 0.3.12
 * ExceptionHandle定义由ExceptionHandle func(*HttpContext, interface{})调整为ExceptionHandle func(*HttpContext, error)
 * HttpContext.SetCookie定义由SetCookie(cookie http.Cookie)调整为SetCookie(cookie *http.Cookie)

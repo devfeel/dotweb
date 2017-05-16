@@ -59,6 +59,9 @@ func New() *DotWeb {
 		Config:        config.NewConfig(),
 	}
 	app.HttpServer.setDotApp(app)
+
+	//init logger
+	logger.InitLog()
 	return app
 }
 
@@ -138,14 +141,19 @@ func (app *DotWeb) SetPProfConfig(enabledPProf bool, httpport int) {
 	app.Config.App.PProfPort = httpport
 }
 
+//set user logger, the logger must implement logger.AppLog interface
+func (app *DotWeb) SetLogger(log logger.AppLog) {
+	logger.SetLogger(log)
+}
+
 //set log root path
 func (app *DotWeb) SetLogPath(path string) {
-	logger.Logger().SetLogPath(path)
+	logger.SetLogPath(path)
 }
 
 //set enabled log flag
 func (app *DotWeb) SetEnabledLog(enabledLog bool) {
-	logger.Logger().SetEnabledLog(enabledLog)
+	logger.SetEnabledLog(enabledLog)
 }
 
 /*启动WebServer
@@ -153,6 +161,7 @@ func (app *DotWeb) SetEnabledLog(enabledLog bool) {
 * httpPort := 80
  */
 func (app *DotWeb) StartServer(httpport int) error {
+
 	//添加框架默认路由规则
 	//默认支持pprof信息查看
 	app.HttpServer.Router().GET("/dotweb/debug/pprof/:key", initPProf)
@@ -204,9 +213,7 @@ func (app *DotWeb) StartServer(httpport int) error {
 	app.Use(&xMiddleware{})
 
 	port := ":" + strconv.Itoa(httpport)
-	if app.Config.App.EnabledLog {
-		logger.Logger().Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
-	}
+	logger.Logger().Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
 	err := http.ListenAndServe(port, app.HttpServer)
 	return err
 }
@@ -217,9 +224,9 @@ func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
 
 	//log config
 	if config.App.LogPath != "" {
-		logger.Logger().SetLogPath(config.App.LogPath)
+		logger.SetLogPath(config.App.LogPath)
 	}
-	logger.Logger().SetEnabledLog(config.App.EnabledLog)
+	logger.SetEnabledLog(config.App.EnabledLog)
 
 	//run mode config
 	if app.Config.App.RunMode != RunMode_Development && app.Config.App.RunMode != RunMode_Production {

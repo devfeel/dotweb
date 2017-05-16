@@ -58,7 +58,7 @@ func main() {
 
 func Index(ctx *dotweb.HttpContext) {
 	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	ctx.WriteString("index => ", ctx.RouterParams)
+	ctx.WriteStringC(201, "index => ", ctx.RouterParams)
 }
 
 func IndexReg(ctx *dotweb.HttpContext) {
@@ -85,7 +85,10 @@ func DefaultError(ctx *dotweb.HttpContext) {
 }
 
 func Redirect(ctx *dotweb.HttpContext) {
-	ctx.Redirect(http.StatusMovedPermanently, "http://www.baidu.com")
+	err := ctx.Redirect(http.StatusMovedPermanently, "http://www.baidu.com")
+	if err != nil {
+		ctx.WriteString(err)
+	}
 }
 
 func InitRoute(server *dotweb.HttpServer) {

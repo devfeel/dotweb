@@ -1,7 +1,9 @@
 package logger
 
 import (
+	"fmt"
 	"github.com/devfeel/dotweb/framework/file"
+	"reflect"
 )
 
 const (
@@ -24,14 +26,41 @@ type AppLog interface {
 var (
 	appLog         AppLog
 	DefaultLogPath string
+	EnabledLog     bool = true
 )
 
 func Logger() AppLog {
 	return appLog
 }
 
-func init() {
-	DefaultLogPath = file.GetCurrentDirectory()
-	appLog = NewXLog(DefaultLogPath)
-	appLog.SetEnabledLog(true) //default enabled log
+func SetLogger(logger AppLog) {
+	appLog = logger
+	logger.SetLogPath(DefaultLogPath)
+	logger.SetEnabledLog(EnabledLog)
+}
+
+func SetLogPath(path string) {
+	DefaultLogPath = path
+	if appLog != nil {
+		appLog.SetLogPath(path)
+	}
+}
+
+func SetEnabledLog(isLog bool) {
+	EnabledLog = isLog
+	if appLog != nil {
+		appLog.SetEnabledLog(isLog)
+	}
+}
+
+func InitLog() {
+	if DefaultLogPath == "" {
+		DefaultLogPath = file.GetCurrentDirectory()
+	}
+	if appLog == nil {
+		appLog = NewXLog()
+	}
+
+	SetLogPath(DefaultLogPath) //set default log path
+	SetEnabledLog(EnabledLog)  //set default enabled log
 }

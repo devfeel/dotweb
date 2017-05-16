@@ -20,10 +20,8 @@ type xLog struct {
 }
 
 //create new xLog
-func NewXLog(logPath string) *xLog {
+func NewXLog() *xLog {
 	l := &xLog{logChan_Custom: make(chan chanLog, 10000)}
-	//设置日志根目录
-	l.SetLogPath(logPath)
 	go l.handleCustom()
 	return l
 }
@@ -36,19 +34,19 @@ const (
 )
 
 func (l *xLog) Debug(log string, logTarget string) {
-	l.Log(log, logTarget, "debug")
+	l.Log(log, logTarget, LogLevel_Debug)
 }
 
 func (l *xLog) Info(log string, logTarget string) {
-	l.Log(log, logTarget, "info")
+	l.Log(log, logTarget, LogLevel_Info)
 }
 
 func (l *xLog) Warn(log string, logTarget string) {
-	l.Log(log, logTarget, "warn")
+	l.Log(log, logTarget, LogLevel_Warn)
 }
 
 func (l *xLog) Error(log string, logTarget string) {
-	l.Log(log, logTarget, "error")
+	l.Log(log, logTarget, LogLevel_Error)
 }
 
 func (l *xLog) Log(log string, logTarget string, logLevel string) {

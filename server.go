@@ -295,7 +295,7 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 				}
 
 				//if set enabledLog, take the error log
-				if server.DotApp.Config.App.EnabledLog {
+				if logger.EnabledLog {
 					//记录访问日志
 					headinfo := fmt.Sprintln(httpCtx.Response.Header)
 					logJson := LogJson{
