@@ -298,6 +298,9 @@ func (ds *DotWeb) DefaultHTTPErrorHandler(ctx *HttpContext, err error) {
 	ctx.Response.Header().Set(HeaderContentType, CharsetUTF8)
 	//if in development mode, output the error info
 	if ds.IsDevelopmentMode() {
+		//buf := make([]byte, 4096)
+		//n := runtime.Stack(buf, true)
+		//stack := string(buf[:n])
 		ctx.WriteString(fmt.Sprintln(err))
 	} else {
 		ctx.WriteString("Internal Server Error")

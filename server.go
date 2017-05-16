@@ -287,7 +287,7 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 		defer func() {
 			var errmsg string
 			if err := recover(); err != nil {
-				errmsg = exception.CatchError("httpserver::RouterHandle", LogTarget_HttpServer, err)
+				errmsg = exception.CatchError("HttpServer::RouterHandle", LogTarget_HttpServer, err)
 
 				//handler the exception
 				if server.DotApp.ExceptionHandler != nil {

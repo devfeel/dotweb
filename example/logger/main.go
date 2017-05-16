@@ -17,7 +17,7 @@ func main() {
 
 	//设置dotserver日志目录
 	//如果不设置，默认启用，且默认为当前目录
-	app.SetLogger(NewYLog())
+	//app.SetLogger(NewYLog())
 	app.SetEnabledLog(true)
 	app.SetLogPath("d:/gotmp/")
 
@@ -41,6 +41,7 @@ func main() {
 
 func Index(ctx *dotweb.HttpContext) {
 	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
+	logger.Logger().Info("xxxx", "x")
 	ctx.WriteStringC(201, "index => ", ctx.RouterParams)
 }
 
