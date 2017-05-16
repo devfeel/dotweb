@@ -49,8 +49,8 @@ func main() {
 
 func Index(ctx *dotweb.HttpContext) {
 	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Println(time.Now(), "Index Handler")
-	ctx.WriteString("index => ", ctx.RouterParams)
+	//fmt.Println(time.Now(), "Index Handler")
+	ctx.WriteString("index  => ", fmt.Sprint(ctx.RouterNode.Middlewares()))
 }
 
 func DefaultError(ctx *dotweb.HttpContext) {
@@ -65,7 +65,7 @@ func InitRoute(server *dotweb.HttpServer) {
 	server.Router().GET("/", Index)
 	server.Router().GET("/use", Index).Use(NewAccessFmtLog("Router-use"))
 
-	g := server.Group("/group").Use(NewAccessFmtLog("group"))
+	g := server.Group("/group").Use(NewAccessFmtLog("group")).Use(NewSimpleAuth("admin"))
 	g.GET("/", Index)
 	g.GET("/use", Index).Use(NewAccessFmtLog("group-use"))
 }
