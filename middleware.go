@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+type MiddlewareFunc func() Middleware
+
 // Middleware middleware interface
 type Middleware interface {
 	Handle(ctx *HttpContext) error
