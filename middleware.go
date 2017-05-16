@@ -3,6 +3,7 @@ package dotweb
 import (
 	"github.com/devfeel/dotweb/framework/convert"
 	"github.com/devfeel/dotweb/logger"
+	"reflect"
 	"time"
 )
 
@@ -34,15 +35,18 @@ type xMiddleware struct {
 }
 
 func (x *xMiddleware) Handle(ctx *HttpContext) error {
+	len := len(ctx.RouterNode.Middlewares())
 	if x.IsEnd {
 		ctx.handle(ctx)
 		return nil
 	} else {
 		if x.next == nil {
-			if len(ctx.RouterNode.Middlewares()) <= 0 {
+			if len <= 0 {
 				ctx.handle(ctx)
 			} else {
-				ctx.RouterNode.Use(&xMiddleware{IsEnd: true})
+				if reflect.TypeOf(ctx.RouterNode.Middlewares()[len-1]).String() != "*dotweb.xMiddleware" {
+					ctx.RouterNode.Use(&xMiddleware{IsEnd: true})
+				}
 				ctx.RouterNode.Middlewares()[0].Handle(ctx)
 			}
 			return nil

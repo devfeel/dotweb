@@ -17,6 +17,7 @@ import (
 	"github.com/devfeel/dotweb/logger"
 	"github.com/devfeel/dotweb/servers"
 	"github.com/devfeel/dotweb/session"
+	"sync"
 )
 
 type (
@@ -30,6 +31,8 @@ type (
 		ExceptionHandler ExceptionHandle
 		NotFoundHandler  NotFoundHandle
 		AppContext       *core.ItemContext
+		middlewareMap    map[string]MiddlewareFunc
+		middlewareMutex  *sync.RWMutex
 	}
 
 	ExceptionHandle func(*HttpContext, error)
@@ -51,18 +54,35 @@ const (
  */
 func New() *DotWeb {
 	app := &DotWeb{
-		HttpServer:    NewHttpServer(),
-		OfflineServer: servers.NewOfflineServer(),
-		Modules:       make([]*HttpModule, 0),
-		Middlewares:   make([]Middleware, 0),
-		AppContext:    core.NewItemContext(),
-		Config:        config.NewConfig(),
+		HttpServer:      NewHttpServer(),
+		OfflineServer:   servers.NewOfflineServer(),
+		Modules:         make([]*HttpModule, 0),
+		Middlewares:     make([]Middleware, 0),
+		AppContext:      core.NewItemContext(),
+		Config:          config.NewConfig(),
+		middlewareMap:   make(map[string]MiddlewareFunc),
+		middlewareMutex: new(sync.RWMutex),
 	}
 	app.HttpServer.setDotApp(app)
 
 	//init logger
 	logger.InitLog()
 	return app
+}
+
+//register middleware with gived name & middleware
+func (app *DotWeb) RegisterMiddlewareFunc(name string, middleFunc MiddlewareFunc) {
+	app.middlewareMutex.Lock()
+	app.middlewareMap[name] = middleFunc
+	app.middlewareMutex.Unlock()
+}
+
+//get middleware with gived name
+func (app *DotWeb) GetMiddlewareFunc(name string) (MiddlewareFunc, bool) {
+	app.middlewareMutex.RLock()
+	v, exists := app.middlewareMap[name]
+	app.middlewareMutex.RUnlock()
+	return v, exists
 }
 
 /*
@@ -192,20 +212,57 @@ func (app *DotWeb) SetConfig(config *config.Config) error {
 		app.HttpServer.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP))
 	}
 
-	//load router and register
-	for _, v := range config.Routers {
-		if h, isok := app.HttpServer.Router().GetHandler(v.HandlerName); isok && v.IsUse {
-			app.HttpServer.Router().RegisterRoute(strings.ToUpper(v.Method), v.Path, h)
+	//register app's middleware
+	for _, m := range config.Middlewares {
+		if m.IsUse {
+			if mf, isok := app.GetMiddlewareFunc(m.Name); isok {
+				app.Use(mf())
+			}
 		}
+	}
+
+	//load router and register
+	for i := 0; i < len(config.Routers); i++ {
+		//fmt.Println("config.Routers ", i, " ", config.Routers[i])
+		if h, isok := app.HttpServer.Router().GetHandler(config.Routers[i].HandlerName); isok && config.Routers[i].IsUse {
+			node := app.HttpServer.Router().RegisterRoute(strings.ToUpper(config.Routers[i].Method), config.Routers[i].Path, h)
+			//use middleware
+			for _, m := range config.Routers[i].Middlewares {
+				if m.IsUse {
+					if mf, isok := app.GetMiddlewareFunc(m.Name); isok {
+						node.Use(mf())
+						//fmt.Println("config.Routers ", i, " ", node)
+					}
+				}
+			}
+		}
+
 	}
 
 	//support group
 	for _, v := range config.Groups {
 		if v.IsUse {
 			g := app.HttpServer.Group(v.Path)
+			//use middleware
+			for _, m := range v.Middlewares {
+				if m.IsUse {
+					if mf, isok := app.GetMiddlewareFunc(m.Name); isok {
+						g.Use(mf())
+					}
+				}
+			}
+			//init group's router
 			for _, r := range v.Routers {
 				if h, isok := app.HttpServer.Router().GetHandler(r.HandlerName); isok && r.IsUse {
-					g.RegisterRoute(strings.ToUpper(r.Method), r.Path, h)
+					node := g.RegisterRoute(strings.ToUpper(r.Method), r.Path, h)
+					//use middleware
+					for _, m := range r.Middlewares {
+						if m.IsUse {
+							if mf, isok := app.GetMiddlewareFunc(m.Name); isok {
+								node.Use(mf())
+							}
+						}
+					}
 				}
 			}
 		}
