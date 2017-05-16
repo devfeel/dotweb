@@ -54,6 +54,9 @@ type Node struct {
 
 //Use registers a middleware
 func (n *Node) Use(m ...Middleware) *Node {
+	if len(m) <= 0 {
+		return n
+	}
 	step := len(n.middlewares) - 1
 	for i := range m {
 		if m[i] != nil {
