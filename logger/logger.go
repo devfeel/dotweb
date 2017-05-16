@@ -1,9 +1,7 @@
 package logger
 
 import (
-	"fmt"
 	"github.com/devfeel/dotweb/framework/file"
-	"reflect"
 )
 
 const (

@@ -156,6 +156,63 @@ func (app *DotWeb) SetEnabledLog(enabledLog bool) {
 	logger.SetEnabledLog(enabledLog)
 }
 
+//set config for app
+func (app *DotWeb) SetConfig(config *config.Config) error {
+	app.Config = config
+
+	//log config
+	if config.App.LogPath != "" {
+		logger.SetLogPath(config.App.LogPath)
+	}
+	logger.SetEnabledLog(config.App.EnabledLog)
+
+	//run mode config
+	if app.Config.App.RunMode != RunMode_Development && app.Config.App.RunMode != RunMode_Production {
+		app.Config.App.RunMode = RunMode_Development
+	} else {
+		app.Config.App.RunMode = RunMode_Development
+	}
+
+	//CROS Config
+	if config.Server.EnabledAutoCORS {
+		app.HttpServer.Features.SetEnabledCROS()
+	}
+
+	app.HttpServer.SetEnabledGzip(config.Server.EnabledGzip)
+
+	//设置维护
+	if config.Offline.Offline {
+		app.HttpServer.SetOffline(config.Offline.Offline, config.Offline.OfflineText, config.Offline.OfflineUrl)
+		app.OfflineServer.SetOffline(config.Offline.Offline, config.Offline.OfflineText, config.Offline.OfflineUrl)
+	}
+
+	//设置session
+	if config.Session.EnabledSession {
+		app.HttpServer.SetEnabledSession(config.Session.EnabledSession)
+		app.HttpServer.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP))
+	}
+
+	//load router and register
+	for _, v := range config.Routers {
+		if h, isok := app.HttpServer.Router().GetHandler(v.HandlerName); isok && v.IsUse {
+			app.HttpServer.Router().RegisterRoute(strings.ToUpper(v.Method), v.Path, h)
+		}
+	}
+
+	//support group
+	for _, v := range config.Groups {
+		if v.IsUse {
+			g := app.HttpServer.Group(v.Path)
+			for _, r := range v.Routers {
+				if h, isok := app.HttpServer.Router().GetHandler(r.HandlerName); isok && r.IsUse {
+					g.RegisterRoute(strings.ToUpper(r.Method), r.Path, h)
+				}
+			}
+		}
+	}
+	return nil
+}
+
 /*启动WebServer
 * 需要初始化HttpRoute
 * httpPort := 80
@@ -220,59 +277,11 @@ func (app *DotWeb) StartServer(httpport int) error {
 
 //start server with appconfig
 func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
-	app.Config = config
 
-	//log config
-	if config.App.LogPath != "" {
-		logger.SetLogPath(config.App.LogPath)
+	err := app.SetConfig(config)
+	if err != nil {
+		return err
 	}
-	logger.SetEnabledLog(config.App.EnabledLog)
-
-	//run mode config
-	if app.Config.App.RunMode != RunMode_Development && app.Config.App.RunMode != RunMode_Production {
-		app.Config.App.RunMode = RunMode_Development
-	} else {
-		app.Config.App.RunMode = RunMode_Development
-	}
-
-	//CROS Config
-	if config.Server.EnabledAutoCORS {
-		app.HttpServer.Features.SetEnabledCROS()
-	}
-
-	app.HttpServer.SetEnabledGzip(config.Server.EnabledGzip)
-
-	//设置维护
-	if config.Offline.Offline {
-		app.HttpServer.SetOffline(config.Offline.Offline, config.Offline.OfflineText, config.Offline.OfflineUrl)
-		app.OfflineServer.SetOffline(config.Offline.Offline, config.Offline.OfflineText, config.Offline.OfflineUrl)
-	}
-
-	//设置session
-	if config.Session.EnabledSession {
-		app.HttpServer.SetEnabledSession(config.Session.EnabledSession)
-		app.HttpServer.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP))
-	}
-
-	//load router and register
-	for _, v := range config.Routers {
-		if h, isok := app.HttpServer.Router().GetHandler(v.HandlerName); isok && v.IsUse {
-			app.HttpServer.Router().RegisterRoute(strings.ToUpper(v.Method), v.Path, h)
-		}
-	}
-
-	//support group
-	for _, v := range config.Groups {
-		if v.IsUse {
-			g := app.HttpServer.Group(v.Path)
-			for _, r := range v.Routers {
-				if h, isok := app.HttpServer.Router().GetHandler(r.HandlerName); isok && r.IsUse {
-					g.RegisterRoute(strings.ToUpper(r.Method), r.Path, h)
-				}
-			}
-		}
-	}
-
 	//start server
 	port := config.Server.Port
 	if port <= 0 {

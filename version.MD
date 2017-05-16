@@ -4,6 +4,7 @@
 * HttpContext增加ViewC、WriteStringC、WriteBlobC、WriteJsonC、WriteJsonBlobC方法，以支持传入指定HttpCode
 * 调整Redirect(code int, targetUrl string) 为 Redirect(code int, targetUrl string) error，增加error返回值
 * DotWeb增加SetLogger方法，支持接入第三方Logger，需实现logger.AppLog接口
+* DotWeb增加SetConfig方法，支持配置与启动分离
 * 新增 example/logger 目录
 * 2017-05-16 09:00
 

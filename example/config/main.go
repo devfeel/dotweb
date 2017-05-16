@@ -17,11 +17,15 @@ func main() {
 	//appConfig := config.InitConfig("d:/gotmp/dotweb.conf")
 	//json config
 	appConfig := config.InitConfig("d:/gotmp/dotweb.json.conf", "json")
-
 	fmt.Println(jsonutil.GetJsonString(appConfig))
 
+	err := app.SetConfig(appConfig)
+	if err != nil {
+		fmt.Println("dotweb.SetConfig error => " + fmt.Sprint(err))
+	}
+
 	fmt.Println("dotweb.StartServer => " + fmt.Sprint(appConfig))
-	err := app.StartServerWithConfig(appConfig)
+	err = app.StartServer(appConfig.Server.Port)
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
