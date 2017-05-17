@@ -12,6 +12,7 @@ type chanLog struct {
 	Content   string
 	LogTarget string
 	LogLevel  string
+	logCtx    *logContext
 }
 
 type xLog struct {
@@ -52,10 +53,17 @@ func (l *xLog) Error(log string, logTarget string) {
 
 func (l *xLog) Log(log string, logTarget string, logLevel string) {
 	if l.enabledLog {
+		skip := 3
+		logCtx, err := callerInfo(skip)
+		if err != nil {
+			fmt.Println("log println err! " + time.Now().Format("2006-01-02 15:04:05") + " Error: " + err.Error())
+			logCtx = &logContext{}
+		}
 		chanLog := chanLog{
 			LogTarget: logTarget + "_" + logLevel,
 			Content:   log,
 			LogLevel:  logLevel,
+			logCtx:    logCtx,
 		}
 		l.logChan_Custom <- chanLog
 	}
@@ -90,13 +98,7 @@ func (l *xLog) writeLog(chanLog chanLog, level string) {
 		filePath = filePath + "_" + time.Now().Format(defaultDateFormatForFileName) + ".log"
 		break
 	}
-
-	skip := 3
-	logCtx, err := callerInfo(skip)
-	if err != nil {
-		fmt.Println("log println err! " + time.Now().Format("2006-01-02 15:04:05") + " Error: " + err.Error())
-	}
-	log := fmt.Sprintf(fmt.Sprintf("[%s] %s [%s:%v] %s", chanLog.LogLevel, time.Now().Format(defaultFullTimeLayout), logCtx.fileName, logCtx.line, chanLog.Content))
+	log := fmt.Sprintf(fmt.Sprintf("[%s] %s [%s:%v] %s", chanLog.LogLevel, time.Now().Format(defaultFullTimeLayout), chanLog.logCtx.fileName, chanLog.logCtx.line, chanLog.Content))
 	writeFile(filePath, log)
 }
 
