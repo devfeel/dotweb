@@ -30,22 +30,39 @@ dotweb.conf
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-<app logpath="d:/" enabledlog="true" runmode="development" />
+<app logpath="d:/gotmp/" enabledlog="true" runmode="development"/>
 <offline offline="false" offlinetext="server is offline!" offlineurl="" />
 <server isrun="true" port="8080" enabledgzip="false" enabledlistdir="false" enabledautohead="true"/>
 <session enabled="true" mode="runtime" timeout="20"/>
+<middlewares>
+    <middleware name="applog" isuse="true" />
+</middlewares>
 <routers>
-    <router method="GET" path="/index" handler="Index" isuse="true"></router>
+    <router method="GET" path="/index" handler="Index" isuse="true">
+         <middleware name="urllog" isuse="true" />
+    </router>
+    <router method="GET" path="/index2" handler="Index" isuse="true">
+        <middleware name="urllog" isuse="true" />
+    </router>
+    <router method="GET" path="/index3" handler="Index" isuse="true">
+            <middleware name="urllog" isuse="true" />
+    </router>
     <router method="GET" path="/redirect" handler="Redirect" isuse="true"></router>
     <router method="GET" path="/error" handler="DefaultError" isuse="true"></router>
 </routers>
 <groups>
     <group path="/admin" isuse="true">
-        <router method="GET" path="/login" handler="Login" isuse="true"></router>
+        <middleware name="grouplog" isuse="true" />
+        <middleware name="simpleauth" isuse="true" />
+        <router method="GET" path="/login" handler="Login" isuse="true">
+            <middleware name="urllog" isuse="true" />
+        </router>
+        <router method="GET" path="/login3" handler="Login" isuse="true"></router>
         <router method="GET" path="/logout" handler="Logout" isuse="true"></router>
+        <router method="GET" path="/login2" handler="Login" isuse="true"></router>
     </group>
 </groups>
-</config>
+</config>　
 ```
 dotweb.json.conf
 ```json
