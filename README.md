@@ -41,12 +41,6 @@ dotweb.conf
     <router method="GET" path="/index" handler="Index" isuse="true">
          <middleware name="urllog" isuse="true" />
     </router>
-    <router method="GET" path="/index2" handler="Index" isuse="true">
-        <middleware name="urllog" isuse="true" />
-    </router>
-    <router method="GET" path="/index3" handler="Index" isuse="true">
-            <middleware name="urllog" isuse="true" />
-    </router>
     <router method="GET" path="/redirect" handler="Redirect" isuse="true"></router>
     <router method="GET" path="/error" handler="DefaultError" isuse="true"></router>
 </routers>
@@ -54,12 +48,8 @@ dotweb.conf
     <group path="/admin" isuse="true">
         <middleware name="grouplog" isuse="true" />
         <middleware name="simpleauth" isuse="true" />
-        <router method="GET" path="/login" handler="Login" isuse="true">
-            <middleware name="urllog" isuse="true" />
-        </router>
-        <router method="GET" path="/login3" handler="Login" isuse="true"></router>
+        <router method="GET" path="/login" handler="Login" isuse="true"></router>
         <router method="GET" path="/logout" handler="Logout" isuse="true"></router>
-        <router method="GET" path="/login2" handler="Login" isuse="true"></router>
     </group>
 </groups>
 </config>　
