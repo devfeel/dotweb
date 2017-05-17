@@ -222,21 +222,19 @@ func (app *DotWeb) SetConfig(config *config.Config) error {
 	}
 
 	//load router and register
-	for i := 0; i < len(config.Routers); i++ {
+	for _, r := range config.Routers {
 		//fmt.Println("config.Routers ", i, " ", config.Routers[i])
-		if h, isok := app.HttpServer.Router().GetHandler(config.Routers[i].HandlerName); isok && config.Routers[i].IsUse {
-			node := app.HttpServer.Router().RegisterRoute(strings.ToUpper(config.Routers[i].Method), config.Routers[i].Path, h)
+		if h, isok := app.HttpServer.Router().GetHandler(r.HandlerName); isok && r.IsUse {
+			node := app.HttpServer.Router().RegisterRoute(strings.ToUpper(r.Method), r.Path, h)
 			//use middleware
-			for _, m := range config.Routers[i].Middlewares {
+			for _, m := range r.Middlewares {
 				if m.IsUse {
 					if mf, isok := app.GetMiddlewareFunc(m.Name); isok {
 						node.Use(mf())
-						//fmt.Println("config.Routers ", i, " ", node)
 					}
 				}
 			}
 		}
-
 	}
 
 	//support group

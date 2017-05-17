@@ -16,9 +16,9 @@ func main() {
 	//注册HttpHandler
 	RegisterHandler(app.HttpServer)
 
-	appConfig := config.InitConfig("d:/gotmp/dotweb.conf")
+	//appConfig := config.InitConfig("d:/gotmp/dotweb.conf")
 	//json config
-	//appConfig := config.InitConfig("d:/gotmp/dotweb.json.conf", "json")
+	appConfig := config.InitConfig("d:/gotmp/dotweb.json.conf", "json")
 	fmt.Println(jsonutil.GetJsonString(appConfig))
 
 	RegisterMiddlewares(app)
