@@ -1,7 +1,7 @@
 # DotWeb
 简约大方的go Web微型框架
 
-## 安装：
+## Install：
 
 ```
 go get -u github.com/devfeel/dotweb
@@ -11,20 +11,35 @@ go get -u github.com/devfeel/dotweb
 ```go
 func StartServer() error {
 	//初始化DotApp
-	dotapp := dotweb.New()
+	app := dotweb.New()
 	//设置dotapp日志目录
-	dotapp.SetLogPath("/home/logs/wwwroot/")
+	app.SetLogPath("/home/logs/wwwroot/")
 	//设置路由
-	dotapp.HttpServer.Router().GET("/index", func(ctx *dotweb.HttpContext) {
+	app.HttpServer.Router().GET("/index", func(ctx *dotweb.HttpContext) {
 		ctx.WriteString("welcome to my first web!")
 	})
 	//开始服务
-	err := dotapp.StartServer(80)
+	err := app.StartServer(80)
 	return err
 }
 
 ```
 
+## Features
+* 支持静态路由、参数路由
+* 路由支持文件/目录服务，支持设置是否允许目录浏览
+* 中间件支持(Middleware\HttpModule双重支持)
+* Feature支持，可绑定HttpServer全局启用
+* 支持STRING/JSON/JSONP/HTML格式输出
+* 统一的HTTP错误处理
+* 统一的日志处理
+* 支持Hijack与websocket
+* 内建Cache支持
+* 支持接入第三方模板引擎（需实现dotweb.Renderer接口）
+* 可配置化，80%模块可通过配置维护
+
+
+## 配置化
 #### 通过配置文件启动
 dotweb.conf
 ```xml
@@ -125,19 +140,6 @@ dotweb.json.conf
 }
 ```
 #### 详细示例 - https://github.com/devfeel/dotweb-example
-
-## 特性
-* 支持静态路由、参数路由
-* 路由支持文件/目录服务，支持设置是否允许目录浏览
-* 中间件支持(Middleware\HttpModule双重支持)
-* Feature支持，可绑定HttpServer全局启用
-* 支持STRING/JSON/JSONP/HTML格式输出
-* 统一的HTTP错误处理
-* 统一的日志处理
-* 支持Hijack与websocket
-* 内建Cache支持
-* 支持接入第三方模板引擎（需实现dotweb.Renderer接口）
-* 支持维护配置，可设置维护欢迎语或维护跳转页
 
 ## 路由
 特殊说明：集成github.com/julienschmidt/httprouter
