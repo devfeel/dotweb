@@ -24,6 +24,7 @@ func StartServer() error {
 }
 
 ```
+#### 详细示例 - https://github.com/devfeel/dotweb-example
 
 ## Features
 * 支持静态路由、参数路由
@@ -139,7 +140,6 @@ dotweb.json.conf
     ]
 }
 ```
-#### 详细示例 - https://github.com/devfeel/dotweb-example
 
 ## 路由
 特殊说明：集成github.com/julienschmidt/httprouter
