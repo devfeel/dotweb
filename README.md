@@ -164,7 +164,7 @@ dotweb.json.conf
 14、Router.MatchPath(ctx *HttpContext, routePath string) bool
 ```
 接受两个参数，一个是URI路径，另一个是 HttpHandle 类型，设定匹配到该路径时执行的方法；
-#### 2)静态路由
+#### 2) 静态路由
 静态路由语法就是没有任何参数变量，pattern是一个固定的字符串。
 ```go
 package main
