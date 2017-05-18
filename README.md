@@ -140,7 +140,7 @@ dotweb.json.conf
 ```
 
 ## 4. Router
-#### 常规路由
+#### 1) 常规路由
 * 支持GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE 这几类请求方法
 * 支持HiJack\WebSocket\ServerFile三类特殊应用
 * 支持Any注册方式，默认兼容GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE方式
@@ -164,7 +164,7 @@ dotweb.json.conf
 14、Router.MatchPath(ctx *HttpContext, routePath string) bool
 ```
 接受两个参数，一个是URI路径，另一个是 HttpHandle 类型，设定匹配到该路径时执行的方法；
-#### 静态路由
+#### 2)静态路由
 静态路由语法就是没有任何参数变量，pattern是一个固定的字符串。
 ```go
 package main
@@ -183,7 +183,7 @@ func main() {
 ```
 测试：
 curl http://127.0.0.1/hello
-#### 参数路由
+#### 3) 参数路由
 参数路由以冒号 : 后面跟一个字符串作为参数名称，可以通过 HttpContext的 GetRouterName 方法获取路由参数的值。
 ```go
 package main
