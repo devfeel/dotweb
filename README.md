@@ -288,7 +288,7 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 
 ## 8.Exception
 #### 500错误
-* 默认设置: 当发生未处理异常时，会根据DebugMode向页面输出默认错误信息或者具体异常信息，并返回 500 错误头
+* 默认设置: 当发生未处理异常时，会根据RunMode向页面输出默认错误信息或者具体异常信息，并返回 500 错误头
 * 自定义: 通过DotServer.SetExceptionHandle(handler *ExceptionHandle)实现自定义异常处理逻辑
 ```go
 type ExceptionHandle func(*HttpContext, interface{})
