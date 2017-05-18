@@ -3,7 +3,7 @@
 #### Version 0.3.14
 * 配置文件支持Middleware，支持App\Group\Router三个级别
 * DotWeb增加RegisterMiddlewareFunc\GetMiddlewareFunc方法，用于创建中间件的方法注册
-* 默认日志增加文件名与行号输出 - logger/xlog.go
+* 默认日志增加文件名与行号输出 - logger/xlog.go - [贡献者: @淡定]
 * 更新 example/config 目录
 * 2017-05-17 15:00
 
