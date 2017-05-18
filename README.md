@@ -140,7 +140,6 @@ dotweb.json.conf
 ```
 
 ## 4.Router
-特殊说明：集成github.com/julienschmidt/httprouter
 #### 常规路由
 * 支持GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE 这几类请求方法
 * 支持HiJack\WebSocket\ServerFile三类特殊应用
