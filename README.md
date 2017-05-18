@@ -272,7 +272,21 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 }
 ```
 
-## 7.Exception
+## 7.Server Config
+#### HttpServer：
+* HttpServer.EnabledSession 设置是否开启Session支持，目前支持runtime、redis两种模式，默认不开启
+* HttpServer.EnabledGzip 设置是否开启Gzip支持，默认不开启
+* HttpServer.EnabledListDir 设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
+* HttpServer.EnabledAutoHEAD 设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
+
+#### Run Mode
+* 新增development、production模式
+* 默认development，通过DotWeb.SetDevelopmentMode\DotWeb.SetProductionMode开启相关模式
+* 若设置development模式，未处理异常会输出异常详细信息
+* 未来会拓展更多运行模式的配置
+
+
+## 8.Exception
 #### 500错误
 * 默认设置: 当发生未处理异常时，会根据DebugMode向页面输出默认错误信息或者具体异常信息，并返回 500 错误头
 * 自定义: 通过DotServer.SetExceptionHandle(handler *ExceptionHandle)实现自定义异常处理逻辑
@@ -280,7 +294,7 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 type ExceptionHandle func(*HttpContext, interface{})
 ```
 
-## 8.Session
+## 9.Session
 #### 支持runtime、redis两种
 * 默认不开启Session支持
 * runtime:基于内存存储实现session模块
@@ -295,19 +309,6 @@ dotapp.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("127.0.0.1:6379
 //HttpContext使用
 ctx.Session().Set(key, value)
 ```
-
-## 9.Server Config
-#### HttpServer：
-* HttpServer.EnabledSession 设置是否开启Session支持，目前支持runtime、redis两种模式，默认不开启
-* HttpServer.EnabledGzip 设置是否开启Gzip支持，默认不开启
-* HttpServer.EnabledListDir 设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
-* HttpServer.EnabledAutoHEAD 设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
-
-#### Run Mode
-* 新增development、production模式
-* 默认development，通过DotWeb.SetDevelopmentMode\DotWeb.SetProductionMode开启相关模式
-* 若设置development模式，未处理异常会输出异常详细信息
-* 未来会拓展更多运行模式的配置
 
 ## 外部依赖
 websocket - golang.org/x/net/websocket
