@@ -1,13 +1,13 @@
 # DotWeb
 简约大方的go Web微型框架
 
-## Install：
+## 1.Install
 
 ```
 go get -u github.com/devfeel/dotweb
 ```
 
-## Getting Started
+## 2.Getting Started
 ```go
 func StartServer() error {
 	//初始化DotApp
@@ -26,7 +26,7 @@ func StartServer() error {
 ```
 #### 详细示例 - https://github.com/devfeel/dotweb-example
 
-## Features
+## 3.Features
 * 支持静态路由、参数路由
 * 路由支持文件/目录服务，支持设置是否允许目录浏览
 * 中间件支持(Middleware\HttpModule双重支持)
@@ -139,7 +139,7 @@ dotweb.json.conf
 }
 ```
 
-## 路由
+## 4.Router
 特殊说明：集成github.com/julienschmidt/httprouter
 #### 常规路由
 * 支持GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE 这几类请求方法
@@ -211,7 +211,7 @@ func main() {
 <br>curl http://127.0.0.1/hello/category1/1
 
 
-## 绑定
+## 5.Bind
 * HttpContext.Bind(interface{})
 * 支持json、xml、Form数据
 * 集成echo的bind实现模块
@@ -232,7 +232,7 @@ func(ctx *dotweb.HttpContext) TestBind{
 
 ```
 
-## 中间件
+## 6.Middleware
 #### RegisterModule - 拦截器
 * 支持OnBeginRequest、OnEndRequest两类中间件
 * 通过实现HttpModule.OnBeginRequest、HttpModule.OnEndRequest接口实现自定义中间件
@@ -273,7 +273,7 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 }
 ```
 
-## 异常
+## 7.Exception
 #### 500错误
 * 默认设置: 当发生未处理异常时，会根据DebugMode向页面输出默认错误信息或者具体异常信息，并返回 500 错误头
 * 自定义: 通过DotServer.SetExceptionHandle(handler *ExceptionHandle)实现自定义异常处理逻辑
@@ -281,7 +281,7 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 type ExceptionHandle func(*HttpContext, interface{})
 ```
 
-## Session
+## 8.Session
 #### 支持runtime、redis两种
 * 默认不开启Session支持
 * runtime:基于内存存储实现session模块
@@ -297,7 +297,7 @@ dotapp.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("127.0.0.1:6379
 ctx.Session().Set(key, value)
 ```
 
-## Server Config
+## 9.Server Config
 #### HttpServer：
 * HttpServer.EnabledSession 设置是否开启Session支持，目前支持runtime、redis两种模式，默认不开启
 * HttpServer.EnabledGzip 设置是否开启Gzip支持，默认不开启
