@@ -7,7 +7,7 @@
 go get -u github.com/devfeel/dotweb
 ```
 
-## 快速开始：
+## Getting Started
 ```go
 func StartServer() error {
 	//初始化DotApp
@@ -39,9 +39,7 @@ func StartServer() error {
 * 支持接入第三方模板引擎（需实现dotweb.Renderer接口）
 * 可配置化，80%模块可通过配置维护
 
-
-## 配置化
-#### 通过配置文件启动
+#### Config Example
 dotweb.conf
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
