@@ -15,7 +15,7 @@ type Renderer interface {
 	//模板查找顺序从最后一个插入的元素开始往前找
 	//默认添加base、base/templates、base/views
 	SetTemplatePath(path ...string)
-	Render(io.Writer, string, interface{}, *HttpContext) error
+	Render(io.Writer, string, interface{}, Context) error
 }
 
 type innerRenderer struct {
@@ -23,7 +23,7 @@ type innerRenderer struct {
 }
 
 // Render render view use http/template
-func (r *innerRenderer) Render(w io.Writer, tpl string, data interface{}, ctx *HttpContext) error {
+func (r *innerRenderer) Render(w io.Writer, tpl string, data interface{}, ctx Context) error {
 	t, err := r.parseFile(tpl)
 	if err != nil {
 		return err

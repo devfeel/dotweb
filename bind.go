@@ -15,13 +15,13 @@ const (
 type (
 	// Binder is the interface that wraps the Bind method.
 	Binder interface {
-		Bind(interface{}, *HttpContext) error
+		Bind(interface{}, Context) error
 	}
 
 	binder struct{}
 )
 
-func (b *binder) Bind(i interface{}, ctx *HttpContext) (err error) {
+func (b *binder) Bind(i interface{}, ctx Context) (err error) {
 	req := ctx.Request()
 	ctype := req.Header.Get(HeaderContentType)
 	if req.Body == nil {

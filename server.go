@@ -213,7 +213,7 @@ func (server *HttpServer) SetEnabledGzip(isEnabled bool) {
 }
 
 //do features...
-func (server *HttpServer) doFeatures(ctx *HttpContext) *HttpContext {
+func (server *HttpServer) doFeatures(ctx Context) Context {
 	//处理 cros feature
 	if server.Features.CROSConfig != nil {
 		c := server.Features.CROSConfig
@@ -328,7 +328,7 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 		}()
 
 		//do features
-		httpCtx = server.doFeatures(httpCtx)
+		server.doFeatures(httpCtx)
 
 		//处理前置Module集合
 		for _, module := range server.DotApp.Modules {

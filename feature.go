@@ -14,7 +14,7 @@ func init() {
 }
 
 //set CROS config on HttpContext
-func (f *xFeatureTools) SetCROSConfig(ctx *HttpContext, c *feature.CROSConfig) {
+func (f *xFeatureTools) SetCROSConfig(ctx Context, c *feature.CROSConfig) {
 	ctx.Response().SetHeader(HeaderAccessControlAllowOrigin, c.AllowedOrigins)
 	ctx.Response().SetHeader(HeaderAccessControlAllowMethods, c.AllowedMethods)
 	ctx.Response().SetHeader(HeaderAccessControlAllowHeaders, c.AllowedHeaders)

@@ -162,7 +162,7 @@ dotweb.json.conf
 11、Router.RegisterRoute(routeMethod string, path string, handle HttpHandle)
 12、Router.RegisterHandler(name string, handler HttpHandle)
 13、Router.GetHandler(name string) (HttpHandle, bool)
-14、Router.MatchPath(ctx *HttpContext, routePath string) bool
+14、Router.MatchPath(ctx Context, routePath string) bool
 ```
 接受两个参数，一个是URI路径，另一个是 HttpHandle 类型，设定匹配到该路径时执行的方法；
 #### 2) 静态路由
@@ -294,7 +294,7 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 * 默认设置: 当发生未处理异常时，会根据RunMode向页面输出默认错误信息或者具体异常信息，并返回 500 错误头
 * 自定义: 通过DotServer.SetExceptionHandle(handler *ExceptionHandle)实现自定义异常处理逻辑
 ```go
-type ExceptionHandle func(*HttpContext, interface{})
+type ExceptionHandle func(Context, error)
 ```
 
 ## 9. Session

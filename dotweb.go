@@ -39,7 +39,7 @@ type (
 	NotFoundHandle  http.Handler
 
 	// Handle is a function that can be registered to a route to handle HTTP
-	// requests. Like http.HandlerFunc, but has a special parameter *HttpContext contain all request and response data.
+	// requests. Like http.HandlerFunc, but has a special parameter Context contain all request and response data.
 	HttpHandle func(Context) error
 )
 
