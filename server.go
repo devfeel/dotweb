@@ -430,7 +430,7 @@ func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Hand
 }
 
 //get default log string
-func logWebsocketContext(ctx *HttpContext, timetaken int64) string {
+func logWebsocketContext(ctx Context, timetaken int64) string {
 	var reqbytelen, resbytelen, method, proto, status, userip string
 	if ctx != nil {
 		reqbytelen = convert.Int642String(ctx.Request().ContentLength)
