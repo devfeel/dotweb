@@ -15,8 +15,9 @@ func StartServer() error {
 	//设置dotapp日志目录
 	app.SetLogPath("/home/logs/wwwroot/")
 	//设置路由
-	app.HttpServer.Router().GET("/index", func(ctx *dotweb.HttpContext) {
-		ctx.WriteString("welcome to my first web!")
+	app.HttpServer.Router().GET("/index", func(ctx dotweb.Context) error{
+		_, err := ctx.WriteString("welcome to my first web!")
+		return err
 	})
 	//开始服务
 	err := app.StartServer(80)
@@ -194,13 +195,15 @@ import (
 
 func main() {
     dotapp := dotweb.New()
-    dotapp.HttpServer.Router().GET("/hello/:name", func(ctx *dotweb.HttpContext) {
-        ctx.WriteString("hello " + ctx.GetRouterName("name"))
+    dotapp.HttpServer.Router().GET("/hello/:name", func(ctx dotweb.Context) error{
+        _, err := ctx.WriteString("hello " + ctx.GetRouterName("name"))
+        return err
     })
-    dotapp.HttpServer.Router().GET("/news/:category/:newsid", func(ctx *dotweb.HttpContext) {
+    dotapp.HttpServer.Router().GET("/news/:category/:newsid", func(ctx dotweb.Context) error{
     	category := ctx.GetRouterName("category")
 	    newsid := ctx.GetRouterName("newsid")
-        ctx.WriteString("news info: category=" + category + " newsid=" + newsid)
+        _, err := ctx.WriteString("news info: category=" + category + " newsid=" + newsid)
+        return err
     })
     dotapp.StartServer(80)
 }
@@ -260,7 +263,7 @@ type AccessFmtLog struct {
 	Index string
 }
 
-func (m *AccessFmtLog) Handle(ctx *dotweb.HttpContext) error {
+func (m *AccessFmtLog) Handle(ctx dotweb.Context) error {
 	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] begin request -> ", ctx.Request.RequestURI)
 	err := m.Next(ctx)
 	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] finish request ", err, " -> ", ctx.Request.RequestURI)
