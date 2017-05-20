@@ -19,7 +19,6 @@ const (
 )
 
 type (
-	//预留，暂未启用
 	Context interface {
 		HttpServer() *HttpServer
 		Response() *Response
