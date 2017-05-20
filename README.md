@@ -296,6 +296,12 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 ```go
 type ExceptionHandle func(Context, error)
 ```
+#### 404错误
+* 默认设置: 当发生404异常时，会默认使用http.NotFound处理
+* 自定义设置: 若设置了DotWeb.NotFoundHandler，当发生404时，通过该自定义实现处理逻辑
+```go
+type NotFoundHandle  func(http.ResponseWriter, *http.Request)
+```
 
 ## 9. Session
 #### 支持runtime、redis两种
