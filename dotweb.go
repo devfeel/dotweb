@@ -281,12 +281,7 @@ func (app *DotWeb) SetConfig(config *config.Config) error {
  */
 func (app *DotWeb) StartServer(httpport int) error {
 
-	//添加框架默认路由规则
-	//默认支持pprof信息查看
-	app.HttpServer.Router().GET("/dotweb/debug/pprof/:key", initPProf)
-	app.HttpServer.Router().GET("/dotweb/debug/freemem", freeMemory)
-	app.HttpServer.Router().GET("/dotweb/state", showServerState)
-	app.HttpServer.Router().GET("/dotweb/query/:key", showQuery)
+	initInnerRouter(app.HttpServer)
 
 	if app.ExceptionHandler == nil {
 		app.SetExceptionHandle(app.DefaultHTTPErrorHandler)
@@ -365,6 +360,16 @@ func (ds *DotWeb) DefaultHTTPErrorHandler(ctx Context, err error) {
 	} else {
 		ctx.WriteString("Internal Server Error")
 	}
+}
+
+//添加框架内部路由规则
+func initInnerRouter(server *HttpServer) {
+	//默认支持pprof信息查看
+	gInner := server.Group("/dotweb")
+	gInner.GET("/debug/pprof/:key", initPProf)
+	gInner.GET("/debug/freemem", freeMemory)
+	gInner.GET("/state", showServerState)
+	gInner.GET("/query/:key", showQuery)
 }
 
 //query pprof debug info

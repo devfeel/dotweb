@@ -324,9 +324,6 @@ func (ctx *HttpContext) View(name string) error {
 func (ctx *HttpContext) ViewC(code int, name string) error {
 	ctx.response.SetStatusCode(code)
 	err := ctx.httpServer.Renderer().Render(ctx.response.Writer(), name, ctx.ViewData().GetCurrentMap(), ctx)
-	if err != nil {
-		panic(err.Error())
-	}
 	return err
 }
 
