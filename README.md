@@ -298,7 +298,7 @@ type ExceptionHandle func(Context, error)
 ```
 #### 404错误
 * 默认设置: 当发生404异常时，会默认使用http.NotFound处理
-* 自定义: 通过DotWeb.NotFoundHandler实现自定义404处理逻辑
+* 自定义: 通过DotWeb.SetNotFoundHandle(handler NotFoundHandle)实现自定义404处理逻辑
 ```go
 type NotFoundHandle  func(http.ResponseWriter, *http.Request)
 ```

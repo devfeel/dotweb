@@ -155,6 +155,13 @@ func (app *DotWeb) SetExceptionHandle(handler ExceptionHandle) {
 	app.ExceptionHandler = handler
 }
 
+/*
+* 设置404处理函数
+ */
+func (app *DotWeb) SetNotFoundHandle(handler NotFoundHandle) {
+	app.NotFoundHandler = handler
+}
+
 //设置pprofserver启动配置，默认不启动，且该端口号请不要与StartServer的端口号一致
 func (app *DotWeb) SetPProfConfig(enabledPProf bool, httpport int) {
 	app.Config.App.EnabledPProf = enabledPProf
