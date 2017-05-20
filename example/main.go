@@ -56,39 +56,45 @@ func main() {
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
-func Index(ctx *dotweb.HttpContext) {
-	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	ctx.WriteStringC(201, "index => ", ctx.RouterParams)
+func Index(ctx dotweb.Context) error {
+	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, err := ctx.WriteStringC(201, "index => ", ctx.RouterParams)
+	return err
 }
 
-func IndexReg(ctx *dotweb.HttpContext) {
-	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	ctx.WriteString("welcome to dotweb")
+func IndexReg(ctx dotweb.Context) error {
+	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, err := ctx.WriteString("welcome to dotweb")
+	return err
 }
 
-func KeyPost(ctx *dotweb.HttpContext) {
-	username1 := ctx.PostString("username")
+func KeyPost(ctx dotweb.Context) error {
+	username1 := ctx.PostFormValue("username")
 	username2 := ctx.FormValue("username")
 	username3 := ctx.PostFormValue("username")
-	ctx.WriteString("username:" + username1 + " - " + username2 + " - " + username3)
+	_, err := ctx.WriteString("username:" + username1 + " - " + username2 + " - " + username3)
+	return err
 }
 
-func JsonPost(ctx *dotweb.HttpContext) {
-	ctx.WriteString("body:" + string(ctx.PostBody()))
+func JsonPost(ctx dotweb.Context) error {
+	_, err := ctx.WriteString("body:" + string(ctx.Request().PostBody()))
+	return err
 }
 
-func DefaultError(ctx *dotweb.HttpContext) {
+func DefaultError(ctx dotweb.Context) error {
 	//panic("my panic error!")
 	i := 0
 	b := 2 / i
-	ctx.WriteString(b)
+	_, err := ctx.WriteString(b)
+	return err
 }
 
-func Redirect(ctx *dotweb.HttpContext) {
+func Redirect(ctx dotweb.Context) error {
 	err := ctx.Redirect(http.StatusMovedPermanently, "http://www.baidu.com")
 	if err != nil {
 		ctx.WriteString(err)
 	}
+	return err
 }
 
 func InitRoute(server *dotweb.HttpServer) {
@@ -102,21 +108,21 @@ func InitRoute(server *dotweb.HttpServer) {
 
 func InitModule(dotserver *dotweb.DotWeb) {
 	dotserver.RegisterModule(&dotweb.HttpModule{
-		OnBeginRequest: func(ctx *dotweb.HttpContext) {
+		OnBeginRequest: func(ctx dotweb.Context) {
 			fmt.Println("BeginRequest1:", ctx)
 		},
-		OnEndRequest: func(ctx *dotweb.HttpContext) {
+		OnEndRequest: func(ctx dotweb.Context) {
 			fmt.Println("EndRequest1:", ctx)
 		},
 	})
 
 	dotserver.RegisterModule(&dotweb.HttpModule{
-		OnBeginRequest: func(ctx *dotweb.HttpContext) {
+		OnBeginRequest: func(ctx dotweb.Context) {
 			fmt.Println("BeginRequest2:", ctx)
 		},
 	})
 	dotserver.RegisterModule(&dotweb.HttpModule{
-		OnEndRequest: func(ctx *dotweb.HttpContext) {
+		OnEndRequest: func(ctx dotweb.Context) {
 			fmt.Println("EndRequest3:", ctx)
 		},
 	})

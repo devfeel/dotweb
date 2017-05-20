@@ -1,5 +1,30 @@
 ##dotweb版本记录：
 
+#### Version 0.3.15
+* 重要更新：HttpHandle增加error返回值，有error再也不用panic啦！
+* 重要更新：新增Context接口
+* ExceptionHandle func(*HttpContext, error) 调整为 ExceptionHandle func(Context, error)
+* HttpHandle func(*HttpContext) 调整为 HttpHandle func(Context) error
+* Middleware.Handle(ctx *HttpContext) error调整为Handle(ctx Context) error
+* Middleware.Next(ctx *HttpContext)调整为Next(ctx Context)
+* 为使Context设计与理解更清晰，做以下重要变更：
+* 迁移Context.QueryStrings()至Context.Request().QueryStrings()
+* 迁移Context.RawQuery()至Context.Request().RawQuery()
+* 迁移Context.FormFile()至Context.Request().FormFile()
+* 迁移Context.FormValues()至Context.Request().FormValues()
+* 迁移Context.PostBody()至Context.Request().PostBody()
+* 迁移Context.QueryHeader()至Context.Request().QueryHeader()
+* 迁移Context.Url()至Context.Request().Url()
+* 迁移Context.ContentType()至Context.Request().ContentType()
+* 迁移Context.DelHeader()至Context.Response().DelHeader()
+* 迁移Context.SetHeader()至Context.Response().SetHeader()
+* 迁移Context.SetContentType()至Context.Response().SetContentType()
+* 迁移Context.SetStatusCode()至Context.Response().SetStatusCode()
+* 废弃Context.PostString(key string) string
+* 通过在handler内返回相应的error，框架自动命中并通过设置的ExceptionHandle处理
+* 更新 example/下所有代码，以支持error返回值，支持Context接口
+* 2017-05-20 15:00
+
 #### Version 0.3.14
 * 配置文件支持Middleware，支持App\Group\Router三个级别
 * DotWeb增加RegisterMiddlewareFunc\GetMiddlewareFunc方法，用于创建中间件的方法注册

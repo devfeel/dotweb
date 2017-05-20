@@ -70,7 +70,7 @@ type (
 		RegisterRoute(routeMethod string, path string, handle HttpHandle) RouterNode
 		RegisterHandler(name string, handler HttpHandle)
 		GetHandler(name string) (HttpHandle, bool)
-		MatchPath(ctx *HttpContext, routePath string) bool
+		MatchPath(ctx Context, routePath string) bool
 	}
 
 	RouterNode interface {
@@ -187,10 +187,10 @@ func (r *router) GetHandler(name string) (HttpHandle, bool) {
 	return v, exists
 }
 
-func (r *router) MatchPath(ctx *HttpContext, routePath string) bool {
-	if root := r.Nodes[ctx.Method()]; root != nil {
+func (r *router) MatchPath(ctx Context, routePath string) bool {
+	if root := r.Nodes[ctx.Request().Method]; root != nil {
 		n := root.getNode(routePath)
-		return n == ctx.RouterNode.Node()
+		return n == ctx.RouterNode().Node()
 	}
 	return false
 }

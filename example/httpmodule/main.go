@@ -47,10 +47,11 @@ func main() {
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
-func Index(ctx *dotweb.HttpContext) {
-	ctx.WriteString("index => " + ctx.Items().GetString("count"))
-	ctx.WriteString("\r\n")
+func Index(ctx dotweb.Context) error {
 	ctx.Items().Set("count", 2)
+	ctx.WriteString("index => " + ctx.Items().GetString("count"))
+	_, err := ctx.WriteString("\r\n")
+	return err
 }
 
 func InitRoute(server *dotweb.HttpServer) {
@@ -62,8 +63,8 @@ func InitRoute(server *dotweb.HttpServer) {
 
 func InitModule(dotserver *dotweb.DotWeb) {
 	dotserver.RegisterModule(&dotweb.HttpModule{
-		OnBeginRequest: func(ctx *dotweb.HttpContext) {
-			if ctx.HttpServer.Router().MatchPath(ctx, "/user") {
+		OnBeginRequest: func(ctx dotweb.Context) {
+			if ctx.HttpServer().Router().MatchPath(ctx, "/user") {
 				//TODO:need login
 			}
 			ctx.Items().Set("count", 1)
@@ -73,7 +74,7 @@ func InitModule(dotserver *dotweb.DotWeb) {
 				ctx.End()
 			}
 		},
-		OnEndRequest: func(ctx *dotweb.HttpContext) {
+		OnEndRequest: func(ctx dotweb.Context) {
 			if ctx.Items().Exists("count") {
 				ctx.WriteString("OnEndRequest => ", ctx.Items().GetString("count"))
 			} else {

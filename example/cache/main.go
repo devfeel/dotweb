@@ -44,23 +44,25 @@ type UserInfo struct {
 	Sex      int
 }
 
-func One(ctx *dotweb.HttpContext) {
+func One(ctx dotweb.Context) error {
 	g, err := ctx.Cache().GetString("g")
 	if err != nil {
 		g = err.Error()
 	}
 	_, err = ctx.Cache().Incr("count")
-	ctx.WriteString("One [" + g + "] " + fmt.Sprint(err))
+	_, err = ctx.WriteString("One [" + g + "] " + fmt.Sprint(err))
+	return err
 }
 
-func Two(ctx *dotweb.HttpContext) {
+func Two(ctx dotweb.Context) error {
 	g, err := ctx.Cache().GetString("g")
 	if err != nil {
 		g = err.Error()
 	}
 	_, err = ctx.Cache().Incr("count")
 	c, _ := ctx.Cache().GetString("count")
-	ctx.WriteString("Two [" + g + "] [" + c + "] " + fmt.Sprint(err))
+	_, err = ctx.WriteString("Two [" + g + "] [" + c + "] " + fmt.Sprint(err))
+	return err
 }
 
 func InitRoute(server *dotweb.HttpServer) {

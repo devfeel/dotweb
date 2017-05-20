@@ -39,10 +39,11 @@ func main() {
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
-func Index(ctx *dotweb.HttpContext) {
-	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
+func Index(ctx dotweb.Context) error {
+	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
 	logger.Logger().Info("xxxx", "x")
-	ctx.WriteStringC(201, "index => ", ctx.RouterParams)
+	_, err := ctx.WriteStringC(201, "index => ", ctx.RouterParams())
+	return err
 }
 
 func InitRoute(server *dotweb.HttpServer) {

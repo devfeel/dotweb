@@ -35,12 +35,12 @@ type (
 		middlewareMutex  *sync.RWMutex
 	}
 
-	ExceptionHandle func(*HttpContext, error)
+	ExceptionHandle func(Context, error)
 	NotFoundHandle  http.Handler
 
 	// Handle is a function that can be registered to a route to handle HTTP
 	// requests. Like http.HandlerFunc, but has a special parameter *HttpContext contain all request and response data.
-	HttpHandle func(*HttpContext)
+	HttpHandle func(Context) error
 )
 
 const (
@@ -347,10 +347,10 @@ func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
 }
 
 //default exception handler
-func (ds *DotWeb) DefaultHTTPErrorHandler(ctx *HttpContext, err error) {
+func (ds *DotWeb) DefaultHTTPErrorHandler(ctx Context, err error) {
 	//输出内容
-	ctx.Response.WriteHeader(http.StatusInternalServerError)
-	ctx.Response.Header().Set(HeaderContentType, CharsetUTF8)
+	ctx.Response().WriteHeader(http.StatusInternalServerError)
+	ctx.Response().Header().Set(HeaderContentType, CharsetUTF8)
 	//if in development mode, output the error info
 	if ds.IsDevelopmentMode() {
 		stack := string(debug.Stack())
@@ -362,23 +362,26 @@ func (ds *DotWeb) DefaultHTTPErrorHandler(ctx *HttpContext, err error) {
 
 //query pprof debug info
 //key:heap goroutine threadcreate block
-func initPProf(ctx *HttpContext) {
+func initPProf(ctx Context) error {
 	querykey := ctx.GetRouterName("key")
 	runtime.GC()
-	pprof.Lookup(querykey).WriteTo(ctx.Response.Writer(), 1)
+	pprof.Lookup(querykey).WriteTo(ctx.Response().Writer(), 1)
+	return nil
 }
 
-func freeMemory(ctx *HttpContext) {
+func freeMemory(ctx Context) error {
 	debug.FreeOSMemory()
+	return nil
 }
 
 //显示服务器状态信息
-func showServerState(ctx *HttpContext) {
+func showServerState(ctx Context) error {
 	ctx.WriteString(jsonutil.GetJsonString(GlobalState))
+	return nil
 }
 
 //显示服务器状态信息
-func showQuery(ctx *HttpContext) {
+func showQuery(ctx Context) error {
 	querykey := ctx.GetRouterName("key")
 	switch querykey {
 	case "state":
@@ -388,4 +391,5 @@ func showQuery(ctx *HttpContext) {
 	default:
 		ctx.WriteString("not support key => " + querykey)
 	}
+	return nil
 }

@@ -76,6 +76,10 @@ func (req *Request) parseForm() error {
 	return nil
 }
 
+func (req *Request) ContentType() string {
+	return req.Header.Get(HeaderContentType)
+}
+
 func (req *Request) QueryHeader(key string) string {
 	return req.Header.Get(key)
 }
@@ -140,12 +144,6 @@ func (req *Request) IsAJAX() bool {
 	return req.Header.Get(HeaderXRequestedWith) == "XMLHttpRequest"
 }
 
-// Host returns requested host.
-//
-// The host is valid until returning from RequestHandler.
-func (ctx *HttpContext) Host() string {
-	return ctx.Request.Host
-}
-func (ctx *HttpContext) Method() string {
-	return ctx.Request.Method
+func (req *Request) Url() string {
+	return req.URL.String()
 }

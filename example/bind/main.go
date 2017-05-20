@@ -33,7 +33,7 @@ func main() {
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
-func TestBind(ctx *dotweb.HttpContext) {
+func TestBind(ctx dotweb.Context) error {
 	type UserInfo struct {
 		UserName string
 		Sex      int
@@ -46,10 +46,11 @@ func TestBind(ctx *dotweb.HttpContext) {
 
 	}
 
-	ctx.WriteString("TestBind [" + errstr + "] " + fmt.Sprint(user))
+	_, err := ctx.WriteString("TestBind [" + errstr + "] " + fmt.Sprint(user))
+	return err
 }
 
-func GetBind(ctx *dotweb.HttpContext) {
+func GetBind(ctx dotweb.Context) error {
 	type UserInfo struct {
 		UserName string `form:"user"`
 		Sex      int    `form:"sex"`
@@ -62,7 +63,8 @@ func GetBind(ctx *dotweb.HttpContext) {
 
 	}
 
-	ctx.WriteString("GetBind [" + errstr + "] " + fmt.Sprint(user))
+	_, err := ctx.WriteString("GetBind [" + errstr + "] " + fmt.Sprint(user))
+	return err
 }
 
 func InitRoute(server *dotweb.HttpServer) {

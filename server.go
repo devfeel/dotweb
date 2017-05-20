@@ -29,9 +29,9 @@ type (
 	//HttpModule定义
 	HttpModule struct {
 		//响应请求时作为 HTTP 执行管线链中的第一个事件发生
-		OnBeginRequest func(*HttpContext)
+		OnBeginRequest func(Context)
 		//响应请求时作为 HTTP 执行管线链中的最后一个事件发生。
-		OnEndRequest func(*HttpContext)
+		OnEndRequest func(Context)
 	}
 
 	//HttpServer定义
@@ -239,7 +239,7 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 		req := server.pool.request.Get().(*Request)
 		req.reset(r)
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(res, req, server, vnode.Node, vnode.Params, handler)
+		httpCtx.reset(res, req, server, vnode.Node, vnode.Params, handler)
 
 		//gzip
 		if server.ServerConfig.EnabledGzip {
@@ -249,7 +249,7 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 			}
 			grw := &gzipResponseWriter{Writer: gw, ResponseWriter: w}
 			res.reset(grw)
-			httpCtx.SetHeader(HeaderContentEncoding, gzipScheme)
+			httpCtx.Response().SetHeader(HeaderContentEncoding, gzipScheme)
 		}
 		//增加状态计数
 		GlobalState.AddRequestCount(1)
@@ -260,12 +260,12 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 		if server.SessionConfig.EnabledSession {
 			sessionId, err := server.GetSessionManager().GetClientSessionID(r)
 			if err == nil && sessionId != "" {
-				httpCtx.SessionID = sessionId
+				httpCtx.sessionID = sessionId
 			} else {
-				httpCtx.SessionID = server.GetSessionManager().NewSessionID()
+				httpCtx.sessionID = server.GetSessionManager().NewSessionID()
 				cookie := &http.Cookie{
 					Name:  server.sessionManager.CookieName,
-					Value: url.QueryEscape(httpCtx.SessionID),
+					Value: url.QueryEscape(httpCtx.sessionID),
 					Path:  "/",
 				}
 				httpCtx.SetCookie(cookie)
@@ -277,8 +277,8 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 			_, hijack_err := httpCtx.Hijack()
 			if hijack_err != nil {
 				//输出内容
-				httpCtx.Response.WriteHeader(http.StatusInternalServerError)
-				httpCtx.Response.Header().Set(HeaderContentType, CharsetUTF8)
+				httpCtx.Response().WriteHeader(http.StatusInternalServerError)
+				httpCtx.Response().Header().Set(HeaderContentType, CharsetUTF8)
 				httpCtx.WriteString(hijack_err.Error())
 				return
 			}
@@ -297,9 +297,9 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 				//if set enabledLog, take the error log
 				if logger.EnabledLog {
 					//记录访问日志
-					headinfo := fmt.Sprintln(httpCtx.Response.Header)
+					headinfo := fmt.Sprintln(httpCtx.Response().Header)
 					logJson := LogJson{
-						RequestUrl: httpCtx.Request.RequestURI,
+						RequestUrl: httpCtx.Request().RequestURI,
 						HttpHeader: headinfo,
 						HttpBody:   errmsg,
 					}
@@ -340,10 +340,17 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 		//处理用户handle
 		//if already set HttpContext.End,ignore user handler - fixed issue #5
 		if !httpCtx.IsEnd() {
+			var ctxErr error
 			if len(server.DotApp.Middlewares) > 0 {
-				server.DotApp.Middlewares[0].Handle(httpCtx)
+				ctxErr = server.DotApp.Middlewares[0].Handle(httpCtx)
 			} else {
-				handler(httpCtx)
+				ctxErr = handler(httpCtx)
+			}
+			if ctxErr != nil {
+				//handler the exception
+				if server.DotApp.ExceptionHandler != nil {
+					server.DotApp.ExceptionHandler(httpCtx, ctxErr)
+				}
 			}
 		}
 
@@ -378,8 +385,8 @@ func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Hand
 		req := server.pool.request.Get().(*Request)
 		req.reset(ws.Request())
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(nil, req, server, nil, nil, handler)
-		httpCtx.WebSocket = &WebSocket{
+		httpCtx.reset(nil, req, server, nil, nil, handler)
+		httpCtx.webSocket = &WebSocket{
 			Conn: ws,
 		}
 		httpCtx.IsWebSocket = true
@@ -391,9 +398,9 @@ func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Hand
 				errmsg = exception.CatchError("httpserver::WebsocketHandle", LogTarget_HttpServer, err)
 
 				//记录访问日志
-				headinfo := fmt.Sprintln(httpCtx.WebSocket.Request().Header)
+				headinfo := fmt.Sprintln(httpCtx.webSocket.Request().Header)
 				logJson := LogJson{
-					RequestUrl: httpCtx.WebSocket.Request().RequestURI,
+					RequestUrl: httpCtx.webSocket.Request().RequestURI,
 					HttpHeader: headinfo,
 					HttpBody:   errmsg,
 				}
@@ -405,7 +412,7 @@ func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Hand
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 			//HttpServer Logging
-			logger.Logger().Log(httpCtx.Url()+" "+logWebsocketContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
+			logger.Logger().Log(httpCtx.Request().Url()+" "+logWebsocketContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
 
 			//release request
 			req.release()
@@ -426,10 +433,10 @@ func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Hand
 func logWebsocketContext(ctx *HttpContext, timetaken int64) string {
 	var reqbytelen, resbytelen, method, proto, status, userip string
 	if ctx != nil {
-		reqbytelen = convert.Int642String(ctx.Request.ContentLength)
+		reqbytelen = convert.Int642String(ctx.Request().ContentLength)
 		resbytelen = "0"
-		method = ctx.Request.Method
-		proto = ctx.Request.Proto
+		method = ctx.Request().Method
+		proto = ctx.Request().Proto
 		status = "0"
 		userip = ctx.RemoteIP()
 	}

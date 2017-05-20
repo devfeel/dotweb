@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/devfeel/dotweb"
 	"github.com/devfeel/dotweb/config"
@@ -33,30 +34,40 @@ func main() {
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
-func Index(ctx *dotweb.HttpContext) {
-	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	ctx.WriteString("index => ", fmt.Sprint(ctx.RouterNode.Middlewares()))
+func Index(ctx dotweb.Context) error {
+	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, err := ctx.WriteString("index => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
+	return err
 }
 
-func DefaultError(ctx *dotweb.HttpContext) {
+func DefaultPanic(ctx dotweb.Context) error {
 	panic("my panic error!")
+	return nil
 }
 
-func Redirect(ctx *dotweb.HttpContext) {
-	ctx.Redirect(200, "http://www.baidu.com")
+func DefaultError(ctx dotweb.Context) error {
+	err := errors.New("my return error")
+	return err
 }
 
-func Login(ctx *dotweb.HttpContext) {
-	ctx.WriteString("login => ", fmt.Sprint(ctx.RouterNode.Middlewares()))
+func Redirect(ctx dotweb.Context) error {
+	return ctx.Redirect(200, "http://www.baidu.com")
 }
 
-func Logout(ctx *dotweb.HttpContext) {
-	ctx.WriteString("logout => ", fmt.Sprint(ctx.RouterNode.Middlewares()))
+func Login(ctx dotweb.Context) error {
+	_, err := ctx.WriteString("login => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
+	return err
+}
+
+func Logout(ctx dotweb.Context) error {
+	_, err := ctx.WriteString("logout => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
+	return err
 }
 
 func RegisterHandler(server *dotweb.HttpServer) {
 	server.Router().RegisterHandler("Index", Index)
-	server.Router().RegisterHandler("DefaultError", DefaultError)
+	server.Router().RegisterHandler("Error", DefaultError)
+	server.Router().RegisterHandler("Panic", DefaultPanic)
 	server.Router().RegisterHandler("Redirect", Redirect)
 	server.Router().RegisterHandler("Login", Login)
 	server.Router().RegisterHandler("Logout", Logout)
@@ -75,10 +86,10 @@ type AccessFmtLog struct {
 	Index string
 }
 
-func (m *AccessFmtLog) Handle(ctx *dotweb.HttpContext) error {
-	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] begin request -> ", ctx.Request.RequestURI)
+func (m *AccessFmtLog) Handle(ctx dotweb.Context) error {
+	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] begin request -> ", ctx.Request().RequestURI)
 	err := m.Next(ctx)
-	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] finish request ", err, " -> ", ctx.Request.RequestURI)
+	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] finish request ", err, " -> ", ctx.Request().RequestURI)
 	return err
 }
 
@@ -99,15 +110,15 @@ type SimpleAuth struct {
 	exactToken string
 }
 
-func (m *SimpleAuth) Handle(ctx *dotweb.HttpContext) error {
-	fmt.Println(time.Now(), "[SimpleAuth] begin request -> ", ctx.Request.RequestURI)
+func (m *SimpleAuth) Handle(ctx dotweb.Context) error {
+	fmt.Println(time.Now(), "[SimpleAuth] begin request -> ", ctx.Request().RequestURI)
 	var err error
 	if ctx.QueryString("token") != m.exactToken {
 		ctx.Write(http.StatusUnauthorized, []byte("sorry, Unauthorized"))
 	} else {
 		err = m.Next(ctx)
 	}
-	fmt.Println(time.Now(), "[SimpleAuth] finish request ", err, " -> ", ctx.Request.RequestURI)
+	fmt.Println(time.Now(), "[SimpleAuth] finish request ", err, " -> ", ctx.Request().RequestURI)
 	return err
 }
 

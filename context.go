@@ -18,63 +18,154 @@ const (
 	defaultHttpCode = http.StatusOK
 )
 
-type HttpContext struct {
-	Request      *Request
-	RouterNode   RouterNode
-	RouterParams Params
-	Response     *Response
-	WebSocket    *WebSocket
-	HijackConn   *HijackConn
-	IsWebSocket  bool
-	IsHijack     bool
-	isEnd        bool //表示当前处理流程是否需要终止
-	HttpServer   *HttpServer
-	SessionID    string
-	items        *core.ItemContext
-	viewData     *core.ItemContext
-	Features     *xFeatureTools
-	handle       HttpHandle
-	startTime    time.Time
-}
+type (
+	//预留，暂未启用
+	Context interface {
+		HttpServer() *HttpServer
+		Response() *Response
+		Request() *Request
+		WebSocket() *WebSocket
+		HijackConn() *HijackConn
+		RouterNode() RouterNode
+		RouterParams() Params
+		Handler() HttpHandle
+		AppContext() *core.ItemContext
+		Cache() cache.Cache
+		Items() *core.ItemContext
+		ViewData() *core.ItemContext
+		SessionID() string
+		Session() (state *session.SessionState)
+		Hijack() (*HijackConn, error)
+		End()
+		IsEnd() bool
+		Redirect(code int, targetUrl string) error
+		QueryString(key string) string
+		FormValue(key string) string
+		PostFormValue(key string) string
+		Bind(i interface{}) error
+		GetRouterName(key string) string
+		RemoteIP() string
+		SetCookieValue(name, value string, maxAge int)
+		SetCookie(cookie *http.Cookie)
+		RemoveCookie(name string)
+		ReadCookieValue(name string) (string, error)
+		ReadCookie(name string) (*http.Cookie, error)
+		View(name string) error
+		ViewC(code int, name string) error
+		Write(code int, content []byte) (int, error)
+		WriteString(contents ...interface{}) (int, error)
+		WriteStringC(code int, contents ...interface{}) (int, error)
+		WriteBlob(contentType string, b []byte) (int, error)
+		WriteBlobC(code int, contentType string, b []byte) (int, error)
+		WriteJson(i interface{}) (int, error)
+		WriteJsonC(code int, i interface{}) (int, error)
+		WriteJsonBlob(b []byte) (int, error)
+		WriteJsonBlobC(code int, b []byte) (int, error)
+		WriteJsonp(callback string, i interface{}) (int, error)
+		WriteJsonpBlob(callback string, b []byte) (size int, err error)
+	}
+
+	HttpContext struct {
+		request      *Request
+		routerNode   RouterNode
+		routerParams Params
+		response     *Response
+		webSocket    *WebSocket
+		hijackConn   *HijackConn
+		IsWebSocket  bool
+		IsHijack     bool
+		isEnd        bool //表示当前处理流程是否需要终止
+		httpServer   *HttpServer
+		sessionID    string
+		items        *core.ItemContext
+		viewData     *core.ItemContext
+		features     *xFeatureTools
+		handler      HttpHandle
+		startTime    time.Time
+	}
+)
 
 //reset response attr
-func (ctx *HttpContext) Reset(res *Response, r *Request, server *HttpServer, node RouterNode, params Params, handler HttpHandle) {
-	ctx.Request = r
-	ctx.Response = res
-	ctx.RouterNode = node
-	ctx.RouterParams = params
+func (ctx *HttpContext) reset(res *Response, r *Request, server *HttpServer, node RouterNode, params Params, handler HttpHandle) {
+	ctx.request = r
+	ctx.response = res
+	ctx.routerNode = node
+	ctx.routerParams = params
 	ctx.IsHijack = false
 	ctx.IsWebSocket = false
-	ctx.HttpServer = server
+	ctx.httpServer = server
 	ctx.items = nil
 	ctx.isEnd = false
-	ctx.Features = FeatureTools
-	ctx.handle = handler
+	ctx.features = FeatureTools
+	ctx.handler = handler
 	ctx.startTime = time.Now()
 }
 
 //release all field
 func (ctx *HttpContext) release() {
-	ctx.Request = nil
-	ctx.Response = nil
-	ctx.RouterNode = nil
-	ctx.RouterParams = nil
+	ctx.request = nil
+	ctx.response = nil
+	ctx.routerNode = nil
+	ctx.routerParams = nil
+	ctx.webSocket = nil
+	ctx.hijackConn = nil
 	ctx.IsHijack = false
 	ctx.IsWebSocket = false
-	ctx.HttpServer = nil
+	ctx.httpServer = nil
 	ctx.isEnd = false
+	ctx.features = nil
 	ctx.items = nil
 	ctx.viewData = nil
-	ctx.SessionID = ""
-	ctx.handle = nil
+	ctx.sessionID = ""
+	ctx.handler = nil
 	ctx.startTime = time.Time{}
+}
+
+func (ctx *HttpContext) HttpServer() *HttpServer {
+	return ctx.httpServer
+}
+
+func (ctx *HttpContext) Response() *Response {
+	return ctx.response
+}
+
+func (ctx *HttpContext) Request() *Request {
+	return ctx.request
+}
+
+func (ctx *HttpContext) RouterNode() RouterNode {
+	return ctx.routerNode
+}
+
+func (ctx *HttpContext) WebSocket() *WebSocket {
+	return ctx.webSocket
+}
+
+func (ctx *HttpContext) HijackConn() *HijackConn {
+	return ctx.hijackConn
+}
+
+func (ctx *HttpContext) RouterParams() Params {
+	return ctx.routerParams
+}
+
+func (ctx *HttpContext) Handler() HttpHandle {
+	return ctx.handler
+}
+
+func (ctx *HttpContext) SessionID() string {
+	return ctx.sessionID
+}
+
+func (ctx *HttpContext) Features() *xFeatureTools {
+	return ctx.features
 }
 
 //get application's global appcontext
 //issue #3
 func (ctx *HttpContext) AppContext() *core.ItemContext {
 	if ctx.HttpServer != nil {
-		return ctx.HttpServer.DotApp.AppContext
+		return ctx.httpServer.DotApp.AppContext
 	} else {
 		return core.NewItemContext()
 	}
@@ -82,7 +173,7 @@ func (ctx *HttpContext) AppContext() *core.ItemContext {
 
 //get application's global cache
 func (ctx *HttpContext) Cache() cache.Cache {
-	return ctx.HttpServer.DotApp.Cache()
+	return ctx.httpServer.DotApp.Cache()
 }
 
 //get request's tem context
@@ -105,21 +196,21 @@ func (ctx *HttpContext) ViewData() *core.ItemContext {
 
 //get session state in current context
 func (ctx *HttpContext) Session() (state *session.SessionState) {
-	if ctx.HttpServer == nil {
+	if ctx.httpServer == nil {
 		//return nil, errors.New("no effective http-server")
 		panic("no effective http-server")
 	}
-	if !ctx.HttpServer.SessionConfig.EnabledSession {
+	if !ctx.httpServer.SessionConfig.EnabledSession {
 		//return nil, errors.New("http-server not enabled session")
 		panic("http-server not enabled session")
 	}
-	state, _ = ctx.HttpServer.sessionManager.GetSessionState(ctx.SessionID)
+	state, _ = ctx.httpServer.sessionManager.GetSessionState(ctx.sessionID)
 	return state
 }
 
 //make current connection to hijack mode
 func (ctx *HttpContext) Hijack() (*HijackConn, error) {
-	hj, ok := ctx.Response.Writer().(http.Hijacker)
+	hj, ok := ctx.response.Writer().(http.Hijacker)
 	if !ok {
 		return nil, errors.New("The Web Server does not support Hijacking! ")
 	}
@@ -127,9 +218,9 @@ func (ctx *HttpContext) Hijack() (*HijackConn, error) {
 	if err != nil {
 		return nil, errors.New("Hijack error:" + err.Error())
 	}
-	ctx.HijackConn = &HijackConn{Conn: conn, ReadWriter: bufrw, header: "HTTP/1.1 200 OK\r\n"}
+	ctx.hijackConn = &HijackConn{Conn: conn, ReadWriter: bufrw, header: "HTTP/1.1 200 OK\r\n"}
 	ctx.IsHijack = true
-	return ctx.HijackConn, nil
+	return ctx.hijackConn, nil
 }
 
 //set context user handler process end
@@ -145,117 +236,44 @@ func (ctx *HttpContext) IsEnd() bool {
 //redirect replies to the request with a redirect to url and with httpcode
 //default you can use http.StatusFound
 func (ctx *HttpContext) Redirect(code int, targetUrl string) error {
-	return ctx.Response.Redirect(code, targetUrl)
-}
-
-/*
-* 返回查询字符串map表示
- */
-func (ctx *HttpContext) QueryStrings() url.Values {
-	return ctx.Request.QueryStrings()
-}
-
-/*
-* 获取原始查询字符串
- */
-func (ctx *HttpContext) RawQuery() string {
-	return ctx.Request.RawQuery()
+	return ctx.response.Redirect(code, targetUrl)
 }
 
 /*
 * 根据指定key获取对应value
  */
 func (ctx *HttpContext) QueryString(key string) string {
-	return ctx.Request.QueryString(key)
+	return ctx.request.QueryString(key)
 }
 
 /*
 * 根据指定key获取包括在post、put和get内的值
  */
 func (ctx *HttpContext) FormValue(key string) string {
-	return ctx.Request.FormValue(key)
-}
-
-func (ctx *HttpContext) FormFile(key string) (*UploadFile, error) {
-	return ctx.Request.FormFile(key)
-}
-
-/*
-* 获取包括post、put和get内的值
- */
-func (ctx *HttpContext) FormValues() map[string][]string {
-	return ctx.Request.FormValues()
+	return ctx.request.FormValue(key)
 }
 
 /*
 * 根据指定key获取包括在post、put内的值
  */
 func (ctx *HttpContext) PostFormValue(key string) string {
-	return ctx.Request.PostFormValue(key)
-}
-
-/*
-* 根据指定key获取包括在post、put内的值
-* Obsolete("use PostFormValue replace this")
- */
-func (ctx *HttpContext) PostString(key string) string {
-	return ctx.Request.PostFormValue(key)
-}
-
-/*
-* 获取post提交的字节数组
- */
-func (ctx *HttpContext) PostBody() []byte {
-	return ctx.Request.PostBody()
+	return ctx.request.PostFormValue(key)
 }
 
 /*
 * 支持Json、Xml、Form提交的属性绑定
  */
 func (ctx *HttpContext) Bind(i interface{}) error {
-	return ctx.HttpServer.Binder().Bind(i, ctx)
-}
-
-func (ctx *HttpContext) QueryHeader(key string) string {
-	return ctx.Request.Header.Get(key)
-}
-
-func (ctx *HttpContext) DelHeader(key string) {
-	ctx.Response.Header().Del(key)
-}
-
-//set response header kv info
-func (ctx *HttpContext) SetHeader(key, value string) {
-	if ctx.IsHijack {
-		ctx.HijackConn.SetHeader(key, value)
-	} else {
-		ctx.Response.Header().Set(key, value)
-	}
-}
-
-func (ctx *HttpContext) Url() string {
-	return ctx.Request.URL.String()
-}
-
-func (ctx *HttpContext) ContentType() string {
-	return ctx.Request.Header.Get(HeaderContentType)
+	return ctx.httpServer.Binder().Bind(i, ctx)
 }
 
 func (ctx *HttpContext) GetRouterName(key string) string {
-	return ctx.RouterParams.ByName(key)
+	return ctx.routerParams.ByName(key)
 }
 
 //RemoteAddr to an "IP" address
 func (ctx *HttpContext) RemoteIP() string {
-	return ctx.Request.RemoteIP()
-}
-
-func (ctx *HttpContext) SetContentType(contenttype string) {
-	ctx.SetHeader(HeaderContentType, contenttype)
-}
-
-func (ctx *HttpContext) SetStatusCode(code int) error {
-	return ctx.Response.WriteHeader(code)
+	return ctx.request.RemoteIP()
 }
 
 // write cookie for name & value & maxAge
@@ -274,7 +292,7 @@ func (ctx *HttpContext) SetCookieValue(name, value string, maxAge int) {
 
 // write cookie with cookie-obj
 func (ctx *HttpContext) SetCookie(cookie *http.Cookie) {
-	http.SetCookie(ctx.Response.Writer(), cookie)
+	http.SetCookie(ctx.response.Writer(), cookie)
 }
 
 // remove cookie for path&name
@@ -285,7 +303,7 @@ func (ctx *HttpContext) RemoveCookie(name string) {
 
 // read cookie value for name
 func (ctx *HttpContext) ReadCookieValue(name string) (string, error) {
-	cookieobj, err := ctx.Request.Cookie(name)
+	cookieobj, err := ctx.request.Cookie(name)
 	if err != nil {
 		return "", err
 	} else {
@@ -295,7 +313,7 @@ func (ctx *HttpContext) ReadCookieValue(name string) (string, error) {
 
 // read cookie object for name
 func (ctx *HttpContext) ReadCookie(name string) (*http.Cookie, error) {
-	return ctx.Request.Cookie(name)
+	return ctx.request.Cookie(name)
 }
 
 // write view content to response
@@ -305,8 +323,8 @@ func (ctx *HttpContext) View(name string) error {
 
 // write (httpCode, view content) to response
 func (ctx *HttpContext) ViewC(code int, name string) error {
-	ctx.SetStatusCode(code)
-	err := ctx.HttpServer.Renderer().Render(ctx.Response.Writer(), name, ctx.ViewData().GetCurrentMap(), ctx)
+	ctx.response.SetStatusCode(code)
+	err := ctx.httpServer.Renderer().Render(ctx.response.Writer(), name, ctx.ViewData().GetCurrentMap(), ctx)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -317,9 +335,9 @@ func (ctx *HttpContext) ViewC(code int, name string) error {
 func (ctx *HttpContext) Write(code int, content []byte) (int, error) {
 	if ctx.IsHijack {
 		//TODO:hijack mode, status-code set default 200
-		return ctx.HijackConn.WriteBlob(content)
+		return ctx.hijackConn.WriteBlob(content)
 	} else {
-		return ctx.Response.Write(code, content)
+		return ctx.response.Write(code, content)
 	}
 }
 
@@ -332,9 +350,9 @@ func (ctx *HttpContext) WriteString(contents ...interface{}) (int, error) {
 func (ctx *HttpContext) WriteStringC(code int, contents ...interface{}) (int, error) {
 	content := fmt.Sprint(contents...)
 	if ctx.IsHijack {
-		return ctx.HijackConn.WriteString(content)
+		return ctx.hijackConn.WriteString(content)
 	} else {
-		return ctx.Response.Write(code, []byte(content))
+		return ctx.response.Write(code, []byte(content))
 	}
 }
 
@@ -346,12 +364,12 @@ func (ctx *HttpContext) WriteBlob(contentType string, b []byte) (int, error) {
 // write (httpCode, []byte) to response
 func (ctx *HttpContext) WriteBlobC(code int, contentType string, b []byte) (int, error) {
 	if contentType != "" {
-		ctx.SetContentType(contentType)
+		ctx.response.SetContentType(contentType)
 	}
 	if ctx.IsHijack {
-		return ctx.HijackConn.WriteBlob(b)
+		return ctx.hijackConn.WriteBlob(b)
 	} else {
-		return ctx.Response.Write(code, b)
+		return ctx.response.Write(code, b)
 	}
 }
 
@@ -392,10 +410,10 @@ func (ctx *HttpContext) WriteJsonp(callback string, i interface{}) (int, error) 
 
 // write jsonp string as []byte to response
 func (ctx *HttpContext) WriteJsonpBlob(callback string, b []byte) (size int, err error) {
-	ctx.SetContentType(MIMEApplicationJavaScriptCharsetUTF8)
+	ctx.response.SetContentType(MIMEApplicationJavaScriptCharsetUTF8)
 	//特殊处理，如果为hijack，需要先行WriteBlob头部
 	if ctx.IsHijack {
-		if size, err = ctx.HijackConn.WriteBlob([]byte(ctx.HijackConn.header + "\r\n")); err != nil {
+		if size, err = ctx.hijackConn.WriteBlob([]byte(ctx.hijackConn.header + "\r\n")); err != nil {
 			return
 		}
 	}

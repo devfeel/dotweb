@@ -45,11 +45,12 @@ type BookInfo struct {
 	Size int64
 }
 
-func NotExistView(ctx *dotweb.HttpContext) {
-	ctx.View("1.html")
+func NotExistView(ctx dotweb.Context) error {
+	err := ctx.View("1.html")
+	return err
 }
 
-func TestView(ctx *dotweb.HttpContext) {
+func TestView(ctx dotweb.Context) error {
 	ctx.ViewData().Set("data", "图书信息")
 	ctx.ViewData().Set("user", &UserInfo{UserName: "user1", Sex: true})
 	m := make([]*BookInfo, 5)
@@ -60,7 +61,8 @@ func TestView(ctx *dotweb.HttpContext) {
 	m[4] = &BookInfo{Name: "book4", Size: 10000}
 	ctx.ViewData().Set("Books", m)
 
-	ctx.View("d:/gotmp/testview.html")
+	err := ctx.View("d:/gotmp/testview.html")
+	return err
 }
 
 func InitRoute(server *dotweb.HttpServer) {

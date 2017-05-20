@@ -29,15 +29,17 @@ func main() {
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
-func Index(ctx *dotweb.HttpContext) {
-	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	flag := ctx.HttpServer.Router().MatchPath(ctx, "/d/:x/y")
-	ctx.WriteString("index - " + ctx.Request.Method + " - " + fmt.Sprint(flag))
+func Index(ctx dotweb.Context) error {
+	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
+	flag := ctx.HttpServer().Router().MatchPath(ctx, "/d/:x/y")
+	_, err := ctx.WriteString("index - " + ctx.Request().Method + " - " + fmt.Sprint(flag))
+	return err
 }
 
-func Any(ctx *dotweb.HttpContext) {
-	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	ctx.WriteString("any - " + ctx.Request.Method)
+func Any(ctx dotweb.Context) error {
+	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, err := ctx.WriteString("any - " + ctx.Request().Method)
+	return err
 }
 
 func InitRoute(server *dotweb.HttpServer) {

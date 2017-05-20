@@ -58,6 +58,18 @@ func (r *Response) BodyString() string {
 	return string(r.body)
 }
 
+func (r *Response) SetHeader(key, val string) {
+	r.Header().Set(key, val)
+}
+
+func (r *Response) SetContentType(contenttype string) {
+	r.SetHeader(HeaderContentType, contenttype)
+}
+
+func (r *Response) SetStatusCode(code int) error {
+	return r.WriteHeader(code)
+}
+
 // WriteHeader sends an HTTP response header with status code. If WriteHeader is
 // not called explicitly, the first call to Write will trigger an implicit
 // WriteHeader(http.StatusOK). Thus explicit calls to WriteHeader are mainly
