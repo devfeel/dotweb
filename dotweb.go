@@ -36,7 +36,7 @@ type (
 	}
 
 	ExceptionHandle func(Context, error)
-	NotFoundHandle  http.Handler
+	NotFoundHandle  func(http.ResponseWriter, *http.Request)
 
 	// Handle is a function that can be registered to a route to handle HTTP
 	// requests. Like http.HandlerFunc, but has a special parameter Context contain all request and response data.

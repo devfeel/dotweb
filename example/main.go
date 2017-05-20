@@ -39,6 +39,12 @@ func main() {
 	//设置路由
 	InitRoute(app.HttpServer)
 
+	//自定义404输出
+	app.NotFoundHandler = func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("is't app's not found!"))
+	}
+
 	//设置HttpModule
 	//InitModule(app)
 

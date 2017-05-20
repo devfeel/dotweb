@@ -273,7 +273,7 @@ func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	// Handle 404
 	if r.server.DotApp.NotFoundHandler != nil {
-		r.server.DotApp.NotFoundHandler.ServeHTTP(w, req)
+		r.server.DotApp.NotFoundHandler(w, req)
 	} else {
 		http.NotFound(w, req)
 	}
