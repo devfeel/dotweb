@@ -41,7 +41,10 @@ func main() {
 
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	logger.Logger().Info("xxxx", "x")
+	logger.Logger().Debug("debug", "x")
+	logger.Logger().Info("info", "x")
+	logger.Logger().Warn("warn", "x")
+	logger.Logger().Error("error", "x")
 	_, err := ctx.WriteStringC(201, "index => ", ctx.RouterParams())
 	return err
 }
