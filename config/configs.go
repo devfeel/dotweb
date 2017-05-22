@@ -34,7 +34,7 @@ type (
 		PProfPort    int    `xml:"pprofport,attr"`    //pprof-server 端口，不能与主Server端口相同
 		EnabledPProf bool   `xml:"enabledpprof,attr"` //是否启用pprof server，默认不启用
 	}
-
+	//update for issue #16 配置文件
 	AppSetNode struct {
 		Key   string `xml:"key,attr"`
 		Value string `xml:"value,attr"`

@@ -186,6 +186,7 @@ func (ctx *HttpContext) Items() *core.ItemContext {
 }
 
 //get appset from config file
+//update for issue #16 配置文件
 func (ctx *HttpContext) AppSetConfig() *core.ItemContext {
 	return ctx.HttpServer().DotApp.Config.AppSetConfig
 }
