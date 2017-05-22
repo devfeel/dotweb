@@ -31,6 +31,7 @@ type (
 		AppContext() *core.ItemContext
 		Cache() cache.Cache
 		Items() *core.ItemContext
+		AppSetConfig() *core.ItemContext
 		ViewData() *core.ItemContext
 		SessionID() string
 		Session() (state *session.SessionState)
@@ -182,6 +183,11 @@ func (ctx *HttpContext) Items() *core.ItemContext {
 		ctx.items = core.NewItemContext()
 	}
 	return ctx.items
+}
+
+//get appset from config file
+func (ctx *HttpContext) AppSetConfig() *core.ItemContext {
+	return ctx.HttpServer().DotApp.Config.AppSetConfig
 }
 
 //get view data context

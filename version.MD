@@ -1,5 +1,24 @@
 ##dotweb版本记录：
 
+#### Version 0.3.16
+* 配置文件加载优化，加载解析配置文件失败的情况下返回error对象
+× 配置文件匹配完善，依次按三个目录匹配：1按绝对路径检查，2进程根目录下寻找，3进程根目录/config/下寻找
+* 配置文件增加AppSet，用于应用自定义简单配置节点，配置文件增加appset节点，通过Context.AppSetConfig()访问
+* 更新 example/config 目录
+```xml
+<appset>
+    <set key="email-host" value="mail.xx.com" />
+    <set key="email-account" value="username" />
+    <set key="email-password" value="password" />
+    <set key="limit-per-ip" value="10" />
+</appset>
+```
+```go
+//查询方式
+ctx.AppSetConfig().GetString("email-host"))
+ctx.AppSetConfig().GetInt("limit-per-ip"))
+```
+
 #### Version 0.3.15
 * 重要更新：HttpHandle增加error返回值，有error再也不用panic啦！
 * 重要更新：新增Context接口

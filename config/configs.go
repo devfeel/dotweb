@@ -3,34 +3,44 @@ package config
 import (
 	"encoding/json"
 	"encoding/xml"
+	"errors"
+	"github.com/devfeel/dotweb/core"
+	"github.com/devfeel/dotweb/framework/file"
 	"io/ioutil"
-	"os"
 )
 
 type (
 	Config struct {
-		XMLName     xml.Name            `xml:"config" json:"-"`
-		App         *AppConfig          `xml:"app"`
-		Offline     *OfflineConfig      `xml:"offline"`
-		Server      *ServerConfig       `xml:"server"`
-		Session     *SessionConfig      `xml:"session"`
-		Routers     []*RouterConfig     `xml:"routers>router"`
-		Groups      []*GroupConfig      `xml:"groups>group"`
-		Middlewares []*MiddlewareConfig `xml:"middlewares>middleware"`
+		XMLName      xml.Name          `xml:"config" json:"-"`
+		App          *AppNode          `xml:"app"`
+		AppSets      []*AppSetNode     `xml:"appset>set"`
+		Offline      *OfflineNode      `xml:"offline"`
+		Server       *ServerNode       `xml:"server"`
+		Session      *SessionNode      `xml:"session"`
+		Routers      []*RouterNode     `xml:"routers>router"`
+		Groups       []*GroupNode      `xml:"groups>group"`
+		Middlewares  []*MiddlewareNode `xml:"middlewares>middleware"`
+		AppSetConfig *core.ItemContext
 	}
-	OfflineConfig struct {
+	OfflineNode struct {
 		Offline     bool   `xml:"offline,attr"`     //是否维护，默认false
 		OfflineText string `xml:"offlinetext,attr"` //当设置为维护，默认显示内容，如果设置url，优先url
 		OfflineUrl  string `xml:"offlineurl,attr"`  //当设置为维护，默认维护页地址，如果设置url，优先url
 	}
-	AppConfig struct {
+	AppNode struct {
 		LogPath      string `xml:"logpath,attr"`      //文件方式日志目录，如果为空，默认当前目录
 		EnabledLog   bool   `xml:"enabledlog,attr"`   //是否启用日志记录
 		RunMode      string `xml:"runmode,attr"`      //运行模式，目前支持development、production
 		PProfPort    int    `xml:"pprofport,attr"`    //pprof-server 端口，不能与主Server端口相同
 		EnabledPProf bool   `xml:"enabledpprof,attr"` //是否启用pprof server，默认不启用
 	}
-	ServerConfig struct {
+
+	AppSetNode struct {
+		Key   string `xml:"key,attr"`
+		Value string `xml:"value,attr"`
+	}
+
+	ServerNode struct {
 		EnabledListDir  bool `xml:"enabledlistdir,attr"`  //设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
 		EnabledGzip     bool `xml:"enabledgzip,attr"`     //是否启用gzip
 		EnabledAutoHEAD bool `xml:"enabledautohead,attr"` //设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
@@ -38,7 +48,7 @@ type (
 		Port            int  `xml:"port,attr"`            //端口
 	}
 
-	SessionConfig struct {
+	SessionNode struct {
 		EnabledSession bool   `xml:"enabled,attr"`  //启用Session
 		SessionMode    string `xml:"mode,attr"`     //session模式，目前支持runtime、redis
 		Timeout        int64  `xml:"timeout,attr"`  //session超时时间，分为单位
@@ -47,22 +57,22 @@ type (
 		Password       string `xml:"password,attr"` //远程session password
 	}
 
-	RouterConfig struct {
-		Method      string              `xml:"method,attr"`
-		Path        string              `xml:"path,attr"`
-		HandlerName string              `xml:"handler,attr"`
-		Middlewares []*MiddlewareConfig `xml:"middleware"`
-		IsUse       bool                `xml:"isuse,attr"` //是否启用，默认false
+	RouterNode struct {
+		Method      string            `xml:"method,attr"`
+		Path        string            `xml:"path,attr"`
+		HandlerName string            `xml:"handler,attr"`
+		Middlewares []*MiddlewareNode `xml:"middleware"`
+		IsUse       bool              `xml:"isuse,attr"` //是否启用，默认false
 	}
 
-	GroupConfig struct {
-		Path        string              `xml:"path,attr"`
-		Routers     []*RouterConfig     `xml:"router"`
-		Middlewares []*MiddlewareConfig `xml:"middleware"`
-		IsUse       bool                `xml:"isuse,attr"` //是否启用，默认false
+	GroupNode struct {
+		Path        string            `xml:"path,attr"`
+		Routers     []*RouterNode     `xml:"router"`
+		Middlewares []*MiddlewareNode `xml:"middleware"`
+		IsUse       bool              `xml:"isuse,attr"` //是否启用，默认false
 	}
 
-	MiddlewareConfig struct {
+	MiddlewareNode struct {
 		Name  string `xml:"name,attr"`
 		IsUse bool   `xml:"isuse,attr"` //是否启用，默认false
 	}
@@ -75,95 +85,119 @@ const (
 
 func NewConfig() *Config {
 	return &Config{
-		App:     NewAppConfig(),
-		Offline: NewOfflineConfig(),
-		Server:  NewServerConfig(),
-		Session: NewSessionConfig(),
+		App:          NewAppNode(),
+		Offline:      NewOfflineNode(),
+		Server:       NewServerNode(),
+		Session:      NewSessionNode(),
+		AppSetConfig: core.NewItemContext(),
 	}
 }
 
-func NewAppConfig() *AppConfig {
-	config := &AppConfig{}
+func NewAppNode() *AppNode {
+	config := &AppNode{}
 	return config
 }
 
-func NewOfflineConfig() *OfflineConfig {
-	config := &OfflineConfig{}
+func NewOfflineNode() *OfflineNode {
+	config := &OfflineNode{}
 	return config
 }
 
-func NewServerConfig() *ServerConfig {
-	config := &ServerConfig{}
+func NewServerNode() *ServerNode {
+	config := &ServerNode{}
 	return config
 }
 
-func NewSessionConfig() *SessionConfig {
-	config := &SessionConfig{}
+func NewSessionNode() *SessionNode {
+	config := &SessionNode{}
 	return config
 }
 
 //初始化配置文件
-func InitConfig(configFile string, confType ...interface{}) *Config {
+func InitConfig(configFile string, confType ...interface{}) (config *Config, err error) {
+
+	//检查配置文件有效性
+	//1、按绝对路径检查
+	//2、尝试在当前进程根目录下寻找
+	//3、尝试在当前进程根目录/config/ 下寻找
+	//fixed for issue #15 读取配置文件路径
+	realFile := configFile
+	if !file.Exist(realFile) {
+		realFile = file.GetCurrentDirectory() + "/" + configFile
+		if !file.Exist(realFile) {
+			realFile = file.GetCurrentDirectory() + "/config/" + configFile
+			if !file.Exist(realFile) {
+				return nil, errors.New("no exists config file => " + configFile)
+			}
+		}
+	}
+
 	cType := ConfigType_Xml
 	if len(confType) > 0 && confType[0] == ConfigType_Json {
 		cType = ConfigType_Json
 	}
 
-	var config *Config
 	if cType == ConfigType_Xml {
-		config = initXmlConfig(configFile)
+		config, err = initXmlConfig(realFile)
 	} else {
-		config = initJsonConfig(configFile)
+		config, err = initJsonConfig(realFile)
+	}
+
+	if err != nil {
+		return config, err
 	}
 
 	if config.App == nil {
-		config.App = &AppConfig{}
+		config.App = NewAppNode()
 	}
 
 	if config.Server == nil {
-		config.Server = &ServerConfig{}
+		config.Server = NewServerNode()
 	}
 
 	if config.Session == nil {
-		config.Session = &SessionConfig{}
+		config.Session = NewSessionNode()
 	}
 
 	if config.Offline == nil {
-		config.Offline = &OfflineConfig{}
+		config.Offline = NewOfflineNode()
 	}
-	return config
+
+	tmpAppSetMap := core.NewItemContext()
+	for _, v := range config.AppSets {
+		tmpAppSetMap.Set(v.Key, v.Value)
+	}
+	config.AppSetConfig = tmpAppSetMap
+
+	return config, nil
 }
 
 //初始化配置文件（xml）
-func initXmlConfig(configFile string) *Config {
+func initXmlConfig(configFile string) (*Config, error) {
 	content, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		panic("DotWeb:Config:InitXmlConfig 配置文件[" + configFile + "]无法解析 - " + err.Error())
-		os.Exit(1)
+		return nil, errors.New("DotWeb:Config:InitXmlConfig 配置文件[" + configFile + "]无法解析 - " + err.Error())
 	}
 
 	var config *Config
 	err = xml.Unmarshal(content, &config)
 	if err != nil {
-		panic("DotWeb:Config:InitXmlConfig 配置文件[" + configFile + "]解析失败 - " + err.Error())
-		os.Exit(1)
+		return nil, errors.New("DotWeb:Config:InitXmlConfig 配置文件[" + configFile + "]解析失败 - " + err.Error())
 	}
-	return config
+	return config, nil
 }
 
 //初始化配置文件（json）
-func initJsonConfig(configFile string) *Config {
+func initJsonConfig(configFile string) (*Config, error) {
 	content, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		panic("DotWeb:Config:InitJsonConfig 配置文件[" + configFile + "]无法解析 - " + err.Error())
-		os.Exit(1)
+		return nil, errors.New("DotWeb:Config:InitJsonConfig 配置文件[" + configFile + "]无法解析 - " + err.Error())
 	}
 
 	var config *Config
 	err = json.Unmarshal(content, &config)
 	if err != nil {
-		panic("DotWeb:Config:InitJsonConfig 配置文件[" + configFile + "]解析失败 - " + err.Error())
-		os.Exit(1)
+		return nil, errors.New("DotWeb:Config:InitJsonConfig 配置文件[" + configFile + "]解析失败 - " + err.Error())
 	}
-	return config
+	return config, nil
 }

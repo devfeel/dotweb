@@ -41,8 +41,8 @@ type (
 		sessionManager *session.SessionManager
 		lock_session   *sync.RWMutex
 		pool           *pool
-		ServerConfig   *config.ServerConfig
-		SessionConfig  *config.SessionConfig
+		ServerConfig   *config.ServerNode
+		SessionConfig  *config.SessionNode
 		binder         Binder
 		render         Renderer
 		offline        bool
@@ -76,8 +76,8 @@ func NewHttpServer() *HttpServer {
 				},
 			},
 		},
-		ServerConfig:  config.NewServerConfig(),
-		SessionConfig: config.NewSessionConfig(),
+		ServerConfig:  config.NewServerNode(),
+		SessionConfig: config.NewSessionNode(),
 		lock_session:  new(sync.RWMutex),
 		binder:        newBinder(),
 		Features:      &feature.Feature{},

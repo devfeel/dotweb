@@ -17,16 +17,20 @@ func main() {
 	//注册HttpHandler
 	RegisterHandler(app.HttpServer)
 
-	//appConfig := config.InitConfig("d:/gotmp/dotweb.conf")
+	//appConfig, err := config.InitConfig("d:/gotmp/dotweb.conf")
 	//json config
-	appConfig := config.InitConfig("d:/gotmp/dotweb.json.conf", "json")
+	appConfig, err := config.InitConfig("d:/gotmp/dotweb.json.conf", "json")
+	if err != nil {
+		fmt.Println("dotweb.InitConfig error => " + fmt.Sprint(err))
+		return
+	}
 	fmt.Println(jsonutil.GetJsonString(appConfig))
-
 	RegisterMiddlewares(app)
 
-	err := app.SetConfig(appConfig)
+	err = app.SetConfig(appConfig)
 	if err != nil {
 		fmt.Println("dotweb.SetConfig error => " + fmt.Sprint(err))
+		return
 	}
 
 	fmt.Println("dotweb.StartServer => " + fmt.Sprint(appConfig))
@@ -37,6 +41,12 @@ func main() {
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
 	_, err := ctx.WriteString("index => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
+	return err
+}
+
+func GetAppSet(ctx dotweb.Context) error {
+	key := ctx.QueryString("key")
+	_, err := ctx.WriteString(ctx.Request().Url(), " => key = ", ctx.AppSetConfig().GetString(key))
 	return err
 }
 
@@ -71,6 +81,7 @@ func RegisterHandler(server *dotweb.HttpServer) {
 	server.Router().RegisterHandler("Redirect", Redirect)
 	server.Router().RegisterHandler("Login", Login)
 	server.Router().RegisterHandler("Logout", Logout)
+	server.Router().RegisterHandler("appset", GetAppSet)
 }
 
 func RegisterMiddlewares(app *dotweb.DotWeb) {
