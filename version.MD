@@ -18,6 +18,7 @@
 ctx.AppSetConfig().GetString("email-host"))
 ctx.AppSetConfig().GetInt("limit-per-ip"))
 ```
+* 2017-05-22 17:30
 
 #### Version 0.3.15
 * 重要更新：HttpHandle增加error返回值，有error再也不用panic啦！
