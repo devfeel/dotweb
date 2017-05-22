@@ -28,9 +28,9 @@ func StartServer() error {
 #### 详细示例 - https://github.com/devfeel/dotweb-example
 
 ## 3. Features
-* 支持静态路由、参数路由
+* 支持静态路由、参数路由、组路由
 * 路由支持文件/目录服务，支持设置是否允许目录浏览
-* 中间件支持(Middleware\HttpModule双重支持)
+* 中间件支持，支持App、Group、Router级别的设置
 * Feature支持，可绑定HttpServer全局启用
 * 支持STRING/JSON/JSONP/HTML格式输出
 * 统一的HTTP错误处理
@@ -38,7 +38,7 @@ func StartServer() error {
 * 支持Hijack与websocket
 * 内建Cache支持
 * 支持接入第三方模板引擎（需实现dotweb.Renderer接口）
-* 可配置化，80%模块可通过配置维护
+* 模块可配置化，85%模块可通过配置维护
 
 #### Config Example
 dotweb.conf
@@ -211,6 +211,15 @@ func main() {
 测试：
 <br>curl http://127.0.0.1/hello/devfeel
 <br>curl http://127.0.0.1/hello/category1/1
+#### 4) 组路由
+```go
+    g := server.Group("/user")
+	g.GET("/", Index)
+	g.GET("/profile", Profile)
+```
+测试：
+<br>curl http://127.0.0.1/user
+<br>curl http://127.0.0.1/user/profile
 
 
 ## 5. Binder
