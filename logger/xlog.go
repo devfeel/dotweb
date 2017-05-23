@@ -2,7 +2,9 @@ package logger
 
 import (
 	"fmt"
+	"github.com/devfeel/dotweb/framework/file"
 	"os"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -103,6 +105,16 @@ func (l *xLog) writeLog(chanLog chanLog, level string) {
 }
 
 func writeFile(logFile string, log string) {
+	pathDir := filepath.Dir(logFile)
+	if !file.Exist(pathDir) {
+		//create path
+		err := os.MkdirAll(pathDir, 0777)
+		if err != nil {
+			fmt.Println("xlog.writeFile create path error ", err)
+			return
+		}
+	}
+
 	var mode os.FileMode
 	flag := syscall.O_RDWR | syscall.O_APPEND | syscall.O_CREAT
 	mode = 0666
@@ -113,6 +125,5 @@ func writeFile(logFile string, log string) {
 		fmt.Println(logFile, err)
 		return
 	}
-	//fmt.Print(logstr)
 	file.WriteString(logstr)
 }

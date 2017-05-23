@@ -19,7 +19,7 @@ func main() {
 	//如果不设置，默认启用，且默认为当前目录
 	//app.SetLogger(NewYLog())
 	app.SetEnabledLog(true)
-	app.SetLogPath("d:/gotmp/")
+	app.SetLogPath("d:/gotmp/xlog/xlog1/xlog2/")
 
 	fmt.Println(logger.Logger())
 
