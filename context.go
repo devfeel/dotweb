@@ -36,6 +36,8 @@ type (
 		SessionID() string
 		Session() (state *session.SessionState)
 		Hijack() (*HijackConn, error)
+		IsHijack() bool
+		IsWebSocket() bool
 		End()
 		IsEnd() bool
 		Redirect(code int, targetUrl string) error
@@ -72,8 +74,8 @@ type (
 		response     *Response
 		webSocket    *WebSocket
 		hijackConn   *HijackConn
-		IsWebSocket  bool
-		IsHijack     bool
+		isWebSocket  bool
+		isHijack     bool
 		isEnd        bool //表示当前处理流程是否需要终止
 		httpServer   *HttpServer
 		sessionID    string
@@ -91,8 +93,8 @@ func (ctx *HttpContext) reset(res *Response, r *Request, server *HttpServer, nod
 	ctx.response = res
 	ctx.routerNode = node
 	ctx.routerParams = params
-	ctx.IsHijack = false
-	ctx.IsWebSocket = false
+	ctx.isHijack = false
+	ctx.isWebSocket = false
 	ctx.httpServer = server
 	ctx.items = nil
 	ctx.isEnd = false
@@ -109,8 +111,8 @@ func (ctx *HttpContext) release() {
 	ctx.routerParams = nil
 	ctx.webSocket = nil
 	ctx.hijackConn = nil
-	ctx.IsHijack = false
-	ctx.IsWebSocket = false
+	ctx.isHijack = false
+	ctx.isWebSocket = false
 	ctx.httpServer = nil
 	ctx.isEnd = false
 	ctx.features = nil
@@ -139,6 +141,14 @@ func (ctx *HttpContext) RouterNode() RouterNode {
 
 func (ctx *HttpContext) WebSocket() *WebSocket {
 	return ctx.webSocket
+}
+
+func (ctx *HttpContext) IsWebSocket() bool {
+	return ctx.isWebSocket
+}
+
+func (ctx *HttpContext) IsHijack() bool {
+	return ctx.isHijack
 }
 
 func (ctx *HttpContext) HijackConn() *HijackConn {
@@ -225,7 +235,7 @@ func (ctx *HttpContext) Hijack() (*HijackConn, error) {
 		return nil, errors.New("Hijack error:" + err.Error())
 	}
 	ctx.hijackConn = &HijackConn{Conn: conn, ReadWriter: bufrw, header: "HTTP/1.1 200 OK\r\n"}
-	ctx.IsHijack = true
+	ctx.isHijack = true
 	return ctx.hijackConn, nil
 }
 
@@ -336,7 +346,7 @@ func (ctx *HttpContext) ViewC(code int, name string) error {
 
 // write code and content content to response
 func (ctx *HttpContext) Write(code int, content []byte) (int, error) {
-	if ctx.IsHijack {
+	if ctx.IsHijack() {
 		//TODO:hijack mode, status-code set default 200
 		return ctx.hijackConn.WriteBlob(content)
 	} else {
@@ -352,7 +362,7 @@ func (ctx *HttpContext) WriteString(contents ...interface{}) (int, error) {
 // write (httpCode, string) to response
 func (ctx *HttpContext) WriteStringC(code int, contents ...interface{}) (int, error) {
 	content := fmt.Sprint(contents...)
-	if ctx.IsHijack {
+	if ctx.IsHijack() {
 		return ctx.hijackConn.WriteString(content)
 	} else {
 		return ctx.response.Write(code, []byte(content))
@@ -369,7 +379,7 @@ func (ctx *HttpContext) WriteBlobC(code int, contentType string, b []byte) (int,
 	if contentType != "" {
 		ctx.response.SetContentType(contentType)
 	}
-	if ctx.IsHijack {
+	if ctx.IsHijack() {
 		return ctx.hijackConn.WriteBlob(b)
 	} else {
 		return ctx.response.Write(code, b)
@@ -415,7 +425,7 @@ func (ctx *HttpContext) WriteJsonp(callback string, i interface{}) (int, error) 
 func (ctx *HttpContext) WriteJsonpBlob(callback string, b []byte) (size int, err error) {
 	ctx.response.SetContentType(MIMEApplicationJavaScriptCharsetUTF8)
 	//特殊处理，如果为hijack，需要先行WriteBlob头部
-	if ctx.IsHijack {
+	if ctx.IsHijack() {
 		if size, err = ctx.hijackConn.WriteBlob([]byte(ctx.hijackConn.header + "\r\n")); err != nil {
 			return
 		}

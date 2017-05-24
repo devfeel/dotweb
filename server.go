@@ -389,7 +389,7 @@ func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Hand
 		httpCtx.webSocket = &WebSocket{
 			Conn: ws,
 		}
-		httpCtx.IsWebSocket = true
+		httpCtx.isWebSocket = true
 
 		startTime := time.Now()
 		defer func() {
