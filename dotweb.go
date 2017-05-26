@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"errors"
 	"github.com/devfeel/dotweb/cache"
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/core"
@@ -332,9 +333,33 @@ func (app *DotWeb) StartServer(httpport int) error {
 	return err
 }
 
+//start app server with set config
+//If an exception occurs, will be return it
+//if no set Server.Port, will be use DefaultHttpPort
+func (app *DotWeb) Start() error {
+	if app.Config == nil {
+		return errors.New("no config set!")
+	}
+	//start server
+	port := app.Config.Server.Port
+	if port <= 0 {
+		port = DefaultHttpPort
+	}
+	return app.StartServer(port)
+}
+
+//start app server with set config
+//If an exception occurs, will be panic it
+//if no set Server.Port, will be use DefaultHttpPort
+func (app *DotWeb) MustStart() {
+	err := app.Start()
+	if err != nil {
+		panic(err)
+	}
+}
+
 //start server with appconfig
 func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
-
 	err := app.SetConfig(config)
 	if err != nil {
 		return err

@@ -113,7 +113,18 @@ func NewSessionNode() *SessionNode {
 	return config
 }
 
+//init config file
+//If an exception occurs, will be panic it
+func MustInitConfig(configFile string, confType ...interface{}) *Config {
+	conf, err := InitConfig(configFile, confType...)
+	if err != nil {
+		panic(err)
+	}
+	return conf
+}
+
 //初始化配置文件
+//如果发生异常，返回异常
 func InitConfig(configFile string, confType ...interface{}) (config *Config, err error) {
 
 	//检查配置文件有效性
