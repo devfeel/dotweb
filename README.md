@@ -1,6 +1,9 @@
 # DotWeb
 简约大方的go Web微型框架
 
+[![GoDoc](https://godoc.org/github.com/devfeel/dotweb?status.svg)](https://godoc.org/github.com/devfeel/dotweb)
+[![Go Report Card](https://goreportcard.com/badge/github.com/devfeel/dotweb)](https://goreportcard.com/report/github.com/devfeel/dotweb)
+
 ## 1. Install
 
 ```
