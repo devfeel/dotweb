@@ -28,7 +28,7 @@ func StartServer() error {
 }
 
 ```
-#### 详细示例 - https://github.com/devfeel/dotweb-example
+#### examples: https://github.com/devfeel/dotweb-example
 
 ## 3. Features
 * 支持静态路由、参数路由、组路由
@@ -168,7 +168,7 @@ dotweb.json.conf
 14、Router.MatchPath(ctx Context, routePath string) bool
 ```
 接受两个参数，一个是URI路径，另一个是 HttpHandle 类型，设定匹配到该路径时执行的方法；
-#### 2) 静态路由
+#### 2) static router
 静态路由语法就是没有任何参数变量，pattern是一个固定的字符串。
 ```go
 package main
@@ -185,9 +185,9 @@ func main() {
     dotapp.StartServer(80)
 }
 ```
-测试：
+test：
 curl http://127.0.0.1/hello
-#### 3) 参数路由
+#### 3) parameter router
 参数路由以冒号 : 后面跟一个字符串作为参数名称，可以通过 HttpContext的 GetRouterName 方法获取路由参数的值。
 ```go
 package main
@@ -211,24 +211,23 @@ func main() {
     dotapp.StartServer(80)
 }
 ```
-测试：
+test：
 <br>curl http://127.0.0.1/hello/devfeel
 <br>curl http://127.0.0.1/hello/category1/1
-#### 4) 组路由
+#### 4) group router
 ```go
     g := server.Group("/user")
 	g.GET("/", Index)
 	g.GET("/profile", Profile)
 ```
-测试：
+test：
 <br>curl http://127.0.0.1/user
 <br>curl http://127.0.0.1/user/profile
 
 
 ## 5. Binder
 * HttpContext.Bind(interface{})
-* 支持json、xml、Form数据
-* 集成echo的bind实现模块
+* Support data from json、xml、Form
 ```go
 type UserInfo struct {
 		UserName string `form:"user"`
@@ -247,12 +246,7 @@ func(ctx *dotweb.HttpContext) TestBind{
 ```
 
 ## 6. Middleware
-#### RegisterModule - 拦截器
-* 支持OnBeginRequest、OnEndRequest两类中间件
-* 通过实现HttpModule.OnBeginRequest、HttpModule.OnEndRequest接口实现自定义中间件
-* 通过设置HttpContext.End()提前终止请求
-
-#### Middleware - 中间件
+#### Middleware
 * 支持粒度：App、Group、RouterNode
 * DotWeb.Use(m ...Middleware)
 * Group.Use(m ...Middleware)
@@ -302,36 +296,36 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 
 
 ## 8. Exception
-#### 500错误
-* 默认设置: 当发生未处理异常时，会根据RunMode向页面输出默认错误信息或者具体异常信息，并返回 500 错误头
-* 自定义: 通过DotServer.SetExceptionHandle(handler *ExceptionHandle)实现自定义异常处理逻辑
+#### 500 error
+* Default: 当发生未处理异常时，会根据RunMode向页面输出默认错误信息或者具体异常信息，并返回 500 错误头
+* User-defined: 通过DotServer.SetExceptionHandle(handler *ExceptionHandle)实现自定义异常处理逻辑
 ```go
 type ExceptionHandle func(Context, error)
 ```
-#### 404错误
-* 默认设置: 当发生404异常时，会默认使用http.NotFound处理
-* 自定义: 通过DotWeb.SetNotFoundHandle(handler NotFoundHandle)实现自定义404处理逻辑
+#### 404 error
+* Default: 当发生404异常时，会默认使用http.NotFound处理
+* User-defined: 通过DotWeb.SetNotFoundHandle(handler NotFoundHandle)实现自定义404处理逻辑
 ```go
 type NotFoundHandle  func(http.ResponseWriter, *http.Request)
 ```
 
 ## 9. Session
-#### 支持runtime、redis两种
-* 默认不开启Session支持
-* runtime:基于内存存储实现session模块
-* redis:基于Redis存储实现session模块,其中redis key以dotweb:session:xxxxxxxxxxxx组成
+#### Support store in runtime、redis
+* default is disabled, you must use app.HttpServer.SetEnabledSession(true) to enabled it
+* runtime:store in runtime memory
+* redis:store in redis,redis-key named with dotweb:session:xxxxxxxxxxxx
 ```go
-//设置session支持
+//enabled session
 dotapp.HttpServer.SetEnabledSession(true)
-//使用runtime模式
+//use runtime mode
 dotapp.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
-//使用redis模式
+//use redis mode
 dotapp.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("127.0.0.1:6379"))
-//HttpContext使用
+//use session with DotWeb.Context
 ctx.Session().Set(key, value)
 ```
 
-## 外部依赖
+## Dependency
 websocket - golang.org/x/net/websocket
 <br>
 redis - github.com/garyburd/redigo/redis
@@ -344,5 +338,5 @@ redis - github.com/garyburd/redigo/redis
 ## 贡献名单
 目前已经有几位朋友在为框架一起做努力，我们将在合适的时间向大家展现，谢谢他们的支持！
 
-## 如何联系
-QQ群：193409346
+## Contact Us
+QQ-Group：193409346
