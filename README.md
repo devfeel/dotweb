@@ -1,5 +1,5 @@
 # DotWeb
-简约大方的go Web微型框架
+Simple and easy go web micro framework
 
 [![GoDoc](https://godoc.org/github.com/devfeel/dotweb?status.svg)](https://godoc.org/github.com/devfeel/dotweb)
 [![Go Report Card](https://goreportcard.com/badge/github.com/devfeel/dotweb)](https://goreportcard.com/report/github.com/devfeel/dotweb)
@@ -13,16 +13,16 @@ go get -u github.com/devfeel/dotweb
 ## 2. Getting Started
 ```go
 func StartServer() error {
-	//初始化DotApp
+	//init DotApp
 	app := dotweb.New()
-	//设置dotapp日志目录
+	//set log path
 	app.SetLogPath("/home/logs/wwwroot/")
-	//设置路由
+	//set route
 	app.HttpServer.Router().GET("/index", func(ctx dotweb.Context) error{
 		_, err := ctx.WriteString("welcome to my first web!")
 		return err
 	})
-	//开始服务
+	//begin server
 	err := app.StartServer(80)
 	return err
 }
