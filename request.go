@@ -84,10 +84,9 @@ func (req *Request) QueryHeader(key string) string {
 	return req.Header.Get(key)
 }
 
-/*
-* 根据指定key获取包括在post、put内的值
-* Obsolete("use PostFormValue replace this")
- */
+//Deprecated: Use the PostFormValue instead
+//returns the first value for the named component of the POST
+// or PUT request body. URL query parameters are ignored.
 func (req *Request) PostString(key string) string {
 	return req.PostFormValue(key)
 }
