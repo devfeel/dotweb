@@ -86,13 +86,6 @@ func (req *Request) QueryHeader(key string) string {
 
 /*
 * 根据指定key获取包括在post、put内的值
- */
-func (req *Request) PostFormValue(key string) string {
-	return req.PostFormValue(key)
-}
-
-/*
-* 根据指定key获取包括在post、put内的值
 * Obsolete("use PostFormValue replace this")
  */
 func (req *Request) PostString(key string) string {
