@@ -1,5 +1,15 @@
 ##dotweb版本记录：
 
+#### Version 0.3.17
+* 新增jwt中间件，参考demo：example/jwt
+* 支持较为丰富的option选项，可以根据实际业务场景自定义
+* 可配置通过Cookie、Header、QueryString三类token存储方式
+* 支持自定义非法token处理函数
+* 支持token通过jwt基础验证后的扩展处理接口
+* 新增依赖 引入 github.com/dgrijalva/jwt-go
+* 新增 example/jwt 目录
+* 2017-06-06 13:00
+
 #### Version 0.3.16
 * 配置文件加载优化，加载解析配置文件失败的情况下返回error对象
 × 配置文件匹配完善，依次按三个目录匹配：1按绝对路径检查，2进程根目录下寻找，3进程根目录/config/下寻找
