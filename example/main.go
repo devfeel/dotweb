@@ -64,7 +64,7 @@ func main() {
 
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, err := ctx.WriteStringC(201, "index => ", ctx.RouterParams)
+	_, err := ctx.WriteStringC(201, "index => ", ctx.RemoteIP())
 	return err
 }
 

@@ -110,12 +110,13 @@ func (req *Request) PostBody() []byte {
 //RemoteAddr to an "IP" address
 func (req *Request) RemoteIP() string {
 	fullIp := req.Request.RemoteAddr
-	s := strings.Split(fullIp, ":")
-	if len(s) > 1 {
-		return s[0]
-	} else {
-		return fullIp
+	//special: if run in win10, localIp will be like "[::]:port"
+	//fixed for #20 cann't get RemoteIP and RemoteAddr in win10
+	lastFlagIndex := strings.LastIndex(fullIp, ":")
+	if lastFlagIndex >= 0 {
+		return fullIp[:lastFlagIndex]
 	}
+	return fullIp
 }
 
 //RemoteAddr to an "IP:port" address
