@@ -40,8 +40,8 @@ func main() {
 
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	user, exists := ctx.Items().Get(JwtContextKey)
-	_, err := ctx.WriteString("custom jwt context => ", user, exists)
+	payload, exists := ctx.Items().Get(JwtContextKey)
+	_, err := ctx.WriteString("custom jwt context => ", payload, exists)
 	return err
 }
 
@@ -96,8 +96,8 @@ func NewSimpleJwt(app *dotweb.DotWeb) dotweb.Middleware {
 
 func NewCustomJwt(app *dotweb.DotWeb) dotweb.Middleware {
 	option := &jwt.Config{
-		TTL:           time.Minute * 10,         //default is 24 hour
-		ContextKey:    JwtContextKey,            //default is dotuser
+		TTL:           time.Second * 20,         //default is 24 hour
+		ContextKey:    JwtContextKey,            //default is dotjwt-user
 		SigningKey:    []byte("devfeel/dotweb"), //must input
 		SigningMethod: jwt.SigningMethodHS256,   //default is SigningMethodHS256
 		ExceptionHandler: func(ctx dotweb.Context, err error) {
@@ -106,12 +106,13 @@ func NewCustomJwt(app *dotweb.DotWeb) dotweb.Middleware {
 		},
 		AddonValidator: func(config *jwt.Config, ctx dotweb.Context) error {
 			//example: check user ip
-			user, exists := ctx.Items().Get(JwtContextKey)
+			jwtobj, exists := ctx.Items().Get(JwtContextKey)
 			if !exists {
 				return errors.New("no token exists")
 			}
-			fmt.Println(user)
-			jwtUserIp := user.(map[string]interface{})["userip"].(string)
+			jwtmap := jwtobj.(map[string]interface{})
+
+			jwtUserIp := jwtmap["userip"].(string)
 			requestIp := ctx.RemoteIP()
 			fmt.Println("jwtUserIp", jwtUserIp, " requestIp:", requestIp)
 			if jwtUserIp != requestIp {

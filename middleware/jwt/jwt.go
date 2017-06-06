@@ -19,7 +19,7 @@ var (
 	DefaultJWTConfig = &Config{
 		TTL:              time.Hour * 24,
 		SigningMethod:    SigningMethodHS256,
-		ContextKey:       "dotuser",
+		ContextKey:       "dotjwt-user",
 		Name:             dotweb.HeaderAuthorization,
 		AuthScheme:       "Bearer",
 		Extractor:        ExtractorFromHeader,
@@ -65,7 +65,7 @@ type (
 		// SigningMethod sign method, default: HS256
 		SigningMethod gojwt.SigningMethod
 		// ContextKey Context key to store user information from the token into context.
-		// Optional. Default value "user".
+		// Optional. Default value "dotjwt-user".
 		ContextKey string
 		//AddonValidator addon validator will handle after standard validator
 		AddonValidator addonValidator
@@ -185,7 +185,7 @@ func defaultCheckJWT(config *Config, ctx dotweb.Context) error {
 	}
 	// save custom value to context
 	claims := parsedToken.Claims.(gojwt.MapClaims)
-	ctx.Items().Set(config.ContextKey, claims[config.ContextKey])
+	ctx.Items().Set(config.ContextKey, map[string]interface{}(claims))
 
 	// handle addon validator
 	if config.AddonValidator != nil {
@@ -208,10 +208,17 @@ func defaultCheckJWT(config *Config, ctx dotweb.Context) error {
 // iat: jwt的签发时间
 // jti: jwt的唯一身份标识，主要用来作为一次性token,从而回避重放攻击。
 // 我们这里默认使用exp控制有效期
-func GeneratorToken(config *Config, customValue interface{}) (string, error) {
-	claims := make(gojwt.MapClaims)
-	claims[config.ContextKey] = customValue
-	claims["exp"] = time.Now().Add(config.TTL).Unix()
+func GeneratorToken(config *Config, payload map[string]interface{}) (string, error) {
+	claims := gojwt.MapClaims(payload)
+	//特别的，如果未设置iat与exp，设置默认值
+	//设置iat
+	if _, isok := claims["iat"]; !isok {
+		claims["iat"] = time.Now().Unix()
+	}
+	//设置exp
+	if _, isok := claims["exp"]; !isok {
+		claims["exp"] = time.Now().Add(config.TTL).Unix()
+	}
 
 	token := gojwt.NewWithClaims(config.SigningMethod, claims)
 	// sign token and get the complete encoded token as a string
