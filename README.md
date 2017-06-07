@@ -252,6 +252,7 @@ func(ctx *dotweb.HttpContext) TestBind{
 * Group.Use(m ...Middleware)
 * RouterNode.Use(m ...Middleware)
 * 启用顺序：App -> Group -> RouterNode，同级别下按Use的引入顺序执行
+* [Middleware List](https://github.com/devfeel/middleware)
 ```go
 app.Use(NewAccessFmtLog("app"))
 
