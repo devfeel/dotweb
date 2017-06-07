@@ -413,7 +413,7 @@ func freeMemory(ctx Context) error {
 
 //显示服务器状态信息
 func showServerState(ctx Context) error {
-	ctx.WriteString(jsonutil.GetJsonString(GlobalState))
+	ctx.WriteString(jsonutil.GetJsonString(core.GlobalState))
 	return nil
 }
 
@@ -422,7 +422,7 @@ func showQuery(ctx Context) error {
 	querykey := ctx.GetRouterName("key")
 	switch querykey {
 	case "state":
-		ctx.WriteString(jsonutil.GetJsonString(GlobalState))
+		ctx.WriteString(jsonutil.GetJsonString(core.GlobalState))
 	case "":
 		ctx.WriteString("please input key")
 	default:

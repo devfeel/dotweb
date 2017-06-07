@@ -2,6 +2,7 @@ package dotweb
 
 import (
 	"fmt"
+	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/framework/convert"
 	"github.com/devfeel/dotweb/framework/exception"
 	"github.com/devfeel/dotweb/framework/json"
@@ -252,7 +253,7 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 			httpCtx.Response().SetHeader(HeaderContentEncoding, gzipScheme)
 		}
 		//增加状态计数
-		GlobalState.AddRequestCount(1)
+		core.GlobalState.AddRequestCount(1)
 
 		//session
 		//if exists client-sessionid, use it
@@ -308,7 +309,7 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 				}
 
 				//增加错误计数
-				GlobalState.AddErrorCount(1)
+				core.GlobalState.AddErrorCount(1)
 			}
 
 			if server.ServerConfig.EnabledGzip {
@@ -368,7 +369,7 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 func (server *HttpServer) wrapFileHandle(fileHandler http.Handler) RouterHandle {
 	return func(w http.ResponseWriter, r *http.Request, vnode *ValueNode) {
 		//增加状态计数
-		GlobalState.AddRequestCount(1)
+		core.GlobalState.AddRequestCount(1)
 		startTime := time.Now()
 		r.URL.Path = vnode.ByName("filepath")
 		fileHandler.ServeHTTP(w, r)
@@ -408,7 +409,7 @@ func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Hand
 				logger.Logger().Log(logString, LogTarget_HttpServer, LogLevel_Error)
 
 				//增加错误计数
-				GlobalState.AddErrorCount(1)
+				core.GlobalState.AddErrorCount(1)
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 			//HttpServer Logging
@@ -425,7 +426,7 @@ func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Hand
 		handler(httpCtx)
 
 		//增加状态计数
-		GlobalState.AddRequestCount(1)
+		core.GlobalState.AddRequestCount(1)
 	}
 }
 
