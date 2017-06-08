@@ -1,8 +1,7 @@
 ##dotweb版本记录：
 
-
 #### Version 0.3.18
-* 新增cros中间件，参考 github.com/devfeel/middleware/cros
+* 新增cros中间件，参考 https://github.com/devfeel/middleware/tree/master/cros
 * 支持较为丰富的option选项，可以根据实际业务场景自定义
 * 支持设置Header：
 * 1)Access-Control-Allow-Origin
@@ -15,7 +14,7 @@
 * HttpServer增加路由快捷方法:GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE\HiJack\WebSocket\ANY
 * Rsponse增加QueryHeader方法
 * 完善一些注释
-* Demo: github.com/devfeel/middleware/example/cros
+* Demo: https://github.com/devfeel/middleware/tree/master/example/cros
 * 2017-06-08 20:00
 
 #### Version 0.3.17
