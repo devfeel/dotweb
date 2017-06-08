@@ -18,7 +18,7 @@ func StartServer() error {
 	//set log path
 	app.SetLogPath("/home/logs/wwwroot/")
 	//set route
-	app.HttpServer.Router().GET("/index", func(ctx dotweb.Context) error{
+	app.HttpServer.GET("/index", func(ctx dotweb.Context) error{
 		_, err := ctx.WriteString("welcome to my first web!")
 		return err
 	})
@@ -179,7 +179,7 @@ import (
 
 func main() {
     dotapp := dotweb.New()
-    dotapp.HttpServer.Router().GET("/hello", func(ctx *dotweb.HttpContext) {
+    dotapp.HttpServer.GET("/hello", func(ctx *dotweb.HttpContext) {
         ctx.WriteString("hello world!")
     })
     dotapp.StartServer(80)
@@ -198,11 +198,11 @@ import (
 
 func main() {
     dotapp := dotweb.New()
-    dotapp.HttpServer.Router().GET("/hello/:name", func(ctx dotweb.Context) error{
+    dotapp.HttpServer.GET("/hello/:name", func(ctx dotweb.Context) error{
         _, err := ctx.WriteString("hello " + ctx.GetRouterName("name"))
         return err
     })
-    dotapp.HttpServer.Router().GET("/news/:category/:newsid", func(ctx dotweb.Context) error{
+    dotapp.HttpServer.GET("/news/:category/:newsid", func(ctx dotweb.Context) error{
     	category := ctx.GetRouterName("category")
 	    newsid := ctx.GetRouterName("newsid")
         _, err := ctx.WriteString("news info: category=" + category + " newsid=" + newsid)
@@ -257,8 +257,8 @@ func(ctx *dotweb.HttpContext) TestBind{
 app.Use(NewAccessFmtLog("app"))
 
 func InitRoute(server *dotweb.HttpServer) {
-	server.Router().GET("/", Index)
-	server.Router().GET("/use", Index).Use(NewAccessFmtLog("Router-use"))
+	server.GET("/", Index)
+	server.GET("/use", Index).Use(NewAccessFmtLog("Router-use"))
 
 	g := server.Group("/group").Use(NewAccessFmtLog("group"))
 	g.GET("/", Index)
