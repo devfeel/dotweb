@@ -40,6 +40,10 @@ func (r *Response) Header() http.Header {
 	return r.header
 }
 
+func (r *Response) QueryHeader(key string) string {
+	return r.Header().Get(key)
+}
+
 func (r *Response) Redirect(code int, targetUrl string) error {
 	r.Header().Set(HeaderCacheControl, "no-cache")
 	r.Header().Set(HeaderLocation, targetUrl)
