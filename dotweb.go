@@ -71,14 +71,14 @@ func New() *DotWeb {
 	return app
 }
 
-//register middleware with gived name & middleware
+// RegisterMiddlewareFunc register middleware with gived name & middleware
 func (app *DotWeb) RegisterMiddlewareFunc(name string, middleFunc MiddlewareFunc) {
 	app.middlewareMutex.Lock()
 	app.middlewareMap[name] = middleFunc
 	app.middlewareMutex.Unlock()
 }
 
-//get middleware with gived name
+// GetMiddlewareFunc get middleware with gived name
 func (app *DotWeb) GetMiddlewareFunc(name string) (MiddlewareFunc, bool) {
 	app.middlewareMutex.RLock()
 	v, exists := app.middlewareMap[name]
@@ -86,21 +86,17 @@ func (app *DotWeb) GetMiddlewareFunc(name string) (MiddlewareFunc, bool) {
 	return v, exists
 }
 
-/*
-* return cache interface
- */
+// Cache return cache interface
 func (app *DotWeb) Cache() cache.Cache {
 	return app.cache
 }
 
-/*
-* set cache interface
- */
+// SetCache set cache interface
 func (app *DotWeb) SetCache(ca cache.Cache) {
 	app.cache = ca
 }
 
-//current app run mode, if not set, default set RunMode_Development
+// RunMode current app run mode, if not set, default set RunMode_Development
 func (app *DotWeb) RunMode() string {
 	if app.Config.App.RunMode != RunMode_Development && app.Config.App.RunMode != RunMode_Production {
 		app.Config.App.RunMode = RunMode_Development
@@ -108,22 +104,22 @@ func (app *DotWeb) RunMode() string {
 	return app.Config.App.RunMode
 }
 
-//check current run mode is development mode
+// IsDevelopmentMode check current run mode is development mode
 func (app *DotWeb) IsDevelopmentMode() bool {
 	return app.RunMode() == RunMode_Development
 }
 
-//set run mode on development mode
+// SetDevelopmentMode set run mode on development mode
 func (app *DotWeb) SetDevelopmentMode() {
 	app.Config.App.RunMode = RunMode_Development
 }
 
-//set run mode on production mode
+// SetProductionMode set run mode on production mode
 func (app *DotWeb) SetProductionMode() {
 	app.Config.App.RunMode = RunMode_Production
 }
 
-//Use registers a middleware
+// Use registers a middleware
 func (app *DotWeb) Use(m ...Middleware) {
 	step := len(app.Middlewares) - 1
 	for i := range m {
@@ -137,54 +133,50 @@ func (app *DotWeb) Use(m ...Middleware) {
 	}
 }
 
-//UseRequestLog register RequestLog middleware
+// UseRequestLog register RequestLog middleware
 func (app *DotWeb) UseRequestLog() {
 	app.Use(&RequestLogMiddleware{})
 }
 
-/*
-* 添加处理模块
- */
+// Deprecated: Use the Middleware instead
+// RegisterModule 添加处理模块
 func (app *DotWeb) RegisterModule(module *HttpModule) {
 	app.Modules = append(app.Modules, module)
 }
 
-/*
-* 设置异常处理函数
- */
+// SetExceptionHandle set custom error handler
 func (app *DotWeb) SetExceptionHandle(handler ExceptionHandle) {
 	app.ExceptionHandler = handler
 }
 
-/*
-* 设置404处理函数
- */
+// SetNotFoundHandle set custom 404 handler
 func (app *DotWeb) SetNotFoundHandle(handler NotFoundHandle) {
 	app.NotFoundHandler = handler
 }
 
-//设置pprofserver启动配置，默认不启动，且该端口号请不要与StartServer的端口号一致
+// SetPProfConfig set pprofserver config, default is disable
+// and don't use same port with StartServer
 func (app *DotWeb) SetPProfConfig(enabledPProf bool, httpport int) {
 	app.Config.App.EnabledPProf = enabledPProf
 	app.Config.App.PProfPort = httpport
 }
 
-//set user logger, the logger must implement logger.AppLog interface
+// SetLogger set user logger, the logger must implement logger.AppLog interface
 func (app *DotWeb) SetLogger(log logger.AppLog) {
 	logger.SetLogger(log)
 }
 
-//set log root path
+// SetLogPath set log root path
 func (app *DotWeb) SetLogPath(path string) {
 	logger.SetLogPath(path)
 }
 
-//set enabled log flag
+// SetEnabledLog set enabled log flag
 func (app *DotWeb) SetEnabledLog(enabledLog bool) {
 	logger.SetEnabledLog(enabledLog)
 }
 
-//set config for app
+// SetConfig set config for app
 func (app *DotWeb) SetConfig(config *config.Config) error {
 	app.Config = config
 
@@ -333,9 +325,9 @@ func (app *DotWeb) StartServer(httpport int) error {
 	return err
 }
 
-//start app server with set config
-//If an exception occurs, will be return it
-//if no set Server.Port, will be use DefaultHttpPort
+// Start start app server with set config
+// If an exception occurs, will be return it
+// if no set Server.Port, will be use DefaultHttpPort
 func (app *DotWeb) Start() error {
 	if app.Config == nil {
 		return errors.New("no config set!")
@@ -348,9 +340,9 @@ func (app *DotWeb) Start() error {
 	return app.StartServer(port)
 }
 
-//start app server with set config
-//If an exception occurs, will be panic it
-//if no set Server.Port, will be use DefaultHttpPort
+// MustStart start app server with set config
+// If an exception occurs, will be panic it
+// if no set Server.Port, will be use DefaultHttpPort
 func (app *DotWeb) MustStart() {
 	err := app.Start()
 	if err != nil {
@@ -358,7 +350,7 @@ func (app *DotWeb) MustStart() {
 	}
 }
 
-//start server with appconfig
+// StartServerWithConfig start server with config
 func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
 	err := app.SetConfig(config)
 	if err != nil {
@@ -373,7 +365,7 @@ func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
 
 }
 
-//default exception handler
+// DefaultHTTPErrorHandler default exception handler
 func (ds *DotWeb) DefaultHTTPErrorHandler(ctx Context, err error) {
 	//输出内容
 	ctx.Response().WriteHeader(http.StatusInternalServerError)

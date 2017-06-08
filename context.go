@@ -171,8 +171,8 @@ func (ctx *HttpContext) Features() *xFeatureTools {
 	return ctx.features
 }
 
-//get application's global appcontext
-//issue #3
+// AppContext get application's global appcontext
+// issue #3
 func (ctx *HttpContext) AppContext() *core.ItemContext {
 	if ctx.HttpServer != nil {
 		return ctx.httpServer.DotApp.AppContext
@@ -181,13 +181,13 @@ func (ctx *HttpContext) AppContext() *core.ItemContext {
 	}
 }
 
-//get application's global cache
+// Cache get application's global cache
 func (ctx *HttpContext) Cache() cache.Cache {
 	return ctx.httpServer.DotApp.Cache()
 }
 
-//get request's tem context
-//lazy init when first use
+// Items get request's tem context
+// lazy init when first use
 func (ctx *HttpContext) Items() *core.ItemContext {
 	if ctx.items == nil {
 		ctx.items = core.NewItemContext()
@@ -195,14 +195,14 @@ func (ctx *HttpContext) Items() *core.ItemContext {
 	return ctx.items
 }
 
-//get appset from config file
-//update for issue #16 配置文件
+// AppSetConfig get appset from config file
+// update for issue #16 配置文件
 func (ctx *HttpContext) AppSetConfig() *core.ItemContext {
 	return ctx.HttpServer().DotApp.Config.AppSetConfig
 }
 
-//get view data context
-//lazy init when first use
+// ViewData get view data context
+// lazy init when first use
 func (ctx *HttpContext) ViewData() *core.ItemContext {
 	if ctx.viewData == nil {
 		ctx.viewData = core.NewItemContext()
@@ -210,7 +210,7 @@ func (ctx *HttpContext) ViewData() *core.ItemContext {
 	return ctx.viewData
 }
 
-//get session state in current context
+// Session get session state in current context
 func (ctx *HttpContext) Session() (state *session.SessionState) {
 	if ctx.httpServer == nil {
 		//return nil, errors.New("no effective http-server")
@@ -224,7 +224,7 @@ func (ctx *HttpContext) Session() (state *session.SessionState) {
 	return state
 }
 
-//make current connection to hijack mode
+// Hijack make current connection to hijack mode
 func (ctx *HttpContext) Hijack() (*HijackConn, error) {
 	hj, ok := ctx.response.Writer().(http.Hijacker)
 	if !ok {
@@ -239,8 +239,8 @@ func (ctx *HttpContext) Hijack() (*HijackConn, error) {
 	return ctx.hijackConn, nil
 }
 
-//set context user handler process end
-//if set HttpContext.End,ignore user handler, but exec all http module  - fixed issue #5
+// End set context user handler process end
+// if set HttpContext.End,ignore user handler, but exec all http module  - fixed issue #5
 func (ctx *HttpContext) End() {
 	ctx.isEnd = true
 }
@@ -249,8 +249,8 @@ func (ctx *HttpContext) IsEnd() bool {
 	return ctx.isEnd
 }
 
-//redirect replies to the request with a redirect to url and with httpcode
-//default you can use http.StatusFound
+// Redirect redirect replies to the request with a redirect to url and with httpcode
+// default you can use http.StatusFound
 func (ctx *HttpContext) Redirect(code int, targetUrl string) error {
 	return ctx.response.Redirect(code, targetUrl)
 }
@@ -287,13 +287,12 @@ func (ctx *HttpContext) GetRouterName(key string) string {
 	return ctx.routerParams.ByName(key)
 }
 
-//RemoteAddr to an "IP" address
+// RemoteIP return user IP address
 func (ctx *HttpContext) RemoteIP() string {
 	return ctx.request.RemoteIP()
 }
 
-// write cookie for name & value & maxAge
-//
+// SetCookieValue write cookie for name & value & maxAge
 // default path = "/"
 // default domain = current domain
 // default maxAge = 0 //seconds
@@ -306,18 +305,18 @@ func (ctx *HttpContext) SetCookieValue(name, value string, maxAge int) {
 	ctx.SetCookie(cookie)
 }
 
-// write cookie with cookie-obj
+// SetCookie write cookie with cookie-obj
 func (ctx *HttpContext) SetCookie(cookie *http.Cookie) {
 	http.SetCookie(ctx.response.Writer(), cookie)
 }
 
-// remove cookie for path&name
+// RemoveCookie remove cookie for path&name
 func (ctx *HttpContext) RemoveCookie(name string) {
 	cookie := &http.Cookie{Name: name, MaxAge: -1}
 	ctx.SetCookie(cookie)
 }
 
-// read cookie value for name
+// ReadCookieValue read cookie value for name
 func (ctx *HttpContext) ReadCookieValue(name string) (string, error) {
 	cookieobj, err := ctx.request.Cookie(name)
 	if err != nil {
@@ -327,24 +326,24 @@ func (ctx *HttpContext) ReadCookieValue(name string) (string, error) {
 	}
 }
 
-// read cookie object for name
+// ReadCookie read cookie object for name
 func (ctx *HttpContext) ReadCookie(name string) (*http.Cookie, error) {
 	return ctx.request.Cookie(name)
 }
 
-// write view content to response
+// View write view content to response
 func (ctx *HttpContext) View(name string) error {
 	return ctx.ViewC(defaultHttpCode, name)
 }
 
-// write (httpCode, view content) to response
+// ViewC write (httpCode, view content) to response
 func (ctx *HttpContext) ViewC(code int, name string) error {
 	ctx.response.SetStatusCode(code)
 	err := ctx.httpServer.Renderer().Render(ctx.response.Writer(), name, ctx.ViewData().GetCurrentMap(), ctx)
 	return err
 }
 
-// write code and content content to response
+// Write write code and content content to response
 func (ctx *HttpContext) Write(code int, content []byte) (int, error) {
 	if ctx.IsHijack() {
 		//TODO:hijack mode, status-code set default 200
@@ -354,12 +353,12 @@ func (ctx *HttpContext) Write(code int, content []byte) (int, error) {
 	}
 }
 
-// write string content to response
+// WriteString write string content to response
 func (ctx *HttpContext) WriteString(contents ...interface{}) (int, error) {
 	return ctx.WriteStringC(defaultHttpCode, contents...)
 }
 
-// write (httpCode, string) to response
+// WriteStringC write (httpCode, string) to response
 func (ctx *HttpContext) WriteStringC(code int, contents ...interface{}) (int, error) {
 	content := fmt.Sprint(contents...)
 	if ctx.IsHijack() {
@@ -369,12 +368,12 @@ func (ctx *HttpContext) WriteStringC(code int, contents ...interface{}) (int, er
 	}
 }
 
-// write []byte content to response
+// WriteBlob write []byte content to response
 func (ctx *HttpContext) WriteBlob(contentType string, b []byte) (int, error) {
 	return ctx.WriteBlobC(defaultHttpCode, contentType, b)
 }
 
-// write (httpCode, []byte) to response
+// WriteBlobC write (httpCode, []byte) to response
 func (ctx *HttpContext) WriteBlobC(code int, contentType string, b []byte) (int, error) {
 	if contentType != "" {
 		ctx.response.SetContentType(contentType)
@@ -386,13 +385,13 @@ func (ctx *HttpContext) WriteBlobC(code int, contentType string, b []byte) (int,
 	}
 }
 
-// write (httpCode, json string) to response
+// WriteJson write (httpCode, json string) to response
 // auto convert interface{} to json string
 func (ctx *HttpContext) WriteJson(i interface{}) (int, error) {
 	return ctx.WriteJsonC(defaultHttpCode, i)
 }
 
-// write (httpCode, json string) to response
+// WriteJsonC write (httpCode, json string) to response
 // auto convert interface{} to json string
 func (ctx *HttpContext) WriteJsonC(code int, i interface{}) (int, error) {
 	b, err := json.Marshal(i)
@@ -402,17 +401,17 @@ func (ctx *HttpContext) WriteJsonC(code int, i interface{}) (int, error) {
 	return ctx.WriteJsonBlobC(code, b)
 }
 
-// write json []byte to response
+// WriteJsonBlob write json []byte to response
 func (ctx *HttpContext) WriteJsonBlob(b []byte) (int, error) {
 	return ctx.WriteJsonBlobC(defaultHttpCode, b)
 }
 
-// write (httpCode, json []byte) to response
+// WriteJsonBlobC write (httpCode, json []byte) to response
 func (ctx *HttpContext) WriteJsonBlobC(code int, b []byte) (int, error) {
 	return ctx.WriteBlobC(code, MIMEApplicationJSONCharsetUTF8, b)
 }
 
-// write jsonp string to response
+// WriteJsonp write jsonp string to response
 func (ctx *HttpContext) WriteJsonp(callback string, i interface{}) (int, error) {
 	b, err := json.Marshal(i)
 	if err != nil {
@@ -421,7 +420,7 @@ func (ctx *HttpContext) WriteJsonp(callback string, i interface{}) (int, error) 
 	return ctx.WriteJsonpBlob(callback, b)
 }
 
-// write jsonp string as []byte to response
+// WriteJsonpBlob write jsonp string as []byte to response
 func (ctx *HttpContext) WriteJsonpBlob(callback string, b []byte) (size int, err error) {
 	ctx.response.SetContentType(MIMEApplicationJavaScriptCharsetUTF8)
 	//特殊处理，如果为hijack，需要先行WriteBlob头部

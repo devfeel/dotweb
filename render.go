@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 )
 
-//Renderer is the interface that wraps the render method.
+// Renderer is the interface that wraps the render method.
 type Renderer interface {
 	//set default template path, support multi path
 	//模板查找顺序从最后一个插入的元素开始往前找
@@ -31,9 +31,9 @@ func (r *innerRenderer) Render(w io.Writer, tpl string, data interface{}, ctx Co
 	return t.Execute(w, data)
 }
 
-//set default template paths, support multi path
-//模板查找顺序从最后一个插入的元素开始往前找
-//默认添加base、base/templates、base/views
+// SetTemplatePath set default template paths, support multi path
+// 模板查找顺序从最后一个插入的元素开始往前找
+// 默认添加base、base/templates、base/views
 func (r *innerRenderer) SetTemplatePath(path ...string) {
 	r.templatePaths = append(r.templatePaths, path...)
 }
@@ -82,7 +82,7 @@ func (r *innerRenderer) parseFile(filename string) (*template.Template, error) {
 	return t, nil
 }
 
-//registe default support funcs
+// registeTemplateFunc registe default support funcs
 func registeTemplateFunc(t *template.Template) *template.Template {
 	return t.Funcs(template.FuncMap{"unescaped": unescaped})
 	//TODO:add more func

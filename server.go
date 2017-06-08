@@ -88,7 +88,7 @@ func NewHttpServer() *HttpServer {
 	return server
 }
 
-//ServeHTTP make sure request can be handled correctly
+// ServeHTTP make sure request can be handled correctly
 func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	//针对websocket与调试信息特殊处理
 	if checkIsWebSocketRequest(req) {
@@ -105,17 +105,17 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-//IsOffline check server is set offline state
+// IsOffline check server is set offline state
 func (server *HttpServer) IsOffline() bool {
 	return server.offline
 }
 
-//SetOffline set server offline config
+// SetOffline set server offline config
 func (server *HttpServer) SetOffline(offline bool, offlineText string, offlineUrl string) {
 	server.offline = offline
 }
 
-//set session store config
+// SetSessionConfig set session store config
 func (server *HttpServer) SetSessionConfig(storeConfig *session.StoreConfig) {
 	//sync session config
 	server.SessionConfig.Timeout = storeConfig.Maxlifetime
@@ -123,7 +123,7 @@ func (server *HttpServer) SetSessionConfig(storeConfig *session.StoreConfig) {
 	server.SessionConfig.ServerIP = storeConfig.ServerIP
 }
 
-//init session manager
+// InitSessionManager init session manager
 func (server *HttpServer) InitSessionManager() {
 	storeConfig := new(session.StoreConfig)
 	storeConfig.Maxlifetime = server.SessionConfig.Timeout
@@ -143,14 +143,12 @@ func (server *HttpServer) InitSessionManager() {
 	}
 }
 
-/*
-* 关联当前HttpServer实例对应的DotServer实例
- */
+// setDotApp 关联当前HttpServer实例对应的DotServer实例
 func (server *HttpServer) setDotApp(dotApp *DotWeb) {
 	server.DotApp = dotApp
 }
 
-//get session manager in current httpserver
+// GetSessionManager get session manager in current httpserver
 func (server *HttpServer) GetSessionManager() *session.SessionManager {
 	if !server.SessionConfig.EnabledSession {
 		return nil
@@ -158,23 +156,72 @@ func (server *HttpServer) GetSessionManager() *session.SessionManager {
 	return server.sessionManager
 }
 
-//get router interface in server
+// Router get router interface in server
 func (server *HttpServer) Router() Router {
 	return server.router
 }
 
-//create new group with current HttpServer
+// GET is a shortcut for router.Handle("GET", path, handle)
+func (server *HttpServer) GET(path string, handle HttpHandle) RouterNode {
+	return server.Router().GET(path, handle)
+}
+
+// ANY is a shortcut for router.Handle("Any", path, handle)
+// it support GET\HEAD\POST\PUT\PATCH\OPTIONS\DELETE
+func (server *HttpServer) Any(path string, handle HttpHandle) {
+	server.Router().Any(path, handle)
+}
+
+// HEAD is a shortcut for router.Handle("HEAD", path, handle)
+func (server *HttpServer) HEAD(path string, handle HttpHandle) RouterNode {
+	return server.Router().HEAD(path, handle)
+}
+
+// OPTIONS is a shortcut for router.Handle("OPTIONS", path, handle)
+func (server *HttpServer) OPTIONS(path string, handle HttpHandle) RouterNode {
+	return server.Router().OPTIONS(path, handle)
+}
+
+// POST is a shortcut for router.Handle("POST", path, handle)
+func (server *HttpServer) POST(path string, handle HttpHandle) RouterNode {
+	return server.Router().POST(path, handle)
+}
+
+// PUT is a shortcut for router.Handle("PUT", path, handle)
+func (server *HttpServer) PUT(path string, handle HttpHandle) RouterNode {
+	return server.Router().PUT(path, handle)
+}
+
+// PATCH is a shortcut for router.Handle("PATCH", path, handle)
+func (server *HttpServer) PATCH(path string, handle HttpHandle) RouterNode {
+	return server.Router().PATCH(path, handle)
+}
+
+// DELETE is a shortcut for router.Handle("DELETE", path, handle)
+func (server *HttpServer) DELETE(path string, handle HttpHandle) RouterNode {
+	return server.Router().DELETE(path, handle)
+}
+
+func (server *HttpServer) HiJack(path string, handle HttpHandle) {
+	server.Router().HiJack(path, handle)
+}
+
+func (server *HttpServer) WebSocket(path string, handle HttpHandle) {
+	server.Router().WebSocket(path, handle)
+}
+
+// Group create new group with current HttpServer
 func (server *HttpServer) Group(prefix string) Group {
 	return NewGroup(prefix, server)
 }
 
-//get binder interface in server
+// Binder get binder interface in server
 func (server *HttpServer) Binder() Binder {
 	return server.binder
 }
 
-//get renderer interface in server
-//if no set, init InnerRenderer
+// Renderer get renderer interface in server
+// if no set, init InnerRenderer
 func (server *HttpServer) Renderer() Renderer {
 	if server.render == nil {
 		server.render = NewInnerRenderer()
@@ -182,38 +229,32 @@ func (server *HttpServer) Renderer() Renderer {
 	return server.render
 }
 
-//set custom renderer in server
+// SetRenderer set custom renderer in server
 func (server *HttpServer) SetRenderer(r Renderer) {
 	server.render = r
 }
 
-//set EnabledAutoHEAD true or false
+// SetEnabledAutoHEAD set EnabledAutoHEAD true or false
 func (server *HttpServer) SetEnabledAutoHEAD(autoHEAD bool) {
 	server.ServerConfig.EnabledAutoHEAD = autoHEAD
 }
 
-/*
-设置是否允许目录浏览,默认为false
-*/
+// SetEnabledListDir 设置是否允许目录浏览,默认为false
 func (server *HttpServer) SetEnabledListDir(isEnabled bool) {
 	server.ServerConfig.EnabledListDir = isEnabled
 }
 
-/*
-设置是否启用Session,默认为false
-*/
+// SetEnabledSession 设置是否启用Session,默认为false
 func (server *HttpServer) SetEnabledSession(isEnabled bool) {
 	server.SessionConfig.EnabledSession = isEnabled
 }
 
-/*
-设置是否启用gzip,默认为false
-*/
+// SetEnabledGzip 设置是否启用gzip,默认为false
 func (server *HttpServer) SetEnabledGzip(isEnabled bool) {
 	server.ServerConfig.EnabledGzip = isEnabled
 }
 
-//do features...
+// doFeatures do features...
 func (server *HttpServer) doFeatures(ctx Context) Context {
 	//处理 cros feature
 	if server.Features.CROSConfig != nil {

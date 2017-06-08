@@ -43,7 +43,7 @@ func Any(ctx dotweb.Context) error {
 }
 
 func InitRoute(server *dotweb.HttpServer) {
-	server.Router().GET("/", Index)
-	server.Router().GET("/d/:x/y", Index)
-	server.Router().GET("/any", Any)
+	server.GET("/", Index)
+	server.GET("/d/:x/y", Index)
+	server.GET("/any", Any)
 }
