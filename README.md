@@ -253,6 +253,14 @@ func(ctx *dotweb.HttpContext) TestBind{
 * RouterNode.Use(m ...Middleware)
 * 启用顺序：App -> Group -> RouterNode，同级别下按Use的引入顺序执行
 * [Middleware List](https://github.com/devfeel/middleware)
+* [JWT](https://github.com/devfeel/middleware/tree/master/jwt)   -  [example](https://github.com/devfeel/middleware/tree/master/example/jwt)
+* [AccessLog](https://github.com/devfeel/middleware/tree/master/accesslog)   -  [example](https://github.com/devfeel/middleware/tree/master/example/accesslog)
+* [CROS](https://github.com/devfeel/middleware/tree/master/cros)   -  [example](https://github.com/devfeel/middleware/tree/master/example/cros)
+* Gzip
+* BasicAuth
+* Recover
+* HeaderOverride
+
 ```go
 app.Use(NewAccessFmtLog("app"))
 
