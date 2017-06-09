@@ -33,7 +33,7 @@ func StartServer() error {
 ## 3. Features
 * 支持静态路由、参数路由、组路由
 * 路由支持文件/目录服务，支持设置是否允许目录浏览
-* 中间件支持，支持App、Group、Router级别的设置
+* 中间件支持，支持App、Group、Router级别的设置 - https://github.com/devfeel/middleware
 * Feature支持，可绑定HttpServer全局启用
 * 支持STRING/JSON/JSONP/HTML格式输出
 * 统一的HTTP错误处理
@@ -252,7 +252,7 @@ func(ctx *dotweb.HttpContext) TestBind{
 * Group.Use(m ...Middleware)
 * RouterNode.Use(m ...Middleware)
 * 启用顺序：App -> Group -> RouterNode，同级别下按Use的引入顺序执行
-* [Middleware List](https://github.com/devfeel/middleware)
+* 更多请参考：https://github.com/devfeel/middleware
 * [JWT](https://github.com/devfeel/middleware/tree/master/jwt)   -  [example](https://github.com/devfeel/middleware/tree/master/example/jwt)
 * [AccessLog](https://github.com/devfeel/middleware/tree/master/accesslog)   -  [example](https://github.com/devfeel/middleware/tree/master/example/accesslog)
 * [CROS](https://github.com/devfeel/middleware/tree/master/cros)   -  [example](https://github.com/devfeel/middleware/tree/master/example/cros)
