@@ -20,7 +20,7 @@ func main() {
 	app.SetDevelopmentMode()
 
 	//设置gzip开关
-	//app.SetEnabledGzip(true)
+	app.HttpServer.SetEnabledGzip(true)
 
 	//设置Session开关
 	app.HttpServer.SetEnabledSession(true)
@@ -64,7 +64,7 @@ func main() {
 
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, err := ctx.WriteStringC(201, "index => ", ctx.RemoteIP())
+	_, err := ctx.WriteStringC(201, "index => ", ctx.RemoteIP(), "我是首页")
 	return err
 }
 
