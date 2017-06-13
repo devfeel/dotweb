@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"github.com/devfeel/dotweb"
 	"github.com/devfeel/dotweb/framework/file"
 	"github.com/devfeel/dotweb/session"
 	"strconv"
+	"time"
 )
 
 func main() {
@@ -31,7 +34,7 @@ func main() {
 	InitRoute(app.HttpServer)
 
 	//设置HttpModule
-	InitModule(app)
+	//InitModule(app)
 
 	//启动 监控服务
 	//app.SetPProfConfig(true, 8081)
@@ -39,6 +42,8 @@ func main() {
 	//全局容器
 	app.AppContext.Set("gstring", "gvalue")
 	app.AppContext.Set("gint", 1)
+
+	app.HttpServer.ServerConfig.RequestTimeOut = 2000
 
 	// 开始服务
 	port := 8080
@@ -54,11 +59,32 @@ func Index(ctx dotweb.Context) error {
 	return err
 }
 
+func CtxTimeOut(ctx dotweb.Context) error {
+	fmt.Println(sleep(ctx.Context()))
+	return nil
+}
+
+func sleep(runCtx context.Context) error {
+	c := make(chan error, 1)
+	go func() {
+		time.Sleep(time.Second * 10)
+		fmt.Println("sleep time end")
+		c <- errors.New("test")
+	}()
+	select {
+	case <-runCtx.Done():
+		return runCtx.Err()
+	case err := <-c:
+		return err
+	}
+}
+
 func InitRoute(server *dotweb.HttpServer) {
-	server.Router().GET("/", Index)
-	server.Router().GET("/user", Index) //need login
-	server.Router().GET("/login", Index)
-	server.Router().GET("/reg", Index)
+	server.GET("/", Index)
+	server.GET("/user", Index) //need login
+	server.GET("/login", Index)
+	server.GET("/reg", Index)
+	server.GET("/ctx", CtxTimeOut)
 }
 
 func InitModule(dotserver *dotweb.DotWeb) {

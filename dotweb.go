@@ -268,12 +268,60 @@ func (app *DotWeb) SetConfig(config *config.Config) error {
 	return nil
 }
 
-/*启动WebServer
-* 需要初始化HttpRoute
-* httpPort := 80
- */
+// StartServer start server with http port
+// if config the pprof, will be start pprof server
 func (app *DotWeb) StartServer(httpport int) error {
 
+	//start pprof server
+	if app.Config.App.EnabledPProf {
+		if app.Config.App.PProfPort == httpport {
+			errStr := "PProf Server and HttpServer have the same port"
+			logger.Logger().Warn("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] failed: "+errStr, LogTarget_HttpServer)
+		} else {
+			logger.Logger().Debug("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] Begin", LogTarget_HttpServer)
+			go func() {
+				err := http.ListenAndServe(":"+strconv.Itoa(app.Config.App.PProfPort), nil)
+				if err != nil {
+					logger.Logger().Warn("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] error: "+err.Error(), LogTarget_HttpServer)
+				}
+			}()
+		}
+	}
+
+	//add default httphandler with middlewares
+	app.Use(&xMiddleware{})
+	addr := ":" + strconv.Itoa(httpport)
+	return app.ListenAndServe(addr)
+
+}
+
+// Start start app server with set config
+// If an exception occurs, will be return it
+// if no set Server.Port, will be use DefaultHttpPort
+func (app *DotWeb) Start() error {
+	if app.Config == nil {
+		return errors.New("no config set!")
+	}
+	//start server
+	port := app.Config.Server.Port
+	if port <= 0 {
+		port = DefaultHttpPort
+	}
+	return app.StartServer(port)
+}
+
+// MustStart start app server with set config
+// If an exception occurs, will be panic it
+// if no set Server.Port, will be use DefaultHttpPort
+func (app *DotWeb) MustStart() {
+	err := app.Start()
+	if err != nil {
+		panic(err)
+	}
+}
+
+// ListenAndServe start server with addr
+func (app *DotWeb) ListenAndServe(addr string) error {
 	initInnerRouter(app.HttpServer)
 
 	if app.ExceptionHandler == nil {
@@ -300,54 +348,9 @@ func (app *DotWeb) StartServer(httpport int) error {
 		app.HttpServer.SetRenderer(NewInnerRenderer())
 	}
 
-	//start pprof server
-	if app.Config.App.EnabledPProf {
-		if app.Config.App.PProfPort == httpport {
-			errStr := "PProf Server and HttpServer have the same port"
-			logger.Logger().Warn("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] failed: "+errStr, LogTarget_HttpServer)
-		} else {
-			logger.Logger().Debug("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] Begin", LogTarget_HttpServer)
-			go func() {
-				err := http.ListenAndServe(":"+strconv.Itoa(app.Config.App.PProfPort), nil)
-				if err != nil {
-					logger.Logger().Warn("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] error: "+err.Error(), LogTarget_HttpServer)
-				}
-			}()
-		}
-	}
-
-	//add default httphandler with middlewares
-	app.Use(&xMiddleware{})
-
-	port := ":" + strconv.Itoa(httpport)
-	logger.Logger().Log("Dotweb:StartServer["+port+"] begin", LogTarget_HttpServer, LogLevel_Debug)
-	err := http.ListenAndServe(port, app.HttpServer)
+	logger.Logger().Log("Dotweb:ListenAndServe["+addr+"] begin", LogTarget_HttpServer, LogLevel_Debug)
+	err := http.ListenAndServe(addr, app.HttpServer)
 	return err
-}
-
-// Start start app server with set config
-// If an exception occurs, will be return it
-// if no set Server.Port, will be use DefaultHttpPort
-func (app *DotWeb) Start() error {
-	if app.Config == nil {
-		return errors.New("no config set!")
-	}
-	//start server
-	port := app.Config.Server.Port
-	if port <= 0 {
-		port = DefaultHttpPort
-	}
-	return app.StartServer(port)
-}
-
-// MustStart start app server with set config
-// If an exception occurs, will be panic it
-// if no set Server.Port, will be use DefaultHttpPort
-func (app *DotWeb) MustStart() {
-	err := app.Start()
-	if err != nil {
-		panic(err)
-	}
 }
 
 // StartServerWithConfig start server with config
@@ -379,7 +382,7 @@ func (ds *DotWeb) DefaultHTTPErrorHandler(ctx Context, err error) {
 	}
 }
 
-//添加框架内部路由规则
+// init inner routers
 func initInnerRouter(server *HttpServer) {
 	//默认支持pprof信息查看
 	gInner := server.Group("/dotweb")

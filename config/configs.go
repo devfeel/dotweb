@@ -7,6 +7,7 @@ import (
 	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/framework/file"
 	"io/ioutil"
+	//"time"
 )
 
 type (
@@ -46,6 +47,7 @@ type (
 		EnabledAutoHEAD bool `xml:"enabledautohead,attr"` //设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
 		EnabledAutoCORS bool `xml:"enabledautocors,attr"` //设置是否自动跨域支持，若设置，默认“GET, POST, PUT, DELETE, OPTIONS”全部请求均支持跨域
 		Port            int  `xml:"port,attr"`            //端口
+		RequestTimeOut  int  `xml:"requestrimeout,attr"`  //请求超时时间，单位毫秒，默认30000秒
 	}
 
 	SessionNode struct {
@@ -180,7 +182,16 @@ func InitConfig(configFile string, confType ...interface{}) (config *Config, err
 	}
 	config.AppSetConfig = tmpAppSetMap
 
+	//deal config default value
+	dealConfigDefaultSet(config)
+
 	return config, nil
+}
+
+func dealConfigDefaultSet(c *Config) {
+	if c.Server.RequestTimeOut <= 0 {
+		c.Server.RequestTimeOut = DefaultRequestTimeOut
+	}
 }
 
 //初始化配置文件（xml）

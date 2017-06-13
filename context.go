@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"context"
 	"fmt"
 	"github.com/devfeel/dotweb/cache"
 	"github.com/devfeel/dotweb/core"
@@ -20,6 +21,8 @@ const (
 
 type (
 	Context interface {
+		Context() context.Context
+		Cancle()
 		HttpServer() *HttpServer
 		Response() *Response
 		Request() *Request
@@ -68,6 +71,8 @@ type (
 	}
 
 	HttpContext struct {
+		context      context.Context
+		cancle       context.CancelFunc
 		request      *Request
 		routerNode   RouterNode
 		routerParams Params
@@ -121,6 +126,14 @@ func (ctx *HttpContext) release() {
 	ctx.sessionID = ""
 	ctx.handler = nil
 	ctx.startTime = time.Time{}
+}
+
+func (ctx *HttpContext) Context() context.Context {
+	return ctx.context
+}
+
+func (ctx *HttpContext) Cancle() {
+	ctx.cancle()
 }
 
 func (ctx *HttpContext) HttpServer() *HttpServer {
