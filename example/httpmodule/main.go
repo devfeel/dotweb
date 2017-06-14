@@ -59,20 +59,15 @@ func Index(ctx dotweb.Context) error {
 
 func CtxTimeOut(ctx dotweb.Context) error {
 	ctx.SetTimeoutContext(time.Second * 3)
-	err := sleepCtx(ctx.Context())
+	runCtx := context.WithValue(ctx.Context(), "test", 1)
+	err := sleepCtx(runCtx)
 	ctx.WriteString(time.Now(), err)
 	return nil
 }
 
-func sleep(runCtx context.Context) error {
-	fmt.Println(runCtx.Value("RequestID"))
-	time.Sleep(time.Second * 5)
-	fmt.Println(time.Now(), "sleep time end")
-	return errors.New("test")
-}
-
 func sleepCtx(runCtx context.Context) error {
 	fmt.Println(runCtx.Value("RequestID"))
+	fmt.Println(runCtx.Value("test"))
 	c := make(chan error, 1)
 	go func() {
 		time.Sleep(time.Second * 5)
@@ -86,6 +81,15 @@ func sleepCtx(runCtx context.Context) error {
 		return err
 	}
 }
+
+func sleep(runCtx context.Context) error {
+	fmt.Println(runCtx.Value("RequestID"))
+	time.Sleep(time.Second * 5)
+	fmt.Println(time.Now(), "sleep time end")
+	return errors.New("test")
+}
+
+
 
 func InitRoute(server *dotweb.HttpServer) {
 	server.GET("/", Index)
