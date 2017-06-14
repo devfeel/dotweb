@@ -1,6 +1,7 @@
 package dotweb
 
 import (
+	"github.com/devfeel/dotweb/framework/crypto"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -11,23 +12,29 @@ type Request struct {
 	*http.Request
 	postBody   []byte
 	isReadBody bool
+	requestID  string
 }
 
 //reset response attr
 func (req *Request) reset(r *http.Request) {
 	req.Request = r
 	req.isReadBody = false
+	req.requestID = cryptos.GetUUID()
 }
 
 func (req *Request) release() {
 	req.Request = nil
 	req.isReadBody = false
 	req.postBody = nil
+	req.requestID = ""
 }
 
-/*
-* 返回查询字符串map表示
- */
+// RequestID get unique ID with current request
+func (req *Request) RequestID() string {
+	return req.requestID
+}
+
+// QueryStrings 返回查询字符串map表示
 func (req *Request) QueryStrings() url.Values {
 	return req.URL.Query()
 }
