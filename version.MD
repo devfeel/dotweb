@@ -1,10 +1,11 @@
 ##dotweb版本记录：
 
 #### Version 0.3.21
-* 新增HttpServer.ListenAndServer(addr string) 支持原生host监听
+* 新增DotWeb & HttpServer.ListenAndServer(addr string) 支持原生host监听
+* 新增DotWeb Close() & Shutdown() 支持优雅关闭服务
 * Context增加Context() & SetTimeoutContext() & WithContext()
 * Request增加自动生成unique RequestID,通过RequestID()获取,默认置入dotweb.Context.context中，以RequestID为key
-* 2017-06-14 06:30
+* 2017-06-14 23:10
 
 #### Version 0.3.20
 * 新增Gzip中间件，参考https://github.com/devfeel/middleware/tree/master/gzip
