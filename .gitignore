@@ -1,0 +1,11 @@
+/out/
+.DS_Store
+*.exe
+/pkg/
+/bin/
+/outer/
+/projectFilesBackup/
+/.idea/
+/work/
+/debug
+.idea
