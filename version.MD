@@ -5,6 +5,7 @@
 * 新增DotWeb Close() & Shutdown() 支持优雅关闭服务
 * Context增加Context() & SetTimeoutContext() & WithContext()
 * Request增加自动生成unique RequestID,通过RequestID()获取,默认置入dotweb.Context.context中，以RequestID为key
+* 新增test目录，提供test公共方法，完善bind_test，感谢@zouyx
 * 2017-06-14 23:10
 
 #### Version 0.3.20
