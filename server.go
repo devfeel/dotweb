@@ -27,7 +27,8 @@ const (
 )
 
 type (
-	//HttpModule定义
+	// Deprecated: Use the Middleware instead
+	// HttpModule struct
 	HttpModule struct {
 		//响应请求时作为 HTTP 执行管线链中的第一个事件发生
 		OnBeginRequest func(Context)
@@ -358,6 +359,12 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 				w = res.Writer().(*gzipResponseWriter).Writer
 				w.(*gzip.Writer).Close()
 			}
+
+			//cancle Context
+			if httpCtx.cancle != nil {
+				httpCtx.cancle()
+			}
+
 			//release response
 			res.release()
 			server.pool.response.Put(res)

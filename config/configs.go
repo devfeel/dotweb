@@ -7,6 +7,7 @@ import (
 	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/framework/file"
 	"io/ioutil"
+	//"time"
 )
 
 type (
@@ -180,7 +181,14 @@ func InitConfig(configFile string, confType ...interface{}) (config *Config, err
 	}
 	config.AppSetConfig = tmpAppSetMap
 
+	//deal config default value
+	dealConfigDefaultSet(config)
+
 	return config, nil
+}
+
+func dealConfigDefaultSet(c *Config) {
+
 }
 
 //初始化配置文件（xml）
