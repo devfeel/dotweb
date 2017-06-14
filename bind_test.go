@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"strings"
 	"io"
+	"encoding/xml"
+	"os"
 )
 
 type Person struct {
@@ -41,7 +43,48 @@ func TestBinder_Bind_json(t *testing.T) {
 	}
 
 	//init param
-	context:=initContext(t,expected)
+	context:=initContext(t,expected,toJson)
+	//actual
+	person:=&Person{
+	}
+
+	err:=binder.Bind(person,context)
+
+	//check error must nil
+	test.Nil(t,err)
+
+	//check expected
+	test.Equal(t,expected,person)
+
+	t.Log("person:",person)
+	t.Log("expected:",expected)
+
+}
+func TestBinder_Bind_xml(t *testing.T) {
+
+	binder:=newBinder()
+
+	if binder==nil {
+		t.Error("binder can not be nil!")
+	}
+
+	//init DotServer
+	app := New()
+
+	if app==nil {
+		t.Error("app can not be nil!")
+	}
+
+	//expected
+	expected:=&Person{
+		Hair:"Brown",
+		HasGlass:true,
+		Age:10,
+		Legs:[]string{"Left", "Right"},
+	}
+
+	//init param
+	context:=initContext(t,expected,toXml)
 	//actual
 	person:=&Person{
 	}
@@ -60,7 +103,7 @@ func TestBinder_Bind_json(t *testing.T) {
 }
 
 //common init context
-func initContext(t *testing.T,v interface{}) *HttpContext {
+func initContext(t *testing.T,v interface{},convertHandler func(t *testing.T,v interface{})string) *HttpContext {
 	httpRequest:=&http.Request{}
 	context:=&HttpContext{
 		request:&Request{
@@ -75,18 +118,27 @@ func initContext(t *testing.T,v interface{}) *HttpContext {
 	header["Content-Type"]=[]string{"application/json"}
 	context.request.Header=header
 
-	body:=format(t,v)
+	jsonStr:=convertHandler(t,v)
+	body:=format(jsonStr)
 	context.request.Request.Body=body
 
 
 	return context
 }
 
-func format(t *testing.T,v interface{}) io.ReadCloser{
+func toJson(t *testing.T,v interface{}) string{
 	b,err:=json.Marshal(v)
 	test.Nil(t,err)
+	return string(b)
+}
+func toXml(t *testing.T,v interface{}) string{
+	b,err:=xml.Marshal(v)
+	test.Nil(t,err)
+	return string(b)
+}
 
-	s := strings.NewReader(string(b))
+func format(b string) io.ReadCloser{
+	s := strings.NewReader(b)
 	r := ioutil.NopCloser(s)
 	r.Close()
 	return r
