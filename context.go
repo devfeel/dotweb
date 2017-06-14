@@ -22,7 +22,8 @@ const (
 type (
 	Context interface {
 		Context() context.Context
-		Cancle()
+		SetTimeoutContext(timeout time.Duration) context.Context
+		WithContext(runCtx context.Context)
 		HttpServer() *HttpServer
 		Response() *Response
 		Request() *Request
@@ -71,7 +72,8 @@ type (
 	}
 
 	HttpContext struct {
-		context      context.Context
+		context context.Context
+		//暂未启用
 		cancle       context.CancelFunc
 		request      *Request
 		routerNode   RouterNode
@@ -128,14 +130,30 @@ func (ctx *HttpContext) release() {
 	ctx.startTime = time.Time{}
 }
 
+// Context return context.Context
 func (ctx *HttpContext) Context() context.Context {
 	return ctx.context
 }
 
-func (ctx *HttpContext) Cancle() {
-	ctx.cancle()
+// SetTimeoutContext set new Timeout Context
+// set Context & cancle
+// withvalue RequestID
+func (ctx *HttpContext) SetTimeoutContext(timeout time.Duration) context.Context {
+	ctx.context, ctx.cancle = context.WithTimeout(context.Background(), timeout)
+	ctx.context = context.WithValue(ctx.context, "RequestID", ctx.Request().RequestID())
+	return ctx.context
 }
 
+// WithContext set Context with RequestID
+func (ctx *HttpContext) WithContext(runCtx context.Context) {
+	if runCtx == nil {
+		panic("nil context")
+	}
+	ctx.context = runCtx
+	ctx.context = context.WithValue(ctx.context, "RequestID", ctx.Request().RequestID())
+}
+
+// HttpServer return HttpServer
 func (ctx *HttpContext) HttpServer() *HttpServer {
 	return ctx.httpServer
 }

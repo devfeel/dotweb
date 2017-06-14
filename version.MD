@@ -2,8 +2,8 @@
 
 #### Version 0.3.21
 * 新增HttpServer.ListenAndServer(addr string) 支持原生host监听
-* Context增加Context() & Cancle() 以通过context.Context实现请求超时机制
-* 配置文件Server节点增加RequestTimeOut设置，表示请求超时时间，单位毫秒，默认30000毫秒
+* Context增加Context() & SetTimeoutContext() & WithContext()
+* Request增加自动生成unique RequestID,通过RequestID()获取,默认置入dotweb.Context.context中，以RequestID为key
 * 2017-06-14 06:30
 
 #### Version 0.3.20

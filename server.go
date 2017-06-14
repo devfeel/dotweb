@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"compress/gzip"
-	"context"
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/feature"
 	"github.com/devfeel/dotweb/logger"
@@ -284,7 +283,6 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 		req.reset(r)
 		httpCtx := server.pool.context.Get().(*HttpContext)
 		httpCtx.reset(res, req, server, vnode.Node, vnode.Params, handler)
-		httpCtx.context, httpCtx.cancle = context.WithTimeout(context.Background(), time.Duration(server.ServerConfig.RequestTimeOut)*time.Millisecond)
 
 		//gzip
 		if server.ServerConfig.EnabledGzip {
@@ -363,7 +361,9 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) Ro
 			}
 
 			//cancle Context
-			httpCtx.Cancle()
+			if httpCtx.cancle != nil {
+				httpCtx.cancle()
+			}
 
 			//release response
 			res.release()

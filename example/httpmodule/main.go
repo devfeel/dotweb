@@ -43,8 +43,6 @@ func main() {
 	app.AppContext.Set("gstring", "gvalue")
 	app.AppContext.Set("gint", 1)
 
-	app.HttpServer.ServerConfig.RequestTimeOut = 2000
-
 	// 开始服务
 	port := 8080
 	fmt.Println("dotweb.StartServer => " + strconv.Itoa(port))
@@ -60,15 +58,25 @@ func Index(ctx dotweb.Context) error {
 }
 
 func CtxTimeOut(ctx dotweb.Context) error {
-	fmt.Println(sleep(ctx.Context()))
+	ctx.SetTimeoutContext(time.Second * 3)
+	err := sleepCtx(ctx.Context())
+	ctx.WriteString(time.Now(), err)
 	return nil
 }
 
 func sleep(runCtx context.Context) error {
+	fmt.Println(runCtx.Value("RequestID"))
+	time.Sleep(time.Second * 5)
+	fmt.Println(time.Now(), "sleep time end")
+	return errors.New("test")
+}
+
+func sleepCtx(runCtx context.Context) error {
+	fmt.Println(runCtx.Value("RequestID"))
 	c := make(chan error, 1)
 	go func() {
-		time.Sleep(time.Second * 10)
-		fmt.Println("sleep time end")
+		time.Sleep(time.Second * 5)
+		fmt.Println(time.Now(), "sleep time end")
 		c <- errors.New("test")
 	}()
 	select {
