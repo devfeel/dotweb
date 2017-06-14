@@ -11,14 +11,13 @@ import (
 
 type (
 	Response struct {
-		writer      http.ResponseWriter
-		Status      int
-		Size        int64
-		body        []byte
-		committed   bool
-		header      http.Header
-		EnabledGzip bool
-		isEnd       bool
+		writer    http.ResponseWriter
+		Status    int
+		Size      int64
+		body      []byte
+		committed bool
+		header    http.Header
+		isEnd     bool
 	}
 
 	gzipResponseWriter struct {
@@ -30,10 +29,6 @@ type (
 func NewResponse(w http.ResponseWriter) (r *Response) {
 	return &Response{writer: w,
 		header: w.Header()}
-}
-
-func (r *Response) SetEnabledGzip(isEnabled bool) {
-	r.EnabledGzip = isEnabled
 }
 
 func (r *Response) Header() http.Header {
@@ -52,6 +47,11 @@ func (r *Response) Redirect(code int, targetUrl string) error {
 
 func (r *Response) Writer() http.ResponseWriter {
 	return r.writer
+}
+
+func (r *Response) SetWriter(w http.ResponseWriter) *Response {
+	r.writer = w
+	return r
 }
 
 func (r *Response) Body() []byte {
@@ -108,11 +108,7 @@ func (r *Response) End() {
 // buffered data to the client.
 // See [http.Flusher](https://golang.org/pkg/net/http/#Flusher)
 func (r *Response) Flush() {
-	if r.EnabledGzip {
-		r.Writer().(*gzipResponseWriter).Flush()
-	} else {
-		r.writer.(http.Flusher).Flush()
-	}
+	r.writer.(http.Flusher).Flush()
 }
 
 // Hijack implements the http.Hijacker interface to allow an HTTP handler to

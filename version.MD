@@ -1,5 +1,26 @@
 ##dotweb版本记录：
 
+#### Version 0.3.21
+* 新增HttpServer.ListenAndServer(addr string) 支持原生host监听
+* Context增加Context() & SetTimeoutContext() & WithContext()
+* Request增加自动生成unique RequestID,通过RequestID()获取,默认置入dotweb.Context.context中，以RequestID为key
+* 2017-06-14 06:30
+
+#### Version 0.3.20
+* 新增Gzip中间件，参考https://github.com/devfeel/middleware/tree/master/gzip
+* 统一：所有中间件的New方式统一为package.Middleware()
+* 2017-06-11 17:00
+
+#### Version 0.3.19
+* 新增AccessLog中间件，参考https://github.com/devfeel/middleware/tree/master/accesslog
+* use dotweb.logger
+* use debug level
+* logtarget is "dotweb_accesslog", like "dotweb_accesslog_debug_2017_06_09.log"
+* logformat: method userip proto status reqbytelen resbytelen timetaken
+* log-example: [debug] 2017-06-09 08:38:10.416369 [middleware.go:49] / GET 127.0.0.1 HTTP/1.1 200 0 19 10
+* 统一：所有中间件的New方式统一为package.Middleware()
+* 2017-06-09 08:00
+
 #### Version 0.3.18
 * 新增cros中间件，参考 https://github.com/devfeel/middleware/tree/master/cros
 * 支持较为丰富的option选项，可以根据实际业务场景自定义
