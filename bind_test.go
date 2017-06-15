@@ -2,6 +2,7 @@ package dotweb
 
 import (
 	"github.com/devfeel/dotweb/test"
+
 	"testing"
 )
 
@@ -11,6 +12,7 @@ type Person struct {
 	Age      int
 	Legs     []string
 }
+
 
 //json
 func TestBinder_Bind_json(t *testing.T) {
