@@ -2,10 +2,7 @@ package dotweb
 
 import (
 	"github.com/devfeel/dotweb/test"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"strings"
+
 	"testing"
 )
 
@@ -16,12 +13,6 @@ type Person struct {
 	Legs     []string
 }
 
-type InitContextParam struct {
-	t              *testing.T
-	v              interface{}
-	contentType    string
-	convertHandler func(t *testing.T, v interface{}) string
-}
 
 //json
 func TestBinder_Bind_json(t *testing.T) {
@@ -232,7 +223,7 @@ func TestBinder_Bind_default(t *testing.T) {
 		t,
 		expected,
 		"",
-		toDefault,
+		test.ToDefault,
 	}
 
 	//init param
@@ -288,7 +279,7 @@ func TestBinder_Bind_default_error(t *testing.T) {
 		t,
 		expected,
 		"application/xml",
-		toDefault,
+		test.ToDefault,
 	}
 
 	//init param
@@ -309,29 +300,6 @@ func TestBinder_Bind_default_error(t *testing.T) {
 	//check error must not nil
 	test.NotNil(t, err)
 
-}
-
-//common init context
-func initContext(param *InitContextParam) *HttpContext {
-	httpRequest := &http.Request{}
-	context := &HttpContext{
-		request: &Request{
-			Request: httpRequest,
-		},
-	}
-	header := make(map[string][]string)
-	header["Accept-Encoding"] = []string{"gzip, deflate"}
-	header["Accept-Language"] = []string{"en-us"}
-	header["Foo"] = []string{"Bar", "two"}
-	//specify json
-	header["Content-Type"] = []string{param.contentType}
-	context.request.Header = header
-
-	jsonStr := param.convertHandler(param.t, param.v)
-	body := format(jsonStr)
-	context.request.Request.Body = body
-
-	return context
 }
 
 //default
@@ -374,15 +342,4 @@ func TestBinder_Bind_ContentTypeNull(t *testing.T) {
 
 	//check error must nil?
 	test.Nil(t, err)
-}
-
-func toDefault(t *testing.T, v interface{}) string {
-	return ""
-}
-
-func format(b string) io.ReadCloser {
-	s := strings.NewReader(b)
-	r := ioutil.NopCloser(s)
-	r.Close()
-	return r
 }
