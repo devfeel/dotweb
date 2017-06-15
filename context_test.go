@@ -3,6 +3,8 @@ package dotweb
 import (
 	"testing"
 	"github.com/devfeel/dotweb/test"
+	"encoding/json"
+	"fmt"
 )
 
 type Animal struct{
@@ -10,7 +12,8 @@ type Animal struct{
 	HasMouth bool
 }
 
-func TestWriteJsonpBlob(t *testing.T) {
+//normal jsonp
+func TestWriteJsonp(t *testing.T) {
 	param := &InitContextParam{
 		t,
 		&Animal{},
@@ -21,12 +24,29 @@ func TestWriteJsonpBlob(t *testing.T) {
 	//init param
 	context := initResponseContext(param)
 
-	excepted:=&Animal{
+	exceptedObject:=&Animal{
 		"Black",
 		true,
 	}
 
-	context.WriteJsonp("jsonCallBack",excepted)
+	callback:="jsonCallBack"
 
-	t.Log(string(context.response.body))
+	//call function
+	context.WriteJsonp(callback,exceptedObject)
+
+	//check result
+
+	//header
+	contentType:=context.response.header.Get(HeaderContentType)
+	test.Equal(t,contentType,MIMEApplicationJavaScriptCharsetUTF8)
+
+	//body
+	body:=string(context.response.body)
+
+	animalJson,err:=json.Marshal(exceptedObject)
+	test.Nil(t,err)
+
+	excepted:=fmt.Sprint(callback,"(",string(animalJson),");")
+
+	test.Equal(t,body,excepted)
 }
