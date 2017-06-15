@@ -20,3 +20,8 @@ func ToXML(t *testing.T, v interface{}) string {
 	//t.Log("xml:",string(b))
 	return string(b)
 }
+
+//ToDefault
+func ToDefault(t *testing.T, v interface{}) string {
+	return ""
+}
