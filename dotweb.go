@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"context"
 	"errors"
 	"github.com/devfeel/dotweb/cache"
 	"github.com/devfeel/dotweb/config"
@@ -349,7 +350,7 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 	}
 
 	logger.Logger().Log("Dotweb:ListenAndServe["+addr+"] begin", LogTarget_HttpServer, LogLevel_Debug)
-	err := http.ListenAndServe(addr, app.HttpServer)
+	err := app.HttpServer.ListenAndServe(addr)
 	return err
 }
 
@@ -380,6 +381,18 @@ func (ds *DotWeb) DefaultHTTPErrorHandler(ctx Context, err error) {
 	} else {
 		ctx.WriteString("Internal Server Error")
 	}
+}
+
+// Close immediately stops the server.
+// It internally calls `http.Server#Close()`.
+func (ds *DotWeb) Close() error {
+	return ds.HttpServer.stdServer.Close()
+}
+
+// Shutdown stops server the gracefully.
+// It internally calls `http.Server#Shutdown()`.
+func (ds *DotWeb) Shutdown(ctx context.Context) error {
+	return ds.HttpServer.stdServer.Shutdown(ctx)
 }
 
 // init inner routers
