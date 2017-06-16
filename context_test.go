@@ -53,7 +53,6 @@ func TestWrite(t *testing.T) {
 }
 
 //normal write string
-//该用例是跑不过的- -,出来是一个[]uint8数组而不是string
 func TestWriteString(t *testing.T) {
 	param := &InitContextParam{
 		t,
@@ -74,7 +73,8 @@ func TestWriteString(t *testing.T) {
 	test.Nil(t,err)
 
 	//call function
-	_,contextErr:=context.WriteString(animalJson)
+	//这里是一个interface数组,用例需要小心.
+	_,contextErr:=context.WriteString(string(animalJson))
 	test.Nil(t,contextErr)
 
 	//header
