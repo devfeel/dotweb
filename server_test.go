@@ -4,7 +4,6 @@ import (
 	"testing"
 	"github.com/devfeel/dotweb/test"
 	"github.com/devfeel/dotweb/session"
-	"os"
 )
 
 //check httpServer
@@ -52,6 +51,7 @@ func TestSesionConfig(t *testing.T) {
 	test.Equal(t,server.sessionManager.GCLifetime,session.DefaultSessionGCLifeTime)
 }
 
+//这个用例报错，不知道怎么处理。- -
 func TestWrapRouterHandle(t *testing.T) {
 	param := &InitContextParam{
 		t,
@@ -60,14 +60,13 @@ func TestWrapRouterHandle(t *testing.T) {
 		test.ToDefault,
 	}
 
-	context:=initContext(param)
-	context.response.writer=os.Stdout
-
+	context:=initAllContext(param)
 
 	server:=NewHttpServer()
 	//use default config
 	server.SetSessionConfig(session.NewDefaultRuntimeConfig())
 	handle:=server.wrapRouterHandle(Index,true)
+
 	handle(context.response.writer,context.request.Request,&ValueNode{})
 }
 
