@@ -2,7 +2,6 @@ package dotweb
 
 import (
 	"testing"
-	"github.com/devfeel/dotweb/test"
 )
 
 // 以下为功能测试
@@ -39,21 +38,4 @@ func Test_IsDevelopmentMode_2(t *testing.T) {
 	app.Config.App.RunMode = "production"
 	b := app.IsDevelopmentMode()
 	t.Log("Run IsDevelopmentMode :", b)
-}
-
-//check httpServer
-func TestNewHttpServer(t *testing.T) {
-	server:=NewHttpServer()
-
-	test.NotNil(t,server.router)
-	test.NotNil(t,server.stdServer)
-	test.NotNil(t,server.ServerConfig)
-	test.NotNil(t,server.SessionConfig)
-	test.NotNil(t,server.lock_session)
-	test.NotNil(t,server.binder)
-	test.NotNil(t,server.Features)
-	test.NotNil(t,server.pool)
-	test.NotNil(t,server.pool.context)
-	test.NotNil(t,server.pool.request)
-	test.NotNil(t,server.pool.response)
 }
