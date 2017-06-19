@@ -213,7 +213,7 @@ func main() {
 ```
 test：
 <br>curl http://127.0.0.1/hello/devfeel
-<br>curl http://127.0.0.1/hello/category1/1
+<br>curl http://127.0.0.1/news/category1/1
 #### 4) group router
 ```go
     g := server.Group("/user")
