@@ -1,27 +1,27 @@
 package dotweb
 
 import (
-	"testing"
-	"github.com/devfeel/dotweb/test"
 	"github.com/devfeel/dotweb/session"
+	"github.com/devfeel/dotweb/test"
+	"testing"
 )
 
 //check httpServer
 func TestNewHttpServer(t *testing.T) {
-	server:=NewHttpServer()
+	server := NewHttpServer()
 
-	test.NotNil(t,server.router)
-	test.NotNil(t,server.stdServer)
-	test.NotNil(t,server.ServerConfig)
-	test.NotNil(t,server.SessionConfig)
-	test.NotNil(t,server.lock_session)
-	test.NotNil(t,server.binder)
-	test.NotNil(t,server.Features)
-	test.NotNil(t,server.pool)
-	test.NotNil(t,server.pool.context)
-	test.NotNil(t,server.pool.request)
-	test.NotNil(t,server.pool.response)
-	test.Equal(t,false,server.IsOffline())
+	test.NotNil(t, server.router)
+	test.NotNil(t, server.stdServer)
+	test.NotNil(t, server.ServerConfig)
+	test.NotNil(t, server.SessionConfig)
+	test.NotNil(t, server.lock_session)
+	test.NotNil(t, server.binder)
+	test.NotNil(t, server.Features)
+	test.NotNil(t, server.pool)
+	test.NotNil(t, server.pool.context)
+	test.NotNil(t, server.pool.request)
+	test.NotNil(t, server.pool.response)
+	test.Equal(t, false, server.IsOffline())
 
 	//t.Log("is offline:",server.IsOffline())
 }
@@ -29,7 +29,7 @@ func TestNewHttpServer(t *testing.T) {
 //session manager用来设置gc？
 //总感觉和名字不是太匹配
 func TestSesionConfig(t *testing.T) {
-	server:=NewHttpServer()
+	server := NewHttpServer()
 	//use default config
 	server.SetSessionConfig(session.NewDefaultRuntimeConfig())
 
@@ -37,18 +37,18 @@ func TestSesionConfig(t *testing.T) {
 	server.InitSessionManager()
 
 	//get session
-	sessionManager:=server.GetSessionManager()
+	sessionManager := server.GetSessionManager()
 
 	//EnabledSession flag is false
-	test.Nil(t,sessionManager)
+	test.Nil(t, sessionManager)
 
 	//switch EnabledSession flag
-	server.SessionConfig.EnabledSession=true
-	sessionManager=server.GetSessionManager()
+	server.SessionConfig.EnabledSession = true
+	sessionManager = server.GetSessionManager()
 
-	test.NotNil(t,sessionManager)
-	test.Equal(t,server.sessionManager.CookieName,session.DefaultSessionCookieName)
-	test.Equal(t,server.sessionManager.GCLifetime,session.DefaultSessionGCLifeTime)
+	test.NotNil(t, sessionManager)
+	test.Equal(t, server.sessionManager.CookieName, session.DefaultSessionCookieName)
+	test.Equal(t, server.sessionManager.GCLifetime, session.DefaultSessionGCLifeTime)
 }
 
 //这个用例报错，不知道怎么处理。- -
@@ -60,14 +60,15 @@ func TestWrapRouterHandle(t *testing.T) {
 		test.ToDefault,
 	}
 
-	context:=initAllContext(param)
+	context := initAllContext(param)
 
-	server:=NewHttpServer()
+	app := New()
+	server := app.HttpServer
 	//use default config
 	server.SetSessionConfig(session.NewDefaultRuntimeConfig())
-	handle:=server.wrapRouterHandle(Index,true)
+	handle := server.wrapRouterHandle(Index, false)
 
-	handle(context.response.writer,context.request.Request,&ValueNode{})
+	handle(context.response.writer, context.request.Request, &ValueNode{})
 }
 
 func Index(ctx Context) error {
