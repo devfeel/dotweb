@@ -39,5 +39,3 @@ func Test_IsDevelopmentMode_2(t *testing.T) {
 	b := app.IsDevelopmentMode()
 	t.Log("Run IsDevelopmentMode :", b)
 }
-
-//
