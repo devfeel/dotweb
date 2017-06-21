@@ -72,7 +72,7 @@ func TestWrapRouterHandle(t *testing.T) {
 	handle(context.response.writer, context.request.Request, &ValueNode{})
 }
 
-func TestLogRequest(t *testing.T) {
+func TestLogWebsocketContext(t *testing.T) {
 	param := &InitContextParam{
 		t,
 		"",
@@ -82,7 +82,7 @@ func TestLogRequest(t *testing.T) {
 
 	context := initAllContext(param)
 
-	log:=logContext(context,time.Now().Unix())
+	log:=logWebsocketContext(context,time.Now().Unix())
 	t.Log("logContext:",log)
 	//test.NotNil(t,log)
 	test.Equal(t,"","")
