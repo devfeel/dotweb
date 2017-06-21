@@ -1,6 +1,7 @@
 package dotweb
 
 import (
+	"github.com/devfeel/dotweb/framework/crypto"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -11,23 +12,29 @@ type Request struct {
 	*http.Request
 	postBody   []byte
 	isReadBody bool
+	requestID  string
 }
 
 //reset response attr
 func (req *Request) reset(r *http.Request) {
 	req.Request = r
 	req.isReadBody = false
+	req.requestID = cryptos.GetUUID()
 }
 
 func (req *Request) release() {
 	req.Request = nil
 	req.isReadBody = false
 	req.postBody = nil
+	req.requestID = ""
 }
 
-/*
-* 返回查询字符串map表示
- */
+// RequestID get unique ID with current request
+func (req *Request) RequestID() string {
+	return req.requestID
+}
+
+// QueryStrings 返回查询字符串map表示
 func (req *Request) QueryStrings() url.Values {
 	return req.URL.Query()
 }
@@ -76,21 +83,17 @@ func (req *Request) parseForm() error {
 	return nil
 }
 
+func (req *Request) ContentType() string {
+	return req.Header.Get(HeaderContentType)
+}
+
 func (req *Request) QueryHeader(key string) string {
 	return req.Header.Get(key)
 }
 
-/*
-* 根据指定key获取包括在post、put内的值
- */
-func (req *Request) PostFormValue(key string) string {
-	return req.PostFormValue(key)
-}
-
-/*
-* 根据指定key获取包括在post、put内的值
-* Obsolete("use PostFormValue replace this")
- */
+//Deprecated: Use the PostFormValue instead
+//returns the first value for the named component of the POST
+// or PUT request body. URL query parameters are ignored.
 func (req *Request) PostString(key string) string {
 	return req.PostFormValue(key)
 }
@@ -114,12 +117,13 @@ func (req *Request) PostBody() []byte {
 //RemoteAddr to an "IP" address
 func (req *Request) RemoteIP() string {
 	fullIp := req.Request.RemoteAddr
-	s := strings.Split(fullIp, ":")
-	if len(s) > 1 {
-		return s[0]
-	} else {
-		return fullIp
+	//special: if run in win10, localIp will be like "[::]:port"
+	//fixed for #20 cann't get RemoteIP and RemoteAddr in win10
+	lastFlagIndex := strings.LastIndex(fullIp, ":")
+	if lastFlagIndex >= 0 {
+		return fullIp[:lastFlagIndex]
 	}
+	return fullIp
 }
 
 //RemoteAddr to an "IP:port" address
@@ -140,12 +144,6 @@ func (req *Request) IsAJAX() bool {
 	return req.Header.Get(HeaderXRequestedWith) == "XMLHttpRequest"
 }
 
-// Host returns requested host.
-//
-// The host is valid until returning from RequestHandler.
-func (ctx *HttpContext) Host() string {
-	return ctx.Request.Host
-}
-func (ctx *HttpContext) Method() string {
-	return ctx.Request.Method
+func (req *Request) Url() string {
+	return req.URL.String()
 }

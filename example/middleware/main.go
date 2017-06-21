@@ -25,12 +25,12 @@ func main() {
 	//设置路由
 	InitRoute(app.HttpServer)
 
-	InitModule(app)
+	//InitModule(app)
 
 	app.UseRequestLog()
 	app.Use(
-		NewAccessFmtLog(1),
-		NewSimpleAuth("admin"),
+		NewAccessFmtLog("app"),
+	//NewSimpleAuth("admin"),
 	)
 
 	//启动 监控服务
@@ -47,61 +47,57 @@ func main() {
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
-func Index(ctx *dotweb.HttpContext) {
-	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Println(time.Now(), "Index Handler")
-	ctx.WriteString("index => ", ctx.RouterParams)
-}
-
-func DefaultError(ctx *dotweb.HttpContext) {
-	panic("my panic error!")
-}
-
-func Redirect(ctx *dotweb.HttpContext) {
-	ctx.Redirect(http.StatusMovedPermanently, "http://www.baidu.com")
+func Index(ctx dotweb.Context) error {
+	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
+	//fmt.Println(time.Now(), "Index Handler")
+	_, err := ctx.WriteString("index  => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
+	return err
 }
 
 func InitRoute(server *dotweb.HttpServer) {
-	server.Router().GET("/", Index).SetEnabledCROS().SetOrigin("*")
-	server.Router().GET("/error", DefaultError)
-	server.Router().GET("/redirect", Redirect)
+	server.Router().GET("/", Index)
+	server.Router().GET("/use", Index).Use(NewAccessFmtLog("Router-use"))
+
+	g := server.Group("/group").Use(NewAccessFmtLog("group")).Use(NewSimpleAuth("admin"))
+	g.GET("/", Index)
+	g.GET("/use", Index).Use(NewAccessFmtLog("group-use"))
 }
 
 func InitModule(dotserver *dotweb.DotWeb) {
 	dotserver.RegisterModule(&dotweb.HttpModule{
-		OnBeginRequest: func(ctx *dotweb.HttpContext) {
-			fmt.Println(time.Now(), "HttpModule BeginRequest1:", ctx.Request.RequestURI)
+		OnBeginRequest: func(ctx dotweb.Context) {
+			fmt.Println(time.Now(), "HttpModule BeginRequest1:", ctx.Request().RequestURI)
 		},
-		OnEndRequest: func(ctx *dotweb.HttpContext) {
-			fmt.Println(time.Now(), "HttpModule EndRequest1:", ctx.Request.RequestURI)
+		OnEndRequest: func(ctx dotweb.Context) {
+			fmt.Println(time.Now(), "HttpModule EndRequest1:", ctx.Request().RequestURI)
 		},
 	})
 
 	dotserver.RegisterModule(&dotweb.HttpModule{
-		OnBeginRequest: func(ctx *dotweb.HttpContext) {
-			fmt.Println(time.Now(), "HttpModule BeginRequest2:", ctx.Request.RequestURI)
+		OnBeginRequest: func(ctx dotweb.Context) {
+			fmt.Println(time.Now(), "HttpModule BeginRequest2:", ctx.Request().RequestURI)
 		},
 	})
 	dotserver.RegisterModule(&dotweb.HttpModule{
-		OnEndRequest: func(ctx *dotweb.HttpContext) {
-			fmt.Println(time.Now(), "HttpModule EndRequest3:", ctx.Request.RequestURI)
+		OnEndRequest: func(ctx dotweb.Context) {
+			fmt.Println(time.Now(), "HttpModule EndRequest3:", ctx.Request().RequestURI)
 		},
 	})
 }
 
 type AccessFmtLog struct {
 	dotweb.BaseMiddlware
-	Index int
+	Index string
 }
 
-func (m *AccessFmtLog) Handle(ctx *dotweb.HttpContext) error {
-	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] begin request -> ", ctx.Request.RequestURI)
+func (m *AccessFmtLog) Handle(ctx dotweb.Context) error {
+	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] begin request -> ", ctx.Request().RequestURI)
 	err := m.Next(ctx)
-	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] finish request ", err, " -> ", ctx.Request.RequestURI)
+	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] finish request ", err, " -> ", ctx.Request().RequestURI)
 	return err
 }
 
-func NewAccessFmtLog(index int) *AccessFmtLog {
+func NewAccessFmtLog(index string) *AccessFmtLog {
 	return &AccessFmtLog{Index: index}
 }
 
@@ -110,15 +106,15 @@ type SimpleAuth struct {
 	exactToken string
 }
 
-func (m *SimpleAuth) Handle(ctx *dotweb.HttpContext) error {
-	fmt.Println(time.Now(), "[SimpleAuth] begin request -> ", ctx.Request.RequestURI)
+func (m *SimpleAuth) Handle(ctx dotweb.Context) error {
+	fmt.Println(time.Now(), "[SimpleAuth] begin request -> ", ctx.Request().RequestURI)
 	var err error
 	if ctx.QueryString("token") != m.exactToken {
 		ctx.Write(http.StatusUnauthorized, []byte("sorry, Unauthorized"))
 	} else {
 		err = m.Next(ctx)
 	}
-	fmt.Println(time.Now(), "[SimpleAuth] finish request ", err, " -> ", ctx.Request.RequestURI)
+	fmt.Println(time.Now(), "[SimpleAuth] finish request ", err, " -> ", ctx.Request().RequestURI)
 	return err
 }
 

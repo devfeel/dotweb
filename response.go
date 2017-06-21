@@ -11,14 +11,13 @@ import (
 
 type (
 	Response struct {
-		writer      http.ResponseWriter
-		Status      int
-		Size        int64
-		body        []byte
-		committed   bool
-		header      http.Header
-		EnabledGzip bool
-		isEnd       bool
+		writer    http.ResponseWriter
+		Status    int
+		Size      int64
+		body      []byte
+		committed bool
+		header    http.Header
+		isEnd     bool
 	}
 
 	gzipResponseWriter struct {
@@ -32,22 +31,27 @@ func NewResponse(w http.ResponseWriter) (r *Response) {
 		header: w.Header()}
 }
 
-func (r *Response) SetEnabledGzip(isEnabled bool) {
-	r.EnabledGzip = isEnabled
-}
-
 func (r *Response) Header() http.Header {
 	return r.header
 }
 
-func (r *Response) Redirect(code int, targetUrl string) {
+func (r *Response) QueryHeader(key string) string {
+	return r.Header().Get(key)
+}
+
+func (r *Response) Redirect(code int, targetUrl string) error {
 	r.Header().Set(HeaderCacheControl, "no-cache")
 	r.Header().Set(HeaderLocation, targetUrl)
-	r.WriteHeader(code)
+	return r.WriteHeader(code)
 }
 
 func (r *Response) Writer() http.ResponseWriter {
 	return r.writer
+}
+
+func (r *Response) SetWriter(w http.ResponseWriter) *Response {
+	r.writer = w
+	return r
 }
 
 func (r *Response) Body() []byte {
@@ -56,6 +60,18 @@ func (r *Response) Body() []byte {
 
 func (r *Response) BodyString() string {
 	return string(r.body)
+}
+
+func (r *Response) SetHeader(key, val string) {
+	r.Header().Set(key, val)
+}
+
+func (r *Response) SetContentType(contenttype string) {
+	r.SetHeader(HeaderContentType, contenttype)
+}
+
+func (r *Response) SetStatusCode(code int) error {
+	return r.WriteHeader(code)
 }
 
 // WriteHeader sends an HTTP response header with status code. If WriteHeader is
@@ -92,11 +108,7 @@ func (r *Response) End() {
 // buffered data to the client.
 // See [http.Flusher](https://golang.org/pkg/net/http/#Flusher)
 func (r *Response) Flush() {
-	if r.EnabledGzip {
-		r.Writer().(*gzipResponseWriter).Flush()
-	} else {
-		r.writer.(http.Flusher).Flush()
-	}
+	r.writer.(http.Flusher).Flush()
 }
 
 // Hijack implements the http.Hijacker interface to allow an HTTP handler to

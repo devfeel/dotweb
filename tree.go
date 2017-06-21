@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be found
 // in the LICENSE file.
 
-package routers
+package dotweb
 
 import (
 	"strings"
@@ -41,14 +41,41 @@ const (
 )
 
 type Node struct {
-	path      string
-	wildChild bool
-	nType     nodeType
-	maxParams uint8
-	indices   string
-	children  []*Node
-	handle    Handle
-	priority  uint32
+	path        string
+	wildChild   bool
+	nType       nodeType
+	maxParams   uint8
+	indices     string
+	children    []*Node
+	middlewares []Middleware
+	handle      RouterHandle
+	priority    uint32
+}
+
+//Use registers a middleware
+func (n *Node) Use(m ...Middleware) *Node {
+	if len(m) <= 0 {
+		return n
+	}
+	step := len(n.middlewares) - 1
+	for i := range m {
+		if m[i] != nil {
+			if step >= 0 {
+				n.middlewares[step].SetNext(m[i])
+			}
+			n.middlewares = append(n.middlewares, m[i])
+			step++
+		}
+	}
+	return n
+}
+
+func (n *Node) Middlewares() []Middleware {
+	return n.middlewares
+}
+
+func (n *Node) Node() *Node {
+	return n
 }
 
 // increments priority of the given child and reorders if necessary
@@ -77,7 +104,7 @@ func (n *Node) incrementChildPrio(pos int) int {
 
 // addRoute adds a node with the given handle to the path.
 // Not concurrency-safe!
-func (n *Node) addRoute(path string, handle Handle) (outnode *Node) {
+func (n *Node) addRoute(path string, handle RouterHandle, m ...Middleware) (outnode *Node) {
 	outnode = n
 
 	fullPath := path
@@ -105,13 +132,14 @@ func (n *Node) addRoute(path string, handle Handle) (outnode *Node) {
 			// Split edge
 			if i < len(n.path) {
 				child := Node{
-					path:      n.path[i:],
-					wildChild: n.wildChild,
-					nType:     static,
-					indices:   n.indices,
-					children:  n.children,
-					handle:    n.handle,
-					priority:  n.priority - 1,
+					path:        n.path[i:],
+					wildChild:   n.wildChild,
+					nType:       static,
+					indices:     n.indices,
+					children:    n.children,
+					handle:      n.handle,
+					priority:    n.priority - 1,
+					middlewares: n.middlewares,
 				}
 
 				// Update maxParams (max of all children)
@@ -198,18 +226,19 @@ func (n *Node) addRoute(path string, handle Handle) (outnode *Node) {
 					panic("a handle is already registered for path '" + fullPath + "'")
 				}
 				n.handle = handle
+				n.Use(m...)
 				outnode = n
 			}
 			return
 		}
 	} else { // Empty tree
-		n.insertChild(numParams, path, fullPath, handle)
+		n.insertChild(numParams, path, fullPath, handle, m...)
 		n.nType = root
 	}
 	return
 }
 
-func (n *Node) insertChild(numParams uint8, path, fullPath string, handle Handle) {
+func (n *Node) insertChild(numParams uint8, path, fullPath string, handle RouterHandle, m ...Middleware) {
 	var offset int // already handled bytes of the path
 
 	// find prefix until first wildcard (beginning with ':'' or '*'')
@@ -311,6 +340,7 @@ func (n *Node) insertChild(numParams uint8, path, fullPath string, handle Handle
 				handle:    handle,
 				priority:  1,
 			}
+			child.Use(m...)
 			n.children = []*Node{child}
 
 			return
@@ -320,6 +350,7 @@ func (n *Node) insertChild(numParams uint8, path, fullPath string, handle Handle
 	// insert remaining path part and handle to the leaf
 	n.path = path[offset:]
 	n.handle = handle
+	n.Use(m...)
 }
 
 func (n *Node) getNode(path string) *Node {
@@ -389,7 +420,7 @@ walk: // outer loop for walking the tree
 // If no handle can be found, a TSR (trailing slash redirect) recommendation is
 // made if a handle exists with an extra (without the) trailing slash for the
 // given path.
-func (n *Node) getValue(path string) (handle Handle, p Params, outnode *Node, tsr bool) {
+func (n *Node) getValue(path string) (handle RouterHandle, p Params, outnode *Node, tsr bool) {
 walk: // outer loop for walking the tree
 	for {
 		if len(path) > len(n.path) {

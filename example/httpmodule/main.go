@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"github.com/devfeel/dotweb"
 	"github.com/devfeel/dotweb/framework/file"
 	"github.com/devfeel/dotweb/session"
 	"strconv"
+	"time"
 )
 
 func main() {
@@ -31,7 +34,7 @@ func main() {
 	InitRoute(app.HttpServer)
 
 	//设置HttpModule
-	InitModule(app)
+	//InitModule(app)
 
 	//启动 监控服务
 	//app.SetPProfConfig(true, 8081)
@@ -47,23 +50,59 @@ func main() {
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
-func Index(ctx *dotweb.HttpContext) {
-	ctx.WriteString("index => " + ctx.Items().GetString("count"))
-	ctx.WriteString("\r\n")
+func Index(ctx dotweb.Context) error {
 	ctx.Items().Set("count", 2)
+	ctx.WriteString("index => " + ctx.Items().GetString("count"))
+	_, err := ctx.WriteString("\r\n")
+	return err
 }
 
+func CtxTimeOut(ctx dotweb.Context) error {
+	ctx.SetTimeoutContext(time.Second * 3)
+	runCtx := context.WithValue(ctx.Context(), "test", 1)
+	err := sleepCtx(runCtx)
+	ctx.WriteString(time.Now(), err)
+	return nil
+}
+
+func sleepCtx(runCtx context.Context) error {
+	fmt.Println(runCtx.Value("RequestID"))
+	fmt.Println(runCtx.Value("test"))
+	c := make(chan error, 1)
+	go func() {
+		time.Sleep(time.Second * 5)
+		fmt.Println(time.Now(), "sleep time end")
+		c <- errors.New("test")
+	}()
+	select {
+	case <-runCtx.Done():
+		return runCtx.Err()
+	case err := <-c:
+		return err
+	}
+}
+
+func sleep(runCtx context.Context) error {
+	fmt.Println(runCtx.Value("RequestID"))
+	time.Sleep(time.Second * 5)
+	fmt.Println(time.Now(), "sleep time end")
+	return errors.New("test")
+}
+
+
+
 func InitRoute(server *dotweb.HttpServer) {
-	server.Router().GET("/", Index)
-	server.Router().GET("/user", Index) //need login
-	server.Router().GET("/login", Index)
-	server.Router().GET("/reg", Index)
+	server.GET("/", Index)
+	server.GET("/user", Index) //need login
+	server.GET("/login", Index)
+	server.GET("/reg", Index)
+	server.GET("/ctx", CtxTimeOut)
 }
 
 func InitModule(dotserver *dotweb.DotWeb) {
 	dotserver.RegisterModule(&dotweb.HttpModule{
-		OnBeginRequest: func(ctx *dotweb.HttpContext) {
-			if ctx.HttpServer.Router().MatchPath(ctx, "/user") {
+		OnBeginRequest: func(ctx dotweb.Context) {
+			if ctx.HttpServer().Router().MatchPath(ctx, "/user") {
 				//TODO:need login
 			}
 			ctx.Items().Set("count", 1)
@@ -73,7 +112,7 @@ func InitModule(dotserver *dotweb.DotWeb) {
 				ctx.End()
 			}
 		},
-		OnEndRequest: func(ctx *dotweb.HttpContext) {
+		OnEndRequest: func(ctx dotweb.Context) {
 			if ctx.Items().Exists("count") {
 				ctx.WriteString("OnEndRequest => ", ctx.Items().GetString("count"))
 			} else {

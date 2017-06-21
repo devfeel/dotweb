@@ -2,7 +2,9 @@ package logger
 
 import (
 	"fmt"
+	"github.com/devfeel/dotweb/framework/file"
 	"os"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -11,6 +13,8 @@ import (
 type chanLog struct {
 	Content   string
 	LogTarget string
+	LogLevel  string
+	logCtx    *logContext
 }
 
 type xLog struct {
@@ -20,10 +24,8 @@ type xLog struct {
 }
 
 //create new xLog
-func NewXLog(logPath string) *xLog {
+func NewXLog() *xLog {
 	l := &xLog{logChan_Custom: make(chan chanLog, 10000)}
-	//设置日志根目录
-	l.SetLogPath(logPath)
 	go l.handleCustom()
 	return l
 }
@@ -36,26 +38,34 @@ const (
 )
 
 func (l *xLog) Debug(log string, logTarget string) {
-	l.Log(log, logTarget, "debug")
+	l.Log(log, logTarget, LogLevel_Debug)
 }
 
 func (l *xLog) Info(log string, logTarget string) {
-	l.Log(log, logTarget, "info")
+	l.Log(log, logTarget, LogLevel_Info)
 }
 
 func (l *xLog) Warn(log string, logTarget string) {
-	l.Log(log, logTarget, "warn")
+	l.Log(log, logTarget, LogLevel_Warn)
 }
 
 func (l *xLog) Error(log string, logTarget string) {
-	l.Log(log, logTarget, "error")
+	l.Log(log, logTarget, LogLevel_Error)
 }
 
 func (l *xLog) Log(log string, logTarget string, logLevel string) {
 	if l.enabledLog {
+		skip := 3
+		logCtx, err := callerInfo(skip)
+		if err != nil {
+			fmt.Println("log println err! " + time.Now().Format("2006-01-02 15:04:05") + " Error: " + err.Error())
+			logCtx = &logContext{}
+		}
 		chanLog := chanLog{
 			LogTarget: logTarget + "_" + logLevel,
 			Content:   log,
+			LogLevel:  logLevel,
+			logCtx:    logCtx,
 		}
 		l.logChan_Custom <- chanLog
 	}
@@ -90,11 +100,21 @@ func (l *xLog) writeLog(chanLog chanLog, level string) {
 		filePath = filePath + "_" + time.Now().Format(defaultDateFormatForFileName) + ".log"
 		break
 	}
-	log := time.Now().Format(defaultFullTimeLayout) + " " + chanLog.Content
+	log := fmt.Sprintf(fmt.Sprintf("[%s] %s [%s:%v] %s", chanLog.LogLevel, time.Now().Format(defaultFullTimeLayout), chanLog.logCtx.fileName, chanLog.logCtx.line, chanLog.Content))
 	writeFile(filePath, log)
 }
 
 func writeFile(logFile string, log string) {
+	pathDir := filepath.Dir(logFile)
+	if !file.Exist(pathDir) {
+		//create path
+		err := os.MkdirAll(pathDir, 0777)
+		if err != nil {
+			fmt.Println("xlog.writeFile create path error ", err)
+			return
+		}
+	}
+
 	var mode os.FileMode
 	flag := syscall.O_RDWR | syscall.O_APPEND | syscall.O_CREAT
 	mode = 0666
@@ -105,6 +125,5 @@ func writeFile(logFile string, log string) {
 		fmt.Println(logFile, err)
 		return
 	}
-	//fmt.Print(logstr)
 	file.WriteString(logstr)
 }

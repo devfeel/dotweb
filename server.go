@@ -2,6 +2,7 @@ package dotweb
 
 import (
 	"fmt"
+	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/framework/convert"
 	"github.com/devfeel/dotweb/framework/exception"
 	"github.com/devfeel/dotweb/framework/json"
@@ -15,7 +16,6 @@ import (
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/feature"
 	"github.com/devfeel/dotweb/logger"
-	"github.com/devfeel/dotweb/routers"
 	"golang.org/x/net/websocket"
 	"io"
 	"net/url"
@@ -27,24 +27,25 @@ const (
 )
 
 type (
-	//HttpModule定义
+	// Deprecated: Use the Middleware instead
+	// HttpModule struct
 	HttpModule struct {
-		Server *HttpServer
 		//响应请求时作为 HTTP 执行管线链中的第一个事件发生
-		OnBeginRequest func(*HttpContext)
+		OnBeginRequest func(Context)
 		//响应请求时作为 HTTP 执行管线链中的最后一个事件发生。
-		OnEndRequest func(*HttpContext)
+		OnEndRequest func(Context)
 	}
 
 	//HttpServer定义
 	HttpServer struct {
+		stdServer      *http.Server
 		router         Router
 		DotApp         *DotWeb
 		sessionManager *session.SessionManager
 		lock_session   *sync.RWMutex
 		pool           *pool
-		ServerConfig   *config.ServerConfig
-		SessionConfig  *config.SessionConfig
+		ServerConfig   *config.ServerNode
+		SessionConfig  *config.SessionNode
 		binder         Binder
 		render         Renderer
 		offline        bool
@@ -78,18 +79,26 @@ func NewHttpServer() *HttpServer {
 				},
 			},
 		},
-		ServerConfig:  config.NewServerConfig(),
-		SessionConfig: config.NewSessionConfig(),
+		ServerConfig:  config.NewServerNode(),
+		SessionConfig: config.NewSessionNode(),
 		lock_session:  new(sync.RWMutex),
 		binder:        newBinder(),
 		Features:      &feature.Feature{},
 	}
 	//设置router
 	server.router = NewRouter(server)
+	server.stdServer = &http.Server{Handler: server}
 	return server
 }
 
-//ServeHTTP make sure request can be handled correctly
+// ListenAndServe listens on the TCP network address srv.Addr and then
+// calls Serve to handle requests on incoming connections.
+func (server *HttpServer) ListenAndServe(addr string) error {
+	server.stdServer.Addr = addr
+	return server.stdServer.ListenAndServe()
+}
+
+// ServeHTTP make sure request can be handled correctly
 func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	//针对websocket与调试信息特殊处理
 	if checkIsWebSocketRequest(req) {
@@ -106,17 +115,17 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-//IsOffline check server is set offline state
+// IsOffline check server is set offline state
 func (server *HttpServer) IsOffline() bool {
 	return server.offline
 }
 
-//SetOffline set server offline config
+// SetOffline set server offline config
 func (server *HttpServer) SetOffline(offline bool, offlineText string, offlineUrl string) {
 	server.offline = offline
 }
 
-//set session store config
+// SetSessionConfig set session store config
 func (server *HttpServer) SetSessionConfig(storeConfig *session.StoreConfig) {
 	//sync session config
 	server.SessionConfig.Timeout = storeConfig.Maxlifetime
@@ -124,7 +133,7 @@ func (server *HttpServer) SetSessionConfig(storeConfig *session.StoreConfig) {
 	server.SessionConfig.ServerIP = storeConfig.ServerIP
 }
 
-//init session manager
+// InitSessionManager init session manager
 func (server *HttpServer) InitSessionManager() {
 	storeConfig := new(session.StoreConfig)
 	storeConfig.Maxlifetime = server.SessionConfig.Timeout
@@ -144,14 +153,12 @@ func (server *HttpServer) InitSessionManager() {
 	}
 }
 
-/*
-* 关联当前HttpServer实例对应的DotServer实例
- */
+// setDotApp 关联当前HttpServer实例对应的DotServer实例
 func (server *HttpServer) setDotApp(dotApp *DotWeb) {
 	server.DotApp = dotApp
 }
 
-//get session manager in current httpserver
+// GetSessionManager get session manager in current httpserver
 func (server *HttpServer) GetSessionManager() *session.SessionManager {
 	if !server.SessionConfig.EnabledSession {
 		return nil
@@ -159,18 +166,72 @@ func (server *HttpServer) GetSessionManager() *session.SessionManager {
 	return server.sessionManager
 }
 
-//get router interface in server
+// Router get router interface in server
 func (server *HttpServer) Router() Router {
 	return server.router
 }
 
-//get binder interface in server
+// GET is a shortcut for router.Handle("GET", path, handle)
+func (server *HttpServer) GET(path string, handle HttpHandle) RouterNode {
+	return server.Router().GET(path, handle)
+}
+
+// ANY is a shortcut for router.Handle("Any", path, handle)
+// it support GET\HEAD\POST\PUT\PATCH\OPTIONS\DELETE
+func (server *HttpServer) Any(path string, handle HttpHandle) {
+	server.Router().Any(path, handle)
+}
+
+// HEAD is a shortcut for router.Handle("HEAD", path, handle)
+func (server *HttpServer) HEAD(path string, handle HttpHandle) RouterNode {
+	return server.Router().HEAD(path, handle)
+}
+
+// OPTIONS is a shortcut for router.Handle("OPTIONS", path, handle)
+func (server *HttpServer) OPTIONS(path string, handle HttpHandle) RouterNode {
+	return server.Router().OPTIONS(path, handle)
+}
+
+// POST is a shortcut for router.Handle("POST", path, handle)
+func (server *HttpServer) POST(path string, handle HttpHandle) RouterNode {
+	return server.Router().POST(path, handle)
+}
+
+// PUT is a shortcut for router.Handle("PUT", path, handle)
+func (server *HttpServer) PUT(path string, handle HttpHandle) RouterNode {
+	return server.Router().PUT(path, handle)
+}
+
+// PATCH is a shortcut for router.Handle("PATCH", path, handle)
+func (server *HttpServer) PATCH(path string, handle HttpHandle) RouterNode {
+	return server.Router().PATCH(path, handle)
+}
+
+// DELETE is a shortcut for router.Handle("DELETE", path, handle)
+func (server *HttpServer) DELETE(path string, handle HttpHandle) RouterNode {
+	return server.Router().DELETE(path, handle)
+}
+
+func (server *HttpServer) HiJack(path string, handle HttpHandle) {
+	server.Router().HiJack(path, handle)
+}
+
+func (server *HttpServer) WebSocket(path string, handle HttpHandle) {
+	server.Router().WebSocket(path, handle)
+}
+
+// Group create new group with current HttpServer
+func (server *HttpServer) Group(prefix string) Group {
+	return NewGroup(prefix, server)
+}
+
+// Binder get binder interface in server
 func (server *HttpServer) Binder() Binder {
 	return server.binder
 }
 
-//get renderer interface in server
-//if no set, init InnerRenderer
+// Renderer get renderer interface in server
+// if no set, init InnerRenderer
 func (server *HttpServer) Renderer() Renderer {
 	if server.render == nil {
 		server.render = NewInnerRenderer()
@@ -178,39 +239,33 @@ func (server *HttpServer) Renderer() Renderer {
 	return server.render
 }
 
-//set custom renderer in server
+// SetRenderer set custom renderer in server
 func (server *HttpServer) SetRenderer(r Renderer) {
 	server.render = r
 }
 
-//set EnabledAutoHEAD true or false
+// SetEnabledAutoHEAD set EnabledAutoHEAD true or false
 func (server *HttpServer) SetEnabledAutoHEAD(autoHEAD bool) {
 	server.ServerConfig.EnabledAutoHEAD = autoHEAD
 }
 
-/*
-设置是否允许目录浏览,默认为false
-*/
+// SetEnabledListDir 设置是否允许目录浏览,默认为false
 func (server *HttpServer) SetEnabledListDir(isEnabled bool) {
 	server.ServerConfig.EnabledListDir = isEnabled
 }
 
-/*
-设置是否启用Session,默认为false
-*/
+// SetEnabledSession 设置是否启用Session,默认为false
 func (server *HttpServer) SetEnabledSession(isEnabled bool) {
 	server.SessionConfig.EnabledSession = isEnabled
 }
 
-/*
-设置是否启用gzip,默认为false
-*/
+// SetEnabledGzip 设置是否启用gzip,默认为false
 func (server *HttpServer) SetEnabledGzip(isEnabled bool) {
 	server.ServerConfig.EnabledGzip = isEnabled
 }
 
-//do features...
-func (server *HttpServer) doFeatures(ctx *HttpContext) *HttpContext {
+// doFeatures do features...
+func (server *HttpServer) doFeatures(ctx Context) Context {
 	//处理 cros feature
 	if server.Features.CROSConfig != nil {
 		c := server.Features.CROSConfig
@@ -227,16 +282,16 @@ type LogJson struct {
 	HttpBody   string
 }
 
-//wrap HttpHandle to httprouter.Handle
-func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) routers.Handle {
-	return func(w http.ResponseWriter, r *http.Request, vnode *routers.ValueNode) {
+//wrap HttpHandle to Handle
+func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandle {
+	return func(w http.ResponseWriter, r *http.Request, vnode *ValueNode) {
 		//get from pool
 		res := server.pool.response.Get().(*Response)
 		res.reset(w)
 		req := server.pool.request.Get().(*Request)
 		req.reset(r)
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(res, req, server, NewRouterNode(vnode.Node, vnode.Method), vnode.Params, handler)
+		httpCtx.reset(res, req, server, vnode.Node, vnode.Params, handler)
 
 		//gzip
 		if server.ServerConfig.EnabledGzip {
@@ -246,10 +301,10 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) ro
 			}
 			grw := &gzipResponseWriter{Writer: gw, ResponseWriter: w}
 			res.reset(grw)
-			httpCtx.SetHeader(HeaderContentEncoding, gzipScheme)
+			httpCtx.Response().SetHeader(HeaderContentEncoding, gzipScheme)
 		}
 		//增加状态计数
-		GlobalState.AddRequestCount(1)
+		core.GlobalState.AddRequestCount(1)
 
 		//session
 		//if exists client-sessionid, use it
@@ -257,12 +312,12 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) ro
 		if server.SessionConfig.EnabledSession {
 			sessionId, err := server.GetSessionManager().GetClientSessionID(r)
 			if err == nil && sessionId != "" {
-				httpCtx.SessionID = sessionId
+				httpCtx.sessionID = sessionId
 			} else {
-				httpCtx.SessionID = server.GetSessionManager().NewSessionID()
-				cookie := http.Cookie{
+				httpCtx.sessionID = server.GetSessionManager().NewSessionID()
+				cookie := &http.Cookie{
 					Name:  server.sessionManager.CookieName,
-					Value: url.QueryEscape(httpCtx.SessionID),
+					Value: url.QueryEscape(httpCtx.sessionID),
 					Path:  "/",
 				}
 				httpCtx.SetCookie(cookie)
@@ -274,8 +329,8 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) ro
 			_, hijack_err := httpCtx.Hijack()
 			if hijack_err != nil {
 				//输出内容
-				httpCtx.Response.WriteHeader(http.StatusInternalServerError)
-				httpCtx.Response.Header().Set(HeaderContentType, CharsetUTF8)
+				httpCtx.Response().WriteHeader(http.StatusInternalServerError)
+				httpCtx.Response().Header().Set(HeaderContentType, CharsetUTF8)
 				httpCtx.WriteString(hijack_err.Error())
 				return
 			}
@@ -284,19 +339,19 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) ro
 		defer func() {
 			var errmsg string
 			if err := recover(); err != nil {
-				errmsg = exception.CatchError("httpserver::RouterHandle", LogTarget_HttpServer, err)
+				errmsg = exception.CatchError("HttpServer::RouterHandle", LogTarget_HttpServer, err)
 
 				//handler the exception
 				if server.DotApp.ExceptionHandler != nil {
-					server.DotApp.ExceptionHandler(httpCtx, err)
+					server.DotApp.ExceptionHandler(httpCtx, fmt.Errorf("%v", err))
 				}
 
 				//if set enabledLog, take the error log
-				if server.DotApp.Config.App.EnabledLog {
+				if logger.EnabledLog {
 					//记录访问日志
-					headinfo := fmt.Sprintln(httpCtx.Response.Header)
+					headinfo := fmt.Sprintln(httpCtx.Response().Header)
 					logJson := LogJson{
-						RequestUrl: httpCtx.Request.RequestURI,
+						RequestUrl: httpCtx.Request().RequestURI,
 						HttpHeader: headinfo,
 						HttpBody:   errmsg,
 					}
@@ -305,7 +360,7 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) ro
 				}
 
 				//增加错误计数
-				GlobalState.AddErrorCount(1)
+				core.GlobalState.AddErrorCount(1)
 			}
 
 			if server.ServerConfig.EnabledGzip {
@@ -313,6 +368,12 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) ro
 				w = res.Writer().(*gzipResponseWriter).Writer
 				w.(*gzip.Writer).Close()
 			}
+
+			//cancle Context
+			if httpCtx.cancle != nil {
+				httpCtx.cancle()
+			}
+
 			//release response
 			res.release()
 			server.pool.response.Put(res)
@@ -325,10 +386,7 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) ro
 		}()
 
 		//do features
-		httpCtx = server.doFeatures(httpCtx)
-
-		//do RouterNode features
-		httpCtx = httpCtx.RouterNode.doFeatures(httpCtx)
+		server.doFeatures(httpCtx)
 
 		//处理前置Module集合
 		for _, module := range server.DotApp.Modules {
@@ -340,10 +398,17 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) ro
 		//处理用户handle
 		//if already set HttpContext.End,ignore user handler - fixed issue #5
 		if !httpCtx.IsEnd() {
+			var ctxErr error
 			if len(server.DotApp.Middlewares) > 0 {
-				server.DotApp.Middlewares[0].Handle(httpCtx)
+				ctxErr = server.DotApp.Middlewares[0].Handle(httpCtx)
 			} else {
-				handler(httpCtx)
+				ctxErr = handler(httpCtx)
+			}
+			if ctxErr != nil {
+				//handler the exception
+				if server.DotApp.ExceptionHandler != nil {
+					server.DotApp.ExceptionHandler(httpCtx, ctxErr)
+				}
 			}
 		}
 
@@ -358,10 +423,10 @@ func (server *HttpServer) wrapRouterHandle(handler HttpHandle, isHijack bool) ro
 }
 
 //wrap fileHandler to httprouter.Handle
-func (server *HttpServer) wrapFileHandle(fileHandler http.Handler) routers.Handle {
-	return func(w http.ResponseWriter, r *http.Request, vnode *routers.ValueNode) {
+func (server *HttpServer) wrapFileHandle(fileHandler http.Handler) RouterHandle {
+	return func(w http.ResponseWriter, r *http.Request, vnode *ValueNode) {
 		//增加状态计数
-		GlobalState.AddRequestCount(1)
+		core.GlobalState.AddRequestCount(1)
 		startTime := time.Now()
 		r.URL.Path = vnode.ByName("filepath")
 		fileHandler.ServeHTTP(w, r)
@@ -378,11 +443,11 @@ func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Hand
 		req := server.pool.request.Get().(*Request)
 		req.reset(ws.Request())
 		httpCtx := server.pool.context.Get().(*HttpContext)
-		httpCtx.Reset(nil, req, server, nil, nil, handler)
-		httpCtx.WebSocket = &WebSocket{
+		httpCtx.reset(nil, req, server, nil, nil, handler)
+		httpCtx.webSocket = &WebSocket{
 			Conn: ws,
 		}
-		httpCtx.IsWebSocket = true
+		httpCtx.isWebSocket = true
 
 		startTime := time.Now()
 		defer func() {
@@ -391,9 +456,9 @@ func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Hand
 				errmsg = exception.CatchError("httpserver::WebsocketHandle", LogTarget_HttpServer, err)
 
 				//记录访问日志
-				headinfo := fmt.Sprintln(httpCtx.WebSocket.Request().Header)
+				headinfo := fmt.Sprintln(httpCtx.webSocket.Request().Header)
 				logJson := LogJson{
-					RequestUrl: httpCtx.WebSocket.Request().RequestURI,
+					RequestUrl: httpCtx.webSocket.Request().RequestURI,
 					HttpHeader: headinfo,
 					HttpBody:   errmsg,
 				}
@@ -401,11 +466,11 @@ func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Hand
 				logger.Logger().Log(logString, LogTarget_HttpServer, LogLevel_Error)
 
 				//增加错误计数
-				GlobalState.AddErrorCount(1)
+				core.GlobalState.AddErrorCount(1)
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 			//HttpServer Logging
-			logger.Logger().Log(httpCtx.Url()+" "+logWebsocketContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
+			logger.Logger().Log(httpCtx.Request().Url()+" "+logWebsocketContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
 
 			//release request
 			req.release()
@@ -418,18 +483,18 @@ func (server *HttpServer) wrapWebSocketHandle(handler HttpHandle) websocket.Hand
 		handler(httpCtx)
 
 		//增加状态计数
-		GlobalState.AddRequestCount(1)
+		core.GlobalState.AddRequestCount(1)
 	}
 }
 
 //get default log string
-func logWebsocketContext(ctx *HttpContext, timetaken int64) string {
+func logWebsocketContext(ctx Context, timetaken int64) string {
 	var reqbytelen, resbytelen, method, proto, status, userip string
 	if ctx != nil {
-		reqbytelen = convert.Int642String(ctx.Request.ContentLength)
+		reqbytelen = convert.Int642String(ctx.Request().ContentLength)
 		resbytelen = "0"
-		method = ctx.Request.Method
-		proto = ctx.Request.Proto
+		method = ctx.Request().Method
+		proto = ctx.Request().Proto
 		status = "0"
 		userip = ctx.RemoteIP()
 	}
@@ -466,8 +531,9 @@ func logRequest(req *http.Request, timetaken int64) string {
 }
 
 //check request is the websocket request
+//check Connection contains upgrade
 func checkIsWebSocketRequest(req *http.Request) bool {
-	if req.Header.Get("Connection") == "Upgrade" {
+	if strings.Index(strings.ToLower(req.Header.Get("Connection")), "upgrade") >= 0 {
 		return true
 	}
 	return false

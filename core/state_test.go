@@ -1,4 +1,4 @@
-package dotweb
+package core
 
 import (
 	"testing"

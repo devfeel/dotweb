@@ -34,20 +34,20 @@ func InitRoute(server *dotweb.HttpServer) {
 	server.Router().POST("/file", FileUpload)
 }
 
-func FileUpload(ctx *dotweb.HttpContext) {
-	upload, err := ctx.FormFile("file")
+func FileUpload(ctx dotweb.Context) error {
+	upload, err := ctx.Request().FormFile("file")
 	if err != nil {
-		ctx.WriteString("FormFile error " + err.Error())
-		return
+		_, err := ctx.WriteString("FormFile error " + err.Error())
+		return err
 	} else {
 		_, err = upload.SaveFile("d:\\" + upload.FileName())
 		if err != nil {
-			ctx.WriteString("SaveFile error => " + err.Error())
-			return
+			_, err := ctx.WriteString("SaveFile error => " + err.Error())
+			return err
 		} else {
-			ctx.WriteString("SaveFile success || " + upload.FileName() + " || " + upload.GetFileExt() + " || " + fmt.Sprint(upload.Size()))
+			_, err := ctx.WriteString("SaveFile success || " + upload.FileName() + " || " + upload.GetFileExt() + " || " + fmt.Sprint(upload.Size()))
 
-			return
+			return err
 		}
 	}
 

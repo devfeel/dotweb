@@ -15,14 +15,14 @@ const (
 type (
 	// Binder is the interface that wraps the Bind method.
 	Binder interface {
-		Bind(interface{}, *HttpContext) error
+		Bind(interface{}, Context) error
 	}
 
 	binder struct{}
 )
 
-func (b *binder) Bind(i interface{}, ctx *HttpContext) (err error) {
-	req := ctx.Request
+func (b *binder) Bind(i interface{}, ctx Context) (err error) {
+	req := ctx.Request()
 	ctype := req.Header.Get(HeaderContentType)
 	if req.Body == nil {
 		err = errors.New("request body can't be empty")
@@ -39,7 +39,7 @@ func (b *binder) Bind(i interface{}, ctx *HttpContext) (err error) {
 	//	err = reflects.ConvertMapToStruct(defaultTagName, i, ctx.FormValues())
 	default:
 		//no check content type for fixed issue #6
-		err = reflects.ConvertMapToStruct(defaultTagName, i, ctx.FormValues())
+		err = reflects.ConvertMapToStruct(defaultTagName, i, ctx.Request().FormValues())
 	}
 	return err
 }

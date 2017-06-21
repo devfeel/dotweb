@@ -47,7 +47,7 @@ func main() {
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
-func TestSession(ctx *dotweb.HttpContext) {
+func TestSession(ctx dotweb.Context) error {
 	type UserInfo struct {
 		UserName string
 		NickName string
@@ -55,7 +55,7 @@ func TestSession(ctx *dotweb.HttpContext) {
 	user := UserInfo{UserName: "test", NickName: "testName"}
 	var userRead UserInfo
 
-	ctx.WriteString("welcome to dotweb - sessionid=> "+ctx.SessionID, "\r\n")
+	ctx.WriteString("welcome to dotweb - sessionid=> "+ctx.SessionID(), "\r\n")
 	err := ctx.Session().Set("username", user)
 	if err != nil {
 		ctx.WriteString("session set error => ", err, "\r\n")
@@ -67,8 +67,8 @@ func TestSession(ctx *dotweb.HttpContext) {
 		ctx.WriteString("session read failed, get nil", "\r\n")
 	}
 
-	ctx.WriteString("userinfo=>" + fmt.Sprintln(userRead))
-
+	_, err = ctx.WriteString("userinfo=>" + fmt.Sprintln(userRead))
+	return err
 }
 
 func InitRoute(server *dotweb.HttpServer) {
