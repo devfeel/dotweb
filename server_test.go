@@ -4,7 +4,6 @@ import (
 	"github.com/devfeel/dotweb/session"
 	"github.com/devfeel/dotweb/test"
 	"testing"
-	"time"
 )
 
 //check httpServer
