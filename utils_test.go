@@ -1,13 +1,14 @@
 package dotweb
 
 import (
-	"net/http"
-	"testing"
-	"io"
-	"strings"
-	"io/ioutil"
-	"fmt"
 	"bytes"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"testing"
+	"net/url"
 )
 
 //common init context
@@ -36,19 +37,18 @@ func initContext(param *InitContextParam) *HttpContext {
 //init response context
 func initResponseContext(param *InitContextParam) *HttpContext {
 	context := &HttpContext{
-		response: &Response{
-		},
+		response: &Response{},
 	}
 
 	var buf1 bytes.Buffer
 	w := io.MultiWriter(&buf1)
 
 	writer := &gzipResponseWriter{
-		ResponseWriter:&httpWriter{},
-		Writer:w,
+		ResponseWriter: &httpWriter{},
+		Writer:         w,
 	}
 
-	context.response=NewResponse(writer)
+	context.response = NewResponse(writer)
 
 	return context
 }
@@ -56,8 +56,7 @@ func initResponseContext(param *InitContextParam) *HttpContext {
 //init request and response context
 func initAllContext(param *InitContextParam) *HttpContext {
 	context := &HttpContext{
-		response: &Response{
-		},
+		response: &Response{},
 		request: &Request{
 			Request: &http.Request{},
 		},
@@ -70,6 +69,13 @@ func initAllContext(param *InitContextParam) *HttpContext {
 	header["Content-Type"] = []string{param.contentType}
 	context.request.Header = header
 
+	u:=&url.URL{
+		Path:"/index",
+	}
+
+	context.request.URL=u
+	context.request.Method="POST"
+
 	jsonStr := param.convertHandler(param.t, param.v)
 	body := format(jsonStr)
 	context.request.Request.Body = body
@@ -77,16 +83,20 @@ func initAllContext(param *InitContextParam) *HttpContext {
 	//var buf1 bytes.Buffer
 	//w := io.MultiWriter(&buf1)
 
-	writer := &gzipResponseWriter{
-		ResponseWriter:&httpWriter{},
-		Writer:&gzipResponseWriter{},
-	}
+	w := &httpWriter{}
+	//gzip 开关
+	/*
+		gw, _ := gzip.NewWriterLevel(w, DefaultGzipLevel)
+		writer := &gzipResponseWriter{
+			ResponseWriter: w,
+			Writer:         &gzipResponseWriter{Writer: gw, ResponseWriter: w},
+		}
+	*/
 
-	context.response=NewResponse(writer)
+	context.response = NewResponse(w)
 
 	return context
 }
-
 
 type httpWriter http.Header
 
@@ -95,12 +105,12 @@ func (ho httpWriter) Header() http.Header {
 }
 
 func (ho httpWriter) Write(byte []byte) (int, error) {
-	fmt.Println("string:",string(byte))
-	return 0,nil
+	fmt.Println("string:", string(byte))
+	return 0, nil
 }
 
 func (ho httpWriter) WriteHeader(code int) {
-	fmt.Println("code:",code)
+	fmt.Println("code:", code)
 }
 
 func format(b string) io.ReadCloser {
