@@ -372,14 +372,13 @@ func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
 // DefaultHTTPErrorHandler default exception handler
 func (ds *DotWeb) DefaultHTTPErrorHandler(ctx Context, err error) {
 	//输出内容
-	ctx.Response().WriteHeader(http.StatusInternalServerError)
 	ctx.Response().Header().Set(HeaderContentType, CharsetUTF8)
 	//if in development mode, output the error info
 	if ds.IsDevelopmentMode() {
 		stack := string(debug.Stack())
-		ctx.WriteString(fmt.Sprintln(err) + stack)
+		ctx.WriteStringC(http.StatusInternalServerError, fmt.Sprintln(err)+stack)
 	} else {
-		ctx.WriteString("Internal Server Error")
+		ctx.WriteStringC(http.StatusInternalServerError, "Internal Server Error")
 	}
 }
 
