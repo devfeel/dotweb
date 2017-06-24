@@ -85,6 +85,12 @@ func IndexReg(ctx dotweb.Context) error {
 	return err
 }
 
+func IndexParam(ctx dotweb.Context) error {
+	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, err := ctx.WriteString("IndexParam", ctx.GetRouterName("id"))
+	return err
+}
+
 func KeyPost(ctx dotweb.Context) error {
 	username1 := ctx.PostFormValue("username")
 	username2 := ctx.FormValue("username")
@@ -119,11 +125,12 @@ func ReturnError(ctx dotweb.Context) error {
 }
 
 func InitRoute(server *dotweb.HttpServer) {
-	server.Router().GET("/", Index)
-	server.Router().POST("/keypost", KeyPost)
-	server.Router().POST("/jsonpost", JsonPost)
-	server.Router().GET("/error", DefaultError)
+	server.GET("/", Index)
+	server.GET("/id/:id", IndexParam)
+	server.POST("/keypost", KeyPost)
+	server.POST("/jsonpost", JsonPost)
+	server.GET("/error", DefaultError)
 	server.GET("/returnerr", ReturnError)
-	server.Router().GET("/redirect", Redirect)
+	server.GET("/redirect", Redirect)
 	server.Router().RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
 }
