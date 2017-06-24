@@ -1,14 +1,25 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/devfeel/dotweb"
+	"github.com/devfeel/dotweb/framework/exception"
 	"github.com/devfeel/dotweb/session"
 	"net/http"
 	"strconv"
 )
 
 func main() {
+
+	defer func() {
+		var errmsg string
+		if err := recover(); err != nil {
+			errmsg = exception.CatchError("main", dotweb.LogTarget_HttpServer, err)
+			fmt.Println("main error : ", errmsg)
+		}
+	}()
+
 	//初始化DotServer
 	app := dotweb.New()
 
@@ -17,7 +28,7 @@ func main() {
 	app.SetEnabledLog(true)
 
 	//开启development模式
-	app.SetDevelopmentMode()
+	app.SetProductionMode()
 
 	//设置gzip开关
 	app.HttpServer.SetEnabledGzip(true)
@@ -103,33 +114,16 @@ func Redirect(ctx dotweb.Context) error {
 	return err
 }
 
+func ReturnError(ctx dotweb.Context) error {
+	return errors.New("return error")
+}
+
 func InitRoute(server *dotweb.HttpServer) {
 	server.Router().GET("/", Index)
 	server.Router().POST("/keypost", KeyPost)
 	server.Router().POST("/jsonpost", JsonPost)
 	server.Router().GET("/error", DefaultError)
+	server.GET("/returnerr", ReturnError)
 	server.Router().GET("/redirect", Redirect)
 	server.Router().RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
-}
-
-func InitModule(dotserver *dotweb.DotWeb) {
-	dotserver.RegisterModule(&dotweb.HttpModule{
-		OnBeginRequest: func(ctx dotweb.Context) {
-			fmt.Println("BeginRequest1:", ctx)
-		},
-		OnEndRequest: func(ctx dotweb.Context) {
-			fmt.Println("EndRequest1:", ctx)
-		},
-	})
-
-	dotserver.RegisterModule(&dotweb.HttpModule{
-		OnBeginRequest: func(ctx dotweb.Context) {
-			fmt.Println("BeginRequest2:", ctx)
-		},
-	})
-	dotserver.RegisterModule(&dotweb.HttpModule{
-		OnEndRequest: func(ctx dotweb.Context) {
-			fmt.Println("EndRequest3:", ctx)
-		},
-	})
 }
