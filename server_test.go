@@ -51,41 +51,6 @@ func TestSesionConfig(t *testing.T) {
 	test.Equal(t, server.sessionManager.GCLifetime, int64(session.DefaultSessionGCLifeTime))
 }
 
-//
-func TestWrapRouterHandle(t *testing.T) {
-	param := &InitContextParam{
-		t,
-		"",
-		"",
-		test.ToDefault,
-	}
-
-	context := initAllContext(param)
-
-	app := New()
-	server := app.HttpServer
-	//use default config
-	server.SetSessionConfig(session.NewDefaultRuntimeConfig())
-	handle := server.wrapRouterHandle(Index, false)
-
-	handle(context.response.writer, context.request.Request, &ValueNode{})
-}
-
-func TestLogWebsocketContext(t *testing.T) {
-	param := &InitContextParam{
-		t,
-		"",
-		"",
-		test.ToDefault,
-	}
-
-	context := initAllContext(param)
-
-	log:=logWebsocketContext(context,time.Now().Unix())
-	t.Log("logContext:",log)
-	//test.NotNil(t,log)
-	test.Equal(t,"","")
-}
 
 
 func Index(ctx Context) error {
