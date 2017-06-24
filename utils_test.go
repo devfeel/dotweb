@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+  "net/url"
 )
 
 //common init context
@@ -67,6 +68,13 @@ func initAllContext(param *InitContextParam) *HttpContext {
 	//specify json
 	header["Content-Type"] = []string{param.contentType}
 	context.request.Header = header
+
+	u:=&url.URL{
+		Path:"/index",
+	}
+
+	context.request.URL=u
+	context.request.Method="POST"
 
 	jsonStr := param.convertHandler(param.t, param.v)
 	body := format(jsonStr)

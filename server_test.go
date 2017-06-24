@@ -48,10 +48,10 @@ func TestSesionConfig(t *testing.T) {
 
 	test.NotNil(t, sessionManager)
 	test.Equal(t, server.sessionManager.CookieName, session.DefaultSessionCookieName)
-	test.Equal(t, server.sessionManager.GCLifetime, session.DefaultSessionGCLifeTime)
+	test.Equal(t, server.sessionManager.GCLifetime, int64(session.DefaultSessionGCLifeTime))
 }
 
-//这个用例报错，不知道怎么处理。- -
+//
 func TestWrapRouterHandle(t *testing.T) {
 	param := &InitContextParam{
 		t,
@@ -70,6 +70,23 @@ func TestWrapRouterHandle(t *testing.T) {
 
 	handle(context.response.writer, context.request.Request, &ValueNode{})
 }
+
+func TestLogWebsocketContext(t *testing.T) {
+	param := &InitContextParam{
+		t,
+		"",
+		"",
+		test.ToDefault,
+	}
+
+	context := initAllContext(param)
+
+	log:=logWebsocketContext(context,time.Now().Unix())
+	t.Log("logContext:",log)
+	//test.NotNil(t,log)
+	test.Equal(t,"","")
+}
+
 
 func Index(ctx Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
