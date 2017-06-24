@@ -334,6 +334,13 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 			}
 		}()
 
+		//处理前置Module集合
+		for _, module := range r.server.DotApp.Modules {
+			if module.OnBeginRequest != nil {
+				module.OnBeginRequest(httpCtx)
+			}
+		}
+
 		//处理用户handle
 		var ctxErr error
 		if len(r.server.DotApp.Middlewares) > 0 {
@@ -347,6 +354,13 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 				r.server.DotApp.ExceptionHandler(httpCtx, ctxErr)
 				//增加错误计数
 				core.GlobalState.AddErrorCount(1)
+			}
+		}
+
+		//处理后置Module集合
+		for _, module := range r.server.DotApp.Modules {
+			if module.OnEndRequest != nil {
+				module.OnEndRequest(httpCtx)
 			}
 		}
 	}
