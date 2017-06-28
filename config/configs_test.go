@@ -1,9 +1,12 @@
 package config
 
+
+//运行以下用例需要在edit configuration中将working dir改成dotweb目录下,不能在当前目录
 import (
 	"testing"
 	"github.com/zouyx/agollo/test"
 )
+
 
 func TestInitConfig(t *testing.T) {
 	conf,err:=InitConfig("example/config/dotweb.json.conf","json")
@@ -16,6 +19,8 @@ func TestInitConfig(t *testing.T) {
 	test.Equal(t,4,	len(conf.AppSets))
 }
 
+//该测试方法报错...
+//是xml问题还是代码问题?
 func TestInitConfigWithXml(t *testing.T) {
 	conf,err:=InitConfig("example/config/dotweb.conf","xml")
 
