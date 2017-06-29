@@ -4,7 +4,7 @@ package config
 //运行以下用例需要在edit configuration中将working dir改成dotweb目录下,不能在当前目录
 import (
 	"testing"
-	"github.com/zouyx/agollo/test"
+	"github.com/devfeel/dotweb/test"
 )
 
 
