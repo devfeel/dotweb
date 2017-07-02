@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"github.com/devfeel/dotweb/core"
@@ -150,9 +149,9 @@ func InitConfig(configFile string, confType ...interface{}) (config *Config, err
 	}
 
 	if cType == ConfigType_Xml {
-		config, err = initXmlConfig(realFile)
+		config, err = initConfig(realFile,cType,fromXml)
 	} else {
-		config, err = initJsonConfig(realFile)
+		config, err = initConfig(realFile,cType,fromJson)
 	}
 
 	if err != nil {
@@ -191,32 +190,16 @@ func dealConfigDefaultSet(c *Config) {
 
 }
 
-//初始化配置文件（xml）
-func initXmlConfig(configFile string) (*Config, error) {
+func initConfig(configFile string,ctType string,f func([]byte,interface{}) error) (*Config, error)  {
 	content, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		return nil, errors.New("DotWeb:Config:InitXmlConfig 配置文件[" + configFile + "]无法解析 - " + err.Error())
+		return nil, errors.New("DotWeb:Config:initConfig 当前cType:"+ctType+" 配置文件[" + configFile + "]无法解析 - " + err.Error())
 	}
 
 	var config *Config
-	err = xml.Unmarshal(content, &config)
+	err = f(content, &config)
 	if err != nil {
-		return nil, errors.New("DotWeb:Config:InitXmlConfig 配置文件[" + configFile + "]解析失败 - " + err.Error())
-	}
-	return config, nil
-}
-
-//初始化配置文件（json）
-func initJsonConfig(configFile string) (*Config, error) {
-	content, err := ioutil.ReadFile(configFile)
-	if err != nil {
-		return nil, errors.New("DotWeb:Config:InitJsonConfig 配置文件[" + configFile + "]无法解析 - " + err.Error())
-	}
-
-	var config *Config
-	err = json.Unmarshal(content, &config)
-	if err != nil {
-		return nil, errors.New("DotWeb:Config:InitJsonConfig 配置文件[" + configFile + "]解析失败 - " + err.Error())
+		return nil, errors.New("DotWeb:Config:initConfig 当前cType:"+ctType+" 配置文件[" + configFile + "]解析失败 - " + err.Error())
 	}
 	return config, nil
 }
