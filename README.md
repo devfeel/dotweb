@@ -4,8 +4,7 @@ Simple and easy go web micro framework
 [![GoDoc](https://godoc.org/github.com/devfeel/dotweb?status.svg)](https://godoc.org/github.com/devfeel/dotweb)
 [![Go Report Card](https://goreportcard.com/badge/github.com/devfeel/dotweb)](https://goreportcard.com/report/github.com/devfeel/dotweb)
 
-## document
-http://dotweb.devfeel.com/doc
+document: http://dotweb.devfeel.com/doc
 
 ## 1. Install
 
