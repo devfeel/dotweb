@@ -217,8 +217,7 @@ func (n *Node) addRoute(path string, handle RouterHandle, m ...Middleware) (outn
 					n.incrementChildPrio(len(n.indices) - 1)
 					n = child
 				}
-				n.insertChild(numParams, path, fullPath, handle)
-				outnode = n
+				outnode = n.insertChild(numParams, path, fullPath, handle)
 				return
 
 			} else if i == len(path) { // Make node a (in-path) leaf
@@ -232,13 +231,13 @@ func (n *Node) addRoute(path string, handle RouterHandle, m ...Middleware) (outn
 			return
 		}
 	} else { // Empty tree
-		n.insertChild(numParams, path, fullPath, handle, m...)
+		outnode = n.insertChild(numParams, path, fullPath, handle, m...)
 		n.nType = root
 	}
 	return
 }
 
-func (n *Node) insertChild(numParams uint8, path, fullPath string, handle RouterHandle, m ...Middleware) {
+func (n *Node) insertChild(numParams uint8, path, fullPath string, handle RouterHandle, m ...Middleware) *Node {
 	var offset int // already handled bytes of the path
 
 	// find prefix until first wildcard (beginning with ':'' or '*'')
@@ -343,7 +342,7 @@ func (n *Node) insertChild(numParams uint8, path, fullPath string, handle Router
 			child.Use(m...)
 			n.children = []*Node{child}
 
-			return
+			return n
 		}
 	}
 
@@ -351,6 +350,7 @@ func (n *Node) insertChild(numParams uint8, path, fullPath string, handle Router
 	n.path = path[offset:]
 	n.handle = handle
 	n.Use(m...)
+	return n
 }
 
 func (n *Node) getNode(path string) *Node {
