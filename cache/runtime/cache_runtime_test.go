@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 	"github.com/devfeel/dotweb/test"
+	"sync"
 )
 
 const (
@@ -75,6 +76,91 @@ func testRuntimeCache(t *testing.T,insertValue interface{},f func(cache *Runtime
 	}(cache,t)
 
 	time.Sleep(5*time.Second)
+}
+
+func TestRuntimeCache_Delete(t *testing.T) {
+	cache:=NewTestRuntimeCache()
+	cache.Set(TEST_CACHE_KEY,TEST_CACHE_VALUE,5)
+
+	value,e:=cache.Get(TEST_CACHE_KEY)
+
+	test.Nil(t,e)
+	test.Equal(t,TEST_CACHE_VALUE,value)
+
+	cache.Delete(TEST_CACHE_KEY)
+
+	value,e=cache.Get(TEST_CACHE_KEY)
+	test.Nil(t,e)
+	test.Nil(t,value)
+}
+
+func TestRuntimeCache_ClearAll(t *testing.T) {
+	cache:=NewTestRuntimeCache()
+	cache.Set(TEST_CACHE_KEY,TEST_CACHE_VALUE,5)
+	cache.Set("2",TEST_CACHE_VALUE,5)
+	cache.Set("3",TEST_CACHE_VALUE,5)
+
+	test.Equal(t,3,len(cache.items))
+
+	cache.ClearAll()
+
+	test.Equal(t,0,len(cache.items))
+}
+
+func TestRuntimeCache_Incr(t *testing.T) {
+	cache:=NewTestRuntimeCache()
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func(cache *RuntimeCache) {
+		for i := 0; i < 50; i++ {
+			cache.Incr(TEST_CACHE_KEY)
+		}
+
+		wg.Add(-1)
+	}(cache)
+
+	go func(cache *RuntimeCache) {
+		for i := 0; i < 50; i++ {
+			cache.Incr(TEST_CACHE_KEY)
+		}
+		wg.Add(-1)
+	}(cache)
+
+	wg.Wait()
+
+	value,e:=cache.GetInt(TEST_CACHE_KEY)
+	test.Nil(t,e)
+
+	test.Equal(t,100,value)
+}
+
+func TestRuntimeCache_Decr(t *testing.T) {
+	cache:=NewTestRuntimeCache()
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func(cache *RuntimeCache) {
+		for i := 0; i < 50; i++ {
+			cache.Decr(TEST_CACHE_KEY)
+		}
+
+		wg.Add(-1)
+	}(cache)
+
+	go func(cache *RuntimeCache) {
+		for i := 0; i < 50; i++ {
+			cache.Decr(TEST_CACHE_KEY)
+		}
+		wg.Add(-1)
+	}(cache)
+
+	wg.Wait()
+
+	value,e:=cache.GetInt(TEST_CACHE_KEY)
+	test.Nil(t,e)
+
+	test.Equal(t,-100,value)
 }
 
 func NewTestRuntimeCache() *RuntimeCache {
