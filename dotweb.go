@@ -272,7 +272,6 @@ func (app *DotWeb) SetConfig(config *config.Config) error {
 // StartServer start server with http port
 // if config the pprof, will be start pprof server
 func (app *DotWeb) StartServer(httpport int) error {
-
 	//start pprof server
 	if app.Config.App.EnabledPProf {
 		if app.Config.App.PProfPort == httpport {
@@ -288,9 +287,6 @@ func (app *DotWeb) StartServer(httpport int) error {
 			}()
 		}
 	}
-
-	//add default httphandler with middlewares
-	app.Use(&xMiddleware{})
 	addr := ":" + strconv.Itoa(httpport)
 	return app.ListenAndServe(addr)
 
@@ -348,6 +344,9 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 	if app.HttpServer.Renderer() == nil {
 		app.HttpServer.SetRenderer(NewInnerRenderer())
 	}
+
+	//add default httphandler with middlewares
+	app.Use(&xMiddleware{})
 
 	logger.Logger().Log("Dotweb:ListenAndServe["+addr+"] begin", LogTarget_HttpServer, LogLevel_Debug)
 	err := app.HttpServer.ListenAndServe(addr)

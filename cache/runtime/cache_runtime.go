@@ -64,7 +64,7 @@ func (ca *RuntimeCache) Get(key string) (interface{}, error) {
 func (ca *RuntimeCache) GetString(key string) (string, error) {
 	v, err := ca.Get(key)
 	if err != nil || v == nil {
-		return "", nil
+		return "", err
 	} else {
 		return fmt.Sprint(v), nil
 	}
@@ -75,11 +75,11 @@ func (ca *RuntimeCache) GetString(key string) (string, error) {
 func (ca *RuntimeCache) GetInt(key string) (int, error) {
 	v, err := ca.GetString(key)
 	if err != nil || v == "" {
-		return 0, nil
+		return 0, err
 	} else {
 		i, e := strconv.Atoi(v)
 		if e != nil {
-			return 0, nil
+			return 0, e
 		} else {
 			return i, nil
 		}
@@ -95,7 +95,7 @@ func (ca *RuntimeCache) GetInt64(key string) (int64, error) {
 	} else {
 		i, e := strconv.ParseInt(v, 10, 64)
 		if e != nil {
-			return ZeroInt64, nil
+			return ZeroInt64, e
 		} else {
 			return i, nil
 		}
@@ -107,6 +107,11 @@ func (ca *RuntimeCache) GetInt64(key string) (int64, error) {
 func (ca *RuntimeCache) Set(key string, value interface{}, ttl int64) error {
 	ca.Lock()
 	defer ca.Unlock()
+	ca.initValue(key, value, ttl)
+	return nil
+}
+
+func (ca *RuntimeCache) initValue(key string, value interface{}, ttl int64) error {
 	ca.items[key] = &RuntimeItem{
 		value:      value,
 		createTime: time.Now(),
@@ -117,16 +122,13 @@ func (ca *RuntimeCache) Set(key string, value interface{}, ttl int64) error {
 
 // Incr increase int64 counter in runtime cache.
 func (ca *RuntimeCache) Incr(key string) (int64, error) {
-	ca.RLock()
+	ca.Lock()
 	item, ok := ca.items[key]
-	ca.RUnlock()
 	if !ok {
 		//if not exists, auto set new with 0
-		ca.Set(key, ZeroInt64, 0)
+		ca.initValue(key, ZeroInt64, 0)
 		//reload
-		ca.RLock()
 		item, _ = ca.items[key]
-		ca.RUnlock()
 	}
 
 	switch item.value.(type) {
@@ -146,22 +148,21 @@ func (ca *RuntimeCache) Incr(key string) (int64, error) {
 		return 0, errors.New("item val is not (u)int (u)int32 (u)int64")
 	}
 
+	ca.Unlock()
+
 	val, _ := strconv.ParseInt(fmt.Sprint(item.value), 10, 64)
 	return val, nil
 }
 
 // Decr decrease counter in runtime cache.
 func (ca *RuntimeCache) Decr(key string) (int64, error) {
-	ca.RLock()
+	ca.Lock()
 	item, ok := ca.items[key]
-	ca.RUnlock()
 	if !ok {
 		//if not exists, auto set new with 0
-		ca.Set(key, ZeroInt64, 0)
+		ca.initValue(key, ZeroInt64, 0)
 		//reload
-		ca.RLock()
 		item, _ = ca.items[key]
-		ca.RUnlock()
 	}
 	switch item.value.(type) {
 	case int:
@@ -191,6 +192,8 @@ func (ca *RuntimeCache) Decr(key string) (int64, error) {
 	default:
 		return 0, errors.New("item val is not int int64 int32")
 	}
+	ca.Unlock()
+
 	val, _ := strconv.ParseInt(fmt.Sprint(item.value), 10, 64)
 	return val, nil
 }
