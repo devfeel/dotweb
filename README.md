@@ -1,9 +1,10 @@
 # DotWeb
-Simple and easy go web micro framework
+Simple and easy go web micro framework 
+
+document: http://dotweb.devfeel.com/doc
 
 [![GoDoc](https://godoc.org/github.com/devfeel/dotweb?status.svg)](https://godoc.org/github.com/devfeel/dotweb)
 [![Go Report Card](https://goreportcard.com/badge/github.com/devfeel/dotweb)](https://goreportcard.com/report/github.com/devfeel/dotweb)
-[![Build Status](https://travis-ci.org/zouyx/dotweb.svg?branch=master)](https://travis-ci.org/zouyx/dotweb)
 
 ## 1. Install
 
