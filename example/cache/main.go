@@ -24,8 +24,8 @@ func main() {
 	//启动 监控服务
 	//app.SetPProfConfig(true, 8081)
 
-	//app.SetCache(cache.NewRuntimeCache())
-	app.SetCache(cache.NewRedisCache("127.0.0.1:6379"))
+	app.SetCache(cache.NewRuntimeCache())
+	//app.SetCache(cache.NewRedisCache("127.0.0.1:6379"))
 
 	err := app.Cache().Set("g", "gv", 20)
 	if err != nil {

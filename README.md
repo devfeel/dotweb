@@ -1,5 +1,7 @@
 # DotWeb
-Simple and easy go web micro framework
+Simple and easy go web micro framework 
+
+document: http://dotweb.devfeel.com/doc
 
 [![GoDoc](https://godoc.org/github.com/devfeel/dotweb?status.svg)](https://godoc.org/github.com/devfeel/dotweb)
 [![Go Report Card](https://goreportcard.com/badge/github.com/devfeel/dotweb)](https://goreportcard.com/report/github.com/devfeel/dotweb)
@@ -213,7 +215,7 @@ func main() {
 ```
 test：
 <br>curl http://127.0.0.1/hello/devfeel
-<br>curl http://127.0.0.1/news/category1/1
+<br>curl http://127.0.0.1/hello/category1/1
 #### 4) group router
 ```go
     g := server.Group("/user")
