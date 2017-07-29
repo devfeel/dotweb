@@ -1,5 +1,16 @@
 ##dotweb版本记录：
 
+#### Version 1.0.0
+* dotweb正式进入1.0时代，感谢大家！
+* HttpServer新增IndexPage(),返回当前Server默认首页名称，支持配置文件配置，如果未配置，自动读取默认值：DefaultIndexPage = "index.html"
+* Context增加File、Attachment、Inline接口
+* Context.File(file string),将指定文件响应到客户端，如果指定为目录，则根据HttpServer.IndexPage，默认寻找该目录下同名文件，不存在则返回404
+* Context.Attachment(file, name string),将指定文件响应到客户端下载，具体参考MIME协议扩展"Content-disposition"说明
+* Context.Inline(file, name string),将指定文件响应到客户端输出，具体参考MIME协议扩展"Content-disposition"说明
+* 新增example\file目录，提供对Context.File、Attachment、Inline三个接口的demo
+* 2017-07-29 17:00
+
+
 #### Version 0.3.21
 * 新增DotWeb & HttpServer.ListenAndServer(addr string) 支持原生host监听
 * 新增DotWeb Close() & Shutdown() 支持优雅关闭服务

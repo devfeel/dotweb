@@ -25,7 +25,7 @@ func main() {
 	//runtime mode
 	//app.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
 	//redis mode
-	app.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6381"))
+	app.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6371"))
 
 	//设置路由
 	InitRoute(app.HttpServer)

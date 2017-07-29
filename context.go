@@ -11,6 +11,8 @@ import (
 	"github.com/devfeel/dotweb/cache"
 	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/session"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -48,6 +50,9 @@ type (
 		QueryString(key string) string
 		FormValue(key string) string
 		PostFormValue(key string) string
+		File(file string) (err error)
+		Attachment(file string, name string) error
+		Inline(file string, name string) error
 		Bind(i interface{}) error
 		GetRouterName(key string) string
 		RemoteIP() string
@@ -305,6 +310,51 @@ func (ctx *HttpContext) FormValue(key string) string {
  */
 func (ctx *HttpContext) PostFormValue(key string) string {
 	return ctx.request.PostFormValue(key)
+}
+
+// File sends a response with the content of the file
+// if file not exists, response 404
+func (ctx *HttpContext) File(file string) (err error) {
+	f, err := os.Open(file)
+	if err != nil {
+		HTTPNotFound(ctx)
+		return nil
+	}
+	defer f.Close()
+
+	fi, _ := f.Stat()
+	if fi.IsDir() {
+		file = filepath.Join(file, ctx.HttpServer().IndexPage())
+		f, err = os.Open(file)
+		if err != nil {
+			HTTPNotFound(ctx)
+			return nil
+		}
+		defer f.Close()
+		if fi, err = f.Stat(); err != nil {
+			return err
+		}
+	}
+	http.ServeContent(ctx.Response().Writer(), ctx.Request().Request, fi.Name(), fi.ModTime(), f)
+	return nil
+}
+
+// Attachment sends a response as attachment, prompting client to save the file.
+func (ctx *HttpContext) Attachment(file, name string) (err error) {
+	return ctx.contentDisposition(file, name, "attachment")
+}
+
+// Inline sends a response as inline, opening the file in the browser.
+// if file not exists, response 404
+func (ctx *HttpContext) Inline(file, name string) (err error) {
+	return ctx.contentDisposition(file, name, "inline")
+}
+
+// contentDisposition set Content-disposition and response file
+func (ctx *HttpContext) contentDisposition(file, name, dispositionType string) (err error) {
+	ctx.Response().SetHeader(HeaderContentDisposition, fmt.Sprintf("%s; filename=%s", dispositionType, name))
+	ctx.File(file)
+	return
 }
 
 /*

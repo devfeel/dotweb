@@ -318,6 +318,7 @@ func (app *DotWeb) MustStart() {
 }
 
 // ListenAndServe start server with addr
+// not support pprof server auto start
 func (app *DotWeb) ListenAndServe(addr string) error {
 	initInnerRouter(app.HttpServer)
 
@@ -391,6 +392,11 @@ func (ds *DotWeb) Close() error {
 // It internally calls `http.Server#Shutdown()`.
 func (ds *DotWeb) Shutdown(ctx context.Context) error {
 	return ds.HttpServer.stdServer.Shutdown(ctx)
+}
+
+// HTTPNotFound simple notfound function for Context
+func HTTPNotFound(ctx Context) {
+	http.NotFound(ctx.Response().Writer(), ctx.Request().Request)
 }
 
 // init inner routers

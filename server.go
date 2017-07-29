@@ -14,6 +14,7 @@ import (
 const (
 	DefaultGzipLevel = 9
 	gzipScheme       = "gzip"
+	DefaultIndexPage = "index.html"
 )
 
 type (
@@ -134,6 +135,15 @@ func (server *HttpServer) IsOffline() bool {
 // SetOffline set server offline config
 func (server *HttpServer) SetOffline(offline bool, offlineText string, offlineUrl string) {
 	server.offline = offline
+}
+
+// IndexPage default index page name
+func (server *HttpServer) IndexPage() string {
+	if server.ServerConfig.IndexPage == "" {
+		return DefaultIndexPage
+	} else {
+		return server.ServerConfig.IndexPage
+	}
 }
 
 // SetSessionConfig set session store config
