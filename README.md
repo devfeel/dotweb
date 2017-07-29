@@ -52,7 +52,7 @@ dotweb.conf
 <config>
 <app logpath="d:/gotmp/" enabledlog="true" runmode="development"/>
 <offline offline="false" offlinetext="server is offline!" offlineurl="" />
-<server isrun="true" port="8080" enabledgzip="false" enabledlistdir="false" enabledautohead="true"/>
+<server isrun="true" port="8080" indexpage="index.html" enabledgzip="false" enabledlistdir="false" enabledautohead="true"/>
 <session enabled="true" mode="runtime" timeout="20"/>
 <middlewares>
     <middleware name="applog" isuse="true" />
