@@ -314,6 +314,7 @@ func (ctx *HttpContext) PostFormValue(key string) string {
 
 // File sends a response with the content of the file
 // if file not exists, response 404
+// for issue #39
 func (ctx *HttpContext) File(file string) (err error) {
 	f, err := os.Open(file)
 	if err != nil {
@@ -340,12 +341,14 @@ func (ctx *HttpContext) File(file string) (err error) {
 }
 
 // Attachment sends a response as attachment, prompting client to save the file.
+// for issue #39
 func (ctx *HttpContext) Attachment(file, name string) (err error) {
 	return ctx.contentDisposition(file, name, "attachment")
 }
 
 // Inline sends a response as inline, opening the file in the browser.
 // if file not exists, response 404
+// for issue #39
 func (ctx *HttpContext) Inline(file, name string) (err error) {
 	return ctx.contentDisposition(file, name, "inline")
 }
