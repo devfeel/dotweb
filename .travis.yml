@@ -9,9 +9,6 @@ env:
 
 before_install:
     - Project=devfeel
-    - mkdir $GOPATH/src/$Project
-    - mv * $GOPATH/src/$Project
-    - cd $GOPATH/src/$Project
 
 script:
-    - go build -o "$Project"  "$Project"
+    - go build -o "$Project"
