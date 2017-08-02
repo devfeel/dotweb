@@ -5,7 +5,7 @@ document: http://dotweb.devfeel.com/doc
 
 [![GoDoc](https://godoc.org/github.com/devfeel/dotweb?status.svg)](https://godoc.org/github.com/devfeel/dotweb)
 [![Go Report Card](https://goreportcard.com/badge/github.com/devfeel/dotweb)](https://goreportcard.com/report/github.com/devfeel/dotweb)
-[![Go Build Card](https://travis-ci.org/devfeel/dotweb.svg?branch=master)]
+[![Go Build Card](https://travis-ci.org/devfeel/dotweb.svg?branch=master)](https://travis-ci.org/devfeel/dotweb.svg?branch=master)
 
 ## 1. Install
 
