@@ -9,7 +9,7 @@ import (
 // MemProvider Implement the provider interface
 type RuntimeStore struct {
 	lock        *sync.RWMutex            // locker
-	sessions    map[string]*list.Element // map in memory
+	 sessions    map[string]*list.Element // map in memory
 	list        *list.List               // for gc
 	maxlifetime int64
 }
@@ -52,6 +52,19 @@ func (store *RuntimeStore) SessionExist(sessionId string) bool {
 
 //SessionUpdate update session state in store
 func (store *RuntimeStore) SessionUpdate(state *SessionState) error {
+
+	if element, ok := store.sessions[state.sessionId]; ok{	//state has exist
+		go store.SessionAccess(state.sessionId)
+		element.Value.(*SessionState).values = state.values		//only assist update whole session state
+		return nil
+	}
+
+	//if sessionId of state not exist, create a new state
+	new_state := NewSessionState(store,state.sessionId,state.values)
+	store.lock.Lock()
+	new_element := store.list.PushFront(new_state)
+	store.sessions[state.sessionId] = new_element
+	store.lock.Unlock()
 	return nil
 }
 
@@ -98,7 +111,7 @@ func (store *RuntimeStore) SessionCount() int {
 }
 
 // SessionAccess expand time of session store by id in memory session
-func (store *RuntimeStore) SessionAccess(sessionId string) error {
+	func (store *RuntimeStore) SessionAccess(sessionId string) error {
 	store.lock.Lock()
 	defer store.lock.Unlock()
 	if element, ok := store.sessions[sessionId]; ok {
