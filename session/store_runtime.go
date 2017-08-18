@@ -9,7 +9,7 @@ import (
 // MemProvider Implement the provider interface
 type RuntimeStore struct {
 	lock        *sync.RWMutex            // locker
-	 sessions    map[string]*list.Element // map in memory
+	sessions    map[string]*list.Element // map in memory
 	list        *list.List               // for gc
 	maxlifetime int64
 }
