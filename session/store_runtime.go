@@ -111,7 +111,7 @@ func (store *RuntimeStore) SessionCount() int {
 }
 
 // SessionAccess expand time of session store by id in memory session
-	func (store *RuntimeStore) SessionAccess(sessionId string) error {
+func (store *RuntimeStore) SessionAccess(sessionId string) error {
 	store.lock.Lock()
 	defer store.lock.Unlock()
 	if element, ok := store.sessions[sessionId]; ok {
