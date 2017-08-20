@@ -52,6 +52,19 @@ func (store *RuntimeStore) SessionExist(sessionId string) bool {
 
 //SessionUpdate update session state in store
 func (store *RuntimeStore) SessionUpdate(state *SessionState) error {
+
+	if element, ok := store.sessions[state.sessionId]; ok{	//state has exist
+		go store.SessionAccess(state.sessionId)
+		element.Value.(*SessionState).values = state.values		//only assist update whole session state
+		return nil
+	}
+
+	//if sessionId of state not exist, create a new state
+	new_state := NewSessionState(store,state.sessionId,state.values)
+	store.lock.Lock()
+	new_element := store.list.PushFront(new_state)
+	store.sessions[state.sessionId] = new_element
+	store.lock.Unlock()
 	return nil
 }
 
