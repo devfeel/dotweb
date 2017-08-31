@@ -37,6 +37,7 @@ func Logger() AppLog {
 	return appLog
 }
 
+//SetLogPath set log path
 func SetLogger(logger AppLog) {
 	appLog = logger
 	logger.SetLogPath(DefaultLogPath)
@@ -50,6 +51,7 @@ func SetLogPath(path string) {
 	}
 }
 
+//SetEnabledLog set enabled log
 func SetEnabledLog(isLog bool) {
 	EnabledLog = isLog
 	if appLog != nil {
@@ -57,6 +59,7 @@ func SetEnabledLog(isLog bool) {
 	}
 }
 
+//SetEnabledConsole set enabled Console output
 func SetEnabledConsole(enabled bool) {
 	EnabledConsole = enabled
 	if appLog != nil {
