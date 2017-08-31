@@ -1,5 +1,11 @@
 ## dotweb版本记录：
 
+#### Version 1.0.1
+* 新增logger.SetEnabledConsole，当设置SetDevelopmentMode时自动开启
+* SetEnabledConsole：自动向console输出dotweb基础日志，便于开发人员调试阶段实时查看
+* 完善日志、注释
+* 2017-08-31 08:30
+
 #### Version 1.0.0
 * dotweb正式进入1.0时代，感谢大家！
 * HttpServer新增IndexPage(),返回当前Server默认首页名称，支持配置文件配置，如果未配置，自动读取默认值：DefaultIndexPage = "index.html"

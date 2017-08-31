@@ -113,11 +113,13 @@ func (app *DotWeb) IsDevelopmentMode() bool {
 // SetDevelopmentMode set run mode on development mode
 func (app *DotWeb) SetDevelopmentMode() {
 	app.Config.App.RunMode = RunMode_Development
+	logger.SetEnabledConsole(true)
 }
 
 // SetProductionMode set run mode on production mode
 func (app *DotWeb) SetProductionMode() {
 	app.Config.App.RunMode = RunMode_Production
+	logger.SetEnabledConsole(false)
 }
 
 // Use registers a middleware
@@ -160,6 +162,7 @@ func (app *DotWeb) SetNotFoundHandle(handler NotFoundHandle) {
 func (app *DotWeb) SetPProfConfig(enabledPProf bool, httpport int) {
 	app.Config.App.EnabledPProf = enabledPProf
 	app.Config.App.PProfPort = httpport
+	logger.Logger().Debug("Dotweb SetPProfConfig ["+strconv.FormatBool(enabledPProf)+", "+strconv.Itoa(httpport)+"]", LogTarget_HttpServer)
 }
 
 // SetLogger set user logger, the logger must implement logger.AppLog interface

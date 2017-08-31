@@ -9,6 +9,8 @@ import (
 
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/feature"
+	"github.com/devfeel/dotweb/logger"
+	"strconv"
 )
 
 const (
@@ -268,21 +270,25 @@ func (server *HttpServer) SetRenderer(r Renderer) {
 // SetEnabledAutoHEAD set EnabledAutoHEAD true or false
 func (server *HttpServer) SetEnabledAutoHEAD(autoHEAD bool) {
 	server.ServerConfig.EnabledAutoHEAD = autoHEAD
+	logger.Logger().Debug("Dotweb:HttpServer SetEnabledAutoHEAD ["+strconv.FormatBool(autoHEAD)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledListDir 设置是否允许目录浏览,默认为false
 func (server *HttpServer) SetEnabledListDir(isEnabled bool) {
 	server.ServerConfig.EnabledListDir = isEnabled
+	logger.Logger().Debug("Dotweb:HttpServer SetEnabledListDir ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledSession 设置是否启用Session,默认为false
 func (server *HttpServer) SetEnabledSession(isEnabled bool) {
 	server.SessionConfig.EnabledSession = isEnabled
+	logger.Logger().Debug("Dotweb:HttpServer SetEnabledSession ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledGzip 设置是否启用gzip,默认为false
 func (server *HttpServer) SetEnabledGzip(isEnabled bool) {
 	server.ServerConfig.EnabledGzip = isEnabled
+	logger.Logger().Debug("Dotweb:HttpServer SetEnabledGzip ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 type LogJson struct {
