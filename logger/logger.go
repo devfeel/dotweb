@@ -17,6 +17,7 @@ const (
 
 type AppLog interface {
 	SetLogPath(logPath string)
+	SetEnabledConsole(enabled bool)
 	SetEnabledLog(enabledLog bool)
 	Debug(log string, logTarget string)
 	Info(log string, logTarget string)
@@ -29,6 +30,7 @@ var (
 	appLog         AppLog
 	DefaultLogPath string
 	EnabledLog     bool = true
+	EnabledConsole bool = false
 )
 
 func Logger() AppLog {
@@ -55,6 +57,13 @@ func SetEnabledLog(isLog bool) {
 	}
 }
 
+func SetEnabledConsole(enabled bool) {
+	EnabledConsole = enabled
+	if appLog != nil {
+		appLog.SetEnabledConsole(enabled)
+	}
+}
+
 func InitLog() {
 	if DefaultLogPath == "" {
 		DefaultLogPath = file.GetCurrentDirectory()
@@ -63,8 +72,9 @@ func InitLog() {
 		appLog = NewXLog()
 	}
 
-	SetLogPath(DefaultLogPath) //set default log path
-	SetEnabledLog(EnabledLog)  //set default enabled log
+	SetLogPath(DefaultLogPath)        //set default log path
+	SetEnabledLog(EnabledLog)         //set default enabled log
+	SetEnabledConsole(EnabledConsole) //set default enabled console output
 }
 
 //日志内容

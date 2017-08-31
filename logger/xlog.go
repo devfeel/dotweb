@@ -21,6 +21,7 @@ type xLog struct {
 	logRootPath    string
 	logChan_Custom chan chanLog
 	enabledLog     bool
+	enabledConsole bool
 }
 
 //create new xLog
@@ -85,6 +86,11 @@ func (l *xLog) SetEnabledLog(enabledLog bool) {
 	l.enabledLog = enabledLog
 }
 
+//set enabled log
+func (l *xLog) SetEnabledConsole(enabled bool) {
+	l.enabledConsole = enabled
+}
+
 //处理日志内部函数
 func (l *xLog) handleCustom() {
 	for {
@@ -101,6 +107,9 @@ func (l *xLog) writeLog(chanLog chanLog, level string) {
 		break
 	}
 	log := fmt.Sprintf(fmt.Sprintf("[%s] %s [%s:%v] %s", chanLog.LogLevel, time.Now().Format(defaultFullTimeLayout), chanLog.logCtx.fileName, chanLog.logCtx.line, chanLog.Content))
+	if l.enabledConsole {
+		fmt.Println(log)
+	}
 	writeFile(filePath, log)
 }
 
