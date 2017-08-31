@@ -72,7 +72,7 @@ func (l *xLog) Log(log string, logTarget string, logLevel string) {
 	}
 }
 
-//set log path
+//SetLogPath set log path
 func (l *xLog) SetLogPath(rootPath string) {
 	//设置日志根目录
 	l.logRootPath = rootPath
@@ -81,12 +81,12 @@ func (l *xLog) SetLogPath(rootPath string) {
 	}
 }
 
-//set enabled log
+//SetEnabledLog set enabled log
 func (l *xLog) SetEnabledLog(enabledLog bool) {
 	l.enabledLog = enabledLog
 }
 
-//set enabled log
+//SetEnabledConsole set enabled Console output
 func (l *xLog) SetEnabledConsole(enabled bool) {
 	l.enabledConsole = enabled
 }
