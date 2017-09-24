@@ -47,104 +47,8 @@ func StartServer() error {
 * 模块可配置化，85%模块可通过配置维护
 
 #### Config Example
-dotweb.conf
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<config>
-<app logpath="d:/gotmp/" enabledlog="true" runmode="development"/>
-<offline offline="false" offlinetext="server is offline!" offlineurl="" />
-<server isrun="true" port="8080" indexpage="index.html" enabledgzip="false" enabledlistdir="false" enabledautohead="true"/>
-<session enabled="true" mode="runtime" timeout="20"/>
-<middlewares>
-    <middleware name="applog" isuse="true" />
-</middlewares>
-<routers>
-    <router method="GET" path="/index" handler="Index" isuse="true">
-         <middleware name="urllog" isuse="true" />
-    </router>
-    <router method="GET" path="/redirect" handler="Redirect" isuse="true"></router>
-    <router method="GET" path="/error" handler="DefaultError" isuse="true"></router>
-</routers>
-<groups>
-    <group path="/admin" isuse="true">
-        <middleware name="grouplog" isuse="true" />
-        <middleware name="simpleauth" isuse="true" />
-        <router method="GET" path="/login" handler="Login" isuse="true"></router>
-        <router method="GET" path="/logout" handler="Logout" isuse="true"></router>
-    </group>
-</groups>
-</config>　
-```
-dotweb.json.conf
-```json
-{
-    "app": {
-        "logpath": "d:/",
-        "enabledlog": false,
-        "runmode": "development",
-        "pprofport": 8081,
-        "enabledpprof": true
-    },
-    "offline": {
-        "offline": false,
-        "offlinetext": "",
-        "offlineurl": ""
-    },
-    "server": {
-        "enabledlistdir": false,
-        "enabledgzip": false,
-        "enabledautohead": true,
-        "enabledautocors": false,
-        "port": 8080
-    },
-    "session": {
-        "enabled": true,
-        "mode": "runtime",
-        "timeout": 20,
-        "serverip": ""
-    },
-    "routers": [
-        {
-            "method": "get",
-            "path": "/index",
-            "HandlerName": "Index",
-            "isuse": true
-        },
-        {
-            "method": "get",
-            "path": "/redirect",
-            "HandlerName": "Redirect",
-            "isuse": true
-        },
-        {
-            "method": "get",
-            "path": "/error",
-            "HandlerName": "DefaultError",
-            "isuse": true
-        }
-    ],
-    "Groups": [
-        {
-            "Path": "/admin",
-            "Routers": [
-                {
-                    "Method": "GET",
-                    "Path": "/login",
-                    "HandlerName": "Login",
-                    "IsUse": true
-                },
-                {
-                    "Method": "GET",
-                    "Path": "/logout",
-                    "HandlerName": "Logout",
-                    "IsUse": true
-                }
-            ],
-            "IsUse": true
-        }
-    ]
-}
-```
+* [dotweb.conf](https://github.com/devfeel/dotweb/blob/master/example/config/dotweb.conf)
+* [dotweb.json](https://github.com/devfeel/dotweb/blob/master/example/config/dotweb.json.conf)
 
 ## 4. Router
 #### 1) 常规路由
@@ -304,7 +208,7 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 #### Run Mode
 * 新增development、production模式
 * 默认development，通过DotWeb.SetDevelopmentMode\DotWeb.SetProductionMode开启相关模式
-* 若设置development模式，未处理异常会输出异常详细信息
+* 若设置development模式，未处理异常会输出异常详细信息，并且dotweb基础日志会同时向console输出
 * 未来会拓展更多运行模式的配置
 
 

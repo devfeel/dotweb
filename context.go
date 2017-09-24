@@ -292,7 +292,7 @@ func (ctx *HttpContext) Redirect(code int, targetUrl string) error {
 }
 
 /*
-* 根据指定key获取对应value
+* 根据指定key获取在Get请求中对应参数值
  */
 func (ctx *HttpContext) QueryString(key string) string {
 	return ctx.request.QueryString(key)
