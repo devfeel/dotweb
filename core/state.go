@@ -14,8 +14,8 @@ var GlobalState *ServerStateInfo
 const (
 	minuteTimeLayout        = "200601021504"
 	dateTimeLayout          = "2006-01-02 15:04:05"
-	defaultReserveMinutes   = 2
-	defaultCheckTimeMinutes = 1
+	defaultReserveMinutes   = 60
+	defaultCheckTimeMinutes = 10
 )
 
 func init() {
