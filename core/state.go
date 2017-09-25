@@ -1,7 +1,7 @@
 package core
 
 import (
-	"devfeel/framework/json"
+	"github.com/devfeel/dotweb/framework/json"
 	"strconv"
 	"strings"
 	"sync"
