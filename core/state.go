@@ -28,7 +28,7 @@ func init() {
 		IntervalErrorData:     NewItemContext(),
 		DetailErrorPageData:   NewItemContext(),
 		DetailErrorData:       NewItemContext(),
-		DetailHttpCodeData:    NewItemContext(),
+		DetailHTTPCodeData:    NewItemContext(),
 		dataChan_Request:      make(chan *RequestInfo, 1000),
 		dataChan_Error:        make(chan *ErrorInfo, 1000),
 		dataChan_HttpCode:     make(chan *HttpCodeInfo, 1000),
