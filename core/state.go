@@ -14,8 +14,8 @@ var GlobalState *ServerStateInfo
 const (
 	minuteTimeLayout        = "200601021504"
 	dateTimeLayout          = "2006-01-02 15:04:05"
-	defaultReserveMinutes   = 60
-	defaultCheckTimeMinutes = 10
+	defaultReserveMinutes   = 2
+	defaultCheckTimeMinutes = 1
 )
 
 func init() {
@@ -261,15 +261,16 @@ func (state *ServerStateInfo) handleInfo() {
 //check and remove need to remove interval data with request and error
 func (state *ServerStateInfo) checkAndRemoveIntervalData() {
 	var needRemoveKey []string
+	now, _ := time.Parse(minuteTimeLayout, time.Now().Format(minuteTimeLayout))
 
 	//check IntervalRequestData
 	state.IntervalRequestData.RLock()
-	if state.IntervalRequestData.Len() > 10 {
+	if state.IntervalRequestData.Len() > defaultReserveMinutes {
 		for k := range state.IntervalRequestData.GetCurrentMap() {
 			if t, err := time.Parse(minuteTimeLayout, k); err != nil {
 				needRemoveKey = append(needRemoveKey, k)
 			} else {
-				if time.Now().Sub(t) > defaultReserveMinutes {
+				if now.Sub(t) > (defaultReserveMinutes * time.Minute) {
 					needRemoveKey = append(needRemoveKey, k)
 				}
 			}
@@ -284,21 +285,21 @@ func (state *ServerStateInfo) checkAndRemoveIntervalData() {
 	//check IntervalErrorData
 	needRemoveKey = []string{}
 	state.IntervalErrorData.RLock()
-	if state.IntervalErrorData.Len() > 10 {
+	if state.IntervalErrorData.Len() > defaultReserveMinutes {
 		for k := range state.IntervalErrorData.GetCurrentMap() {
 			if t, err := time.Parse(minuteTimeLayout, k); err != nil {
 				needRemoveKey = append(needRemoveKey, k)
 			} else {
-				if time.Now().Sub(t) > defaultReserveMinutes {
+				if now.Sub(t) > (defaultReserveMinutes * time.Minute) {
 					needRemoveKey = append(needRemoveKey, k)
 				}
 			}
 		}
 	}
+	state.IntervalErrorData.RUnlock()
 	//remove keys
 	for _, v := range needRemoveKey {
 		state.IntervalErrorData.Remove(v)
 	}
-
 	time.AfterFunc(time.Duration(defaultCheckTimeMinutes)*time.Minute, state.checkAndRemoveIntervalData)
 }
