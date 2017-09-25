@@ -45,6 +45,7 @@ func StartServer() error {
 * 内建Cache支持
 * 支持接入第三方模板引擎（需实现dotweb.Renderer接口）
 * 模块可配置化，85%模块可通过配置维护
+* 自集成基础统计数据，并支持按分钟为单位的间隔时间统计数据输出
 
 #### Config Example
 * [dotweb.conf](https://github.com/devfeel/dotweb/blob/master/example/config/dotweb.conf)
