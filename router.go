@@ -323,7 +323,7 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 				}
 
 				//增加错误计数
-				core.GlobalState.AddErrorCount(1)
+				core.GlobalState.AddErrorCount(httpCtx.Request().Path(), fmt.Errorf("%v", err), 1)
 			}
 
 			FeatureTools.ReleaseFeatures(r.server, httpCtx)
@@ -353,7 +353,7 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 			if r.server.DotApp.ExceptionHandler != nil {
 				r.server.DotApp.ExceptionHandler(httpCtx, ctxErr)
 				//增加错误计数
-				core.GlobalState.AddErrorCount(1)
+				core.GlobalState.AddErrorCount(httpCtx.Request().Path(), ctxErr, 1)
 			}
 		}
 
@@ -370,7 +370,7 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 func (r *router) wrapFileHandle(fileHandler http.Handler) RouterHandle {
 	return func(httpCtx *HttpContext) {
 		//增加状态计数
-		core.GlobalState.AddRequestCount(1)
+		core.GlobalState.AddRequestCount(httpCtx.Request().Path(), 1)
 		startTime := time.Now()
 		httpCtx.Request().URL.Path = httpCtx.RouterParams().ByName("filepath")
 		fileHandler.ServeHTTP(httpCtx.Response().Writer(), httpCtx.Request().Request)
@@ -594,7 +594,7 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 				logger.Logger().Log(logString, LogTarget_HttpServer, LogLevel_Error)
 
 				//增加错误计数
-				core.GlobalState.AddErrorCount(1)
+				core.GlobalState.AddErrorCount(httpCtx.Request().Path(), fmt.Errorf("%v", err), 1)
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 			//HttpServer Logging
@@ -611,7 +611,7 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 		handler(httpCtx)
 
 		//增加状态计数
-		core.GlobalState.AddRequestCount(1)
+		core.GlobalState.AddRequestCount(httpCtx.Request().Path(), 1)
 	}
 }
 

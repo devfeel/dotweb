@@ -31,7 +31,7 @@ func main() {
 	app.SetProductionMode()
 
 	//设置gzip开关
-	app.HttpServer.SetEnabledGzip(true)
+	//app.HttpServer.SetEnabledGzip(true)
 
 	//设置Session开关
 	app.HttpServer.SetEnabledSession(true)
@@ -75,8 +75,9 @@ func main() {
 
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, err := ctx.WriteStringC(201, "index => ", ctx.RemoteIP(), "我是首页")
-	return err
+	ctx.WriteString(ctx.Request().URL.Path)
+	//_, err := ctx.WriteStringC(201, "index => ", ctx.RemoteIP(), "我是首页")
+	return nil
 }
 
 func IndexReg(ctx dotweb.Context) error {
@@ -126,11 +127,12 @@ func ReturnError(ctx dotweb.Context) error {
 
 func InitRoute(server *dotweb.HttpServer) {
 	server.GET("/", Index)
+	server.GET("/index", Index)
 	server.GET("/id/:id", IndexParam)
 	server.POST("/keypost", KeyPost)
 	server.POST("/jsonpost", JsonPost)
 	server.GET("/error", DefaultError)
 	server.GET("/returnerr", ReturnError)
 	server.GET("/redirect", Redirect)
-	server.Router().RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
+	//server.Router().RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
 }
