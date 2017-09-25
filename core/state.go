@@ -61,16 +61,20 @@ type pool struct {
 	httpCodeInfo sync.Pool
 }
 
+//http request count info
 type RequestInfo struct {
 	Url string
 	Num uint64
 }
+
+//error count info
 type ErrorInfo struct {
 	Url    string
 	ErrMsg string
 	Num    uint64
 }
 
+//httpcode count info
 type HttpCodeInfo struct {
 	Url  string
 	Code int
@@ -96,7 +100,7 @@ type ServerStateInfo struct {
 	//明细异常数据 - 以不带参数的访问url为key
 	DetailErrorData *ItemContext
 	//明细Http状态码数据 - 以HttpCode为key，例如200、500等
-	DetailHttpCodeData *ItemContext
+	DetailHTTPCodeData *ItemContext
 
 	dataChan_Request  chan *RequestInfo
 	dataChan_Error    chan *ErrorInfo
@@ -134,9 +138,9 @@ func (state *ServerStateInfo) ShowHtmlData() string {
 	data += "DetailErrorData : " + jsonutil.GetJsonString(state.DetailErrorData.GetCurrentMap())
 	state.DetailErrorData.RUnlock()
 	data += "<br>"
-	state.DetailHttpCodeData.RLock()
-	data += "DetailHttpCodeData : " + jsonutil.GetJsonString(state.DetailHttpCodeData.GetCurrentMap())
-	state.DetailHttpCodeData.RUnlock()
+	state.DetailHTTPCodeData.RLock()
+	data += "DetailHttpCodeData : " + jsonutil.GetJsonString(state.DetailHTTPCodeData.GetCurrentMap())
+	state.DetailHTTPCodeData.RUnlock()
 	data += "</div></body></html>"
 	return data
 }
@@ -151,7 +155,7 @@ func (state *ServerStateInfo) QueryIntervalErrorData(queryKey string) uint64 {
 	return state.IntervalErrorData.GetUInt64(queryKey)
 }
 
-//增加请求数
+//AddRequestCount 增加请求数
 func (state *ServerStateInfo) AddRequestCount(page string, num uint64) uint64 {
 	if strings.Index(page, "/dotweb/") != 0 {
 		atomic.AddUint64(&state.TotalRequestCount, num)
@@ -160,15 +164,15 @@ func (state *ServerStateInfo) AddRequestCount(page string, num uint64) uint64 {
 	return state.TotalRequestCount
 }
 
-//增加Http状态码数据
-func (state *ServerStateInfo) AddHttpCodeCount(page string, code int, num uint64) uint64 {
+//AddHttpCodeCount 增加Http状态码数据
+func (state *ServerStateInfo) AddTTPCodeCount(page string, code int, num uint64) uint64 {
 	if strings.Index(page, "/dotweb/") != 0 {
-		state.addHttpCodeData(page, code, num)
+		state.addHTTPCodeData(page, code, num)
 	}
 	return state.TotalErrorCount
 }
 
-//增加错误数
+//AddErrorCount 增加错误数
 func (state *ServerStateInfo) AddErrorCount(page string, err error, num uint64) uint64 {
 	atomic.AddUint64(&state.TotalErrorCount, num)
 	state.addErrorData(page, err, num)
@@ -192,7 +196,7 @@ func (state *ServerStateInfo) addErrorData(page string, err error, num uint64) {
 	state.dataChan_Error <- info
 }
 
-func (state *ServerStateInfo) addHttpCodeData(page string, code int, num uint64) {
+func (state *ServerStateInfo) addHTTPCodeData(page string, code int, num uint64) {
 	//get from pool
 	info := state.infoPool.httpCodeInfo.Get().(*HttpCodeInfo)
 	info.Url = page
@@ -244,8 +248,8 @@ func (state *ServerStateInfo) handleInfo() {
 			{
 				//set detail error page data
 				key := strconv.Itoa(info.Code)
-				val := state.DetailHttpCodeData.GetUInt64(key)
-				state.DetailHttpCodeData.Set(key, val+info.Num)
+				val := state.DetailHTTPCodeData.GetUInt64(key)
+				state.DetailHTTPCodeData.Set(key, val+info.Num)
 
 				//put info obj
 				state.infoPool.httpCodeInfo.Put(info)
@@ -261,7 +265,7 @@ func (state *ServerStateInfo) checkAndRemoveIntervalData() {
 	//check IntervalRequestData
 	state.IntervalRequestData.RLock()
 	if state.IntervalRequestData.Len() > 10 {
-		for k, _ := range state.IntervalRequestData.GetCurrentMap() {
+		for k := range state.IntervalRequestData.GetCurrentMap() {
 			if t, err := time.Parse(minuteTimeLayout, k); err != nil {
 				needRemoveKey = append(needRemoveKey, k)
 			} else {
@@ -281,7 +285,7 @@ func (state *ServerStateInfo) checkAndRemoveIntervalData() {
 	needRemoveKey = []string{}
 	state.IntervalErrorData.RLock()
 	if state.IntervalErrorData.Len() > 10 {
-		for k, _ := range state.IntervalErrorData.GetCurrentMap() {
+		for k := range state.IntervalErrorData.GetCurrentMap() {
 			if t, err := time.Parse(minuteTimeLayout, k); err != nil {
 				needRemoveKey = append(needRemoveKey, k)
 			} else {

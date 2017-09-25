@@ -202,6 +202,9 @@ func (r *router) MatchPath(ctx Context, routePath string) bool {
 
 // ServeHTTP makes the router implement the http.Handler interface.
 func (r *router) ServeHTTP(ctx *HttpContext) {
+	//增加状态计数
+	core.GlobalState.AddRequestCount(ctx.Request().Path(), 1)
+
 	req := ctx.Request().Request
 	w := ctx.Response().Writer()
 	path := req.URL.Path
