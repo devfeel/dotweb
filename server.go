@@ -111,10 +111,9 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			httpCtx := server.pool.context.Get().(*HttpContext)
 			httpCtx.reset(response, request, server, nil, nil, nil)
 
-			//增加状态计数
-			core.GlobalState.AddRequestCount(1)
-
 			server.Router().ServeHTTP(httpCtx)
+
+			core.GlobalState.AddTTPCodeCount(httpCtx.Request().Path(), httpCtx.Response().HttpCode(), 1)
 
 			//release response
 			response.release()
