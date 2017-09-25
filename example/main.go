@@ -8,6 +8,7 @@ import (
 	"github.com/devfeel/dotweb/session"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func main() {
@@ -80,6 +81,20 @@ func Index(ctx dotweb.Context) error {
 	return nil
 }
 
+func Time(ctx dotweb.Context) error {
+	minuteTimeLayout := "200601021504"
+	if t, err := time.Parse(minuteTimeLayout, "201709251541"); err != nil {
+		ctx.WriteString(err.Error())
+	} else {
+		now, _ := time.Parse(minuteTimeLayout, time.Now().Format(minuteTimeLayout))
+		ctx.WriteString(t)
+		ctx.WriteString(now)
+		ctx.WriteString(t.Sub(now))
+		//ctx.WriteString(t.Sub(time.Now()) > 5*time.Minute)
+	}
+	return nil
+}
+
 func IndexReg(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
 	_, err := ctx.WriteString("welcome to dotweb")
@@ -127,6 +142,7 @@ func ReturnError(ctx dotweb.Context) error {
 
 func InitRoute(server *dotweb.HttpServer) {
 	server.GET("/", Index)
+	server.GET("/time", Time)
 	server.GET("/index", Index)
 	server.GET("/id/:id", IndexParam)
 	server.POST("/keypost", KeyPost)
