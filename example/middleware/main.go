@@ -63,7 +63,7 @@ func InitRoute(server *dotweb.HttpServer) {
 	g.GET("/use", Index).Use(NewAccessFmtLog("group-use"))
 }
 
-func InitModule(dotserver *dotweb.DotWeb) {
+func InitModule(dotserver *dotweb.HttpServer) {
 	dotserver.RegisterModule(&dotweb.HttpModule{
 		OnBeginRequest: func(ctx dotweb.Context) {
 			fmt.Println(time.Now(), "HttpModule BeginRequest1:", ctx.Request().RequestURI)
