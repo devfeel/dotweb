@@ -7,7 +7,7 @@ document: https://www.kancloud.cn/devfeel/dotweb/346608
 [![GoDoc](https://godoc.org/github.com/devfeel/dotweb?status.svg)](https://godoc.org/github.com/devfeel/dotweb)
 [![Go Report Card](https://goreportcard.com/badge/github.com/devfeel/dotweb)](https://goreportcard.com/report/github.com/devfeel/dotweb)
 [![Go Build Card](https://travis-ci.org/devfeel/dotweb.svg?branch=master)](https://travis-ci.org/devfeel/dotweb.svg?branch=master)
-
+<a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=836e11667837ad674462a4a97fb21fba487cd3dff5b2e1ca0d7ea4c2324b4574"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="Golang-Devfeel" title="Golang-Devfeel"></a>
 ## 1. Install
 
 ```
@@ -259,5 +259,5 @@ redis - github.com/garyburd/redigo/redis
 目前已经有几位朋友在为框架一起做努力，我们将在合适的时间向大家展现，谢谢他们的支持！
 
 ## Contact Us
-#### QQ-Group：193409346 - <a target="_blank" href=""http://shang.qq.com/wpa/qunwpa?idkey=836e11667837ad674462a4a97fb21fba487cd3dff5b2e1ca0d7ea4c2324b4574"><img border="0" src=""http://pub.idqqimg.com/wpa/images/group.png" alt="Golang-Devfeel" title="Golang-Devfeel"></a>
+#### QQ-Group：193409346 - <a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=836e11667837ad674462a4a97fb21fba487cd3dff5b2e1ca0d7ea4c2324b4574"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="Golang-Devfeel" title="Golang-Devfeel"></a>
 #### Gitter：[![Gitter](https://badges.gitter.im/devfeel/dotweb.svg)](https://gitter.im/devfeel-dotweb/wechat)
