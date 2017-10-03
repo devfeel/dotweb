@@ -1,5 +1,28 @@
 ## dotweb版本记录：
 
+#### Version 1.2
+* 国庆特别版 - 2017年的国庆，恰逢中秋双节，祝愿国家繁荣昌盛，祝愿代码艺术家们双节快乐！
+* 主要新增HttpModule模块、新增ServerConfig：EnabledIgnoreFavicon、完善HttpContext、完善debug日志输出
+* 【新增】HttpModule模块，提供路由之前全局级别的自定义代码能力
+* 1、新增module文件，将原dotweb文件中HttpMoule定义转移至module文件，新增Name属性
+* 2、新增getIgnoreFaviconModule函数用于创建基础Module用于EnabledIgnoreFavicon特性
+* 3、HttpServer新增RegisterModule函数，用于注册自定义HttpModule
+* 4、增加代码示例-根据参数动态变更访问路由 - package: example/httpmodule
+* 【新增】忽视favicon文件请求能力
+* 1、通过ServerConfig：EnabledIgnoreFavicon设置，默认不启用
+* 2、当启用该选项时，请求/facicon.ico文件时，将默认反馈空
+* 3、配置文件server节点增加enabledignorefavicon设置项
+* 【完善】HttpContext，使相关接口更清晰
+* 1、新增WriteHtml、WriteHtmlC函数，默认设置Context-Type:text/html; charset=utf-8
+* 3、注意，若在同一个请求期间，多次调用WriteHtml与WriteString，以最后一次调用的Context-Type为准
+* 【完善】debug日志输出，使dotweb启动过程更清晰
+* 1、新增Group创建日志
+* 2、新增ServerConfig设置日志
+* 3、新增设置Session参数日志
+* 4、新增Session初始化日志
+* 5、新增RegisterModule日志
+* 2017-10-03 14:00
+
 #### Version 1.1
 * 主要新增集成基础统计数据
 * 【新增】dotweb/state接口，提供基础统计数据，主要数据说明：

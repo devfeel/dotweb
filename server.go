@@ -9,6 +9,7 @@ import (
 
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/feature"
+	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/logger"
 	"strconv"
 )
@@ -20,19 +21,11 @@ const (
 )
 
 type (
-	// Deprecated: Use the Middleware instead
-	// HttpModule struct
-	HttpModule struct {
-		//响应请求时作为 HTTP 执行管线链中的第一个事件发生
-		OnBeginRequest func(Context)
-		//响应请求时作为 HTTP 执行管线链中的最后一个事件发生。
-		OnEndRequest func(Context)
-	}
-
 	//HttpServer定义
 	HttpServer struct {
 		stdServer      *http.Server
 		router         Router
+		Modules        []*HttpModule
 		DotApp         *DotWeb
 		sessionManager *session.SessionManager
 		lock_session   *sync.RWMutex
@@ -72,6 +65,7 @@ func NewHttpServer() *HttpServer {
 				},
 			},
 		},
+		Modules:       make([]*HttpModule, 0),
 		ServerConfig:  config.NewServerNode(),
 		SessionConfig: config.NewSessionNode(),
 		lock_session:  new(sync.RWMutex),
@@ -111,8 +105,25 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			httpCtx := server.pool.context.Get().(*HttpContext)
 			httpCtx.reset(response, request, server, nil, nil, nil)
 
-			server.Router().ServeHTTP(httpCtx)
+			//处理前置Module集合
+			for _, module := range server.Modules {
+				if module.OnBeginRequest != nil {
+					module.OnBeginRequest(httpCtx)
+				}
+			}
 
+			if !httpCtx.IsEnd() {
+				server.Router().ServeHTTP(httpCtx)
+			}
+
+			//处理后置Module集合
+			for _, module := range server.Modules {
+				if module.OnEndRequest != nil {
+					module.OnEndRequest(httpCtx)
+				}
+			}
+
+			//add view count with httpcode
 			core.GlobalState.AddTTPCodeCount(httpCtx.Request().Path(), httpCtx.Response().HttpCode(), 1)
 
 			//release response
@@ -153,6 +164,7 @@ func (server *HttpServer) SetSessionConfig(storeConfig *session.StoreConfig) {
 	server.SessionConfig.Timeout = storeConfig.Maxlifetime
 	server.SessionConfig.SessionMode = storeConfig.StoreName
 	server.SessionConfig.ServerIP = storeConfig.ServerIP
+	logger.Logger().Debug("Dotweb:HttpServer SetSessionConfig ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
 }
 
 // InitSessionManager init session manager
@@ -173,6 +185,7 @@ func (server *HttpServer) InitSessionManager() {
 		}
 		server.lock_session.Unlock()
 	}
+	logger.Logger().Debug("Dotweb:HttpServer InitSessionManager ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
 }
 
 // setDotApp 关联当前HttpServer实例对应的DotServer实例
@@ -288,6 +301,18 @@ func (server *HttpServer) SetEnabledSession(isEnabled bool) {
 func (server *HttpServer) SetEnabledGzip(isEnabled bool) {
 	server.ServerConfig.EnabledGzip = isEnabled
 	logger.Logger().Debug("Dotweb:HttpServer SetEnabledGzip ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+}
+
+func (server *HttpServer) SetEnabledIgnoreFavicon(isEnabled bool) {
+	server.ServerConfig.EnabledIgnoreFavicon = isEnabled
+	logger.Logger().Debug("Dotweb:HttpServer SetEnabledIgnoreFavicon ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	server.RegisterModule(getIgnoreFaviconModule())
+}
+
+// RegisterModule 添加处理模块
+func (server *HttpServer) RegisterModule(module *HttpModule) {
+	server.Modules = append(server.Modules, module)
+	logger.Logger().Debug("Dotweb:HttpServer RegisterModule ["+module.Name+"]", LogTarget_HttpServer)
 }
 
 type LogJson struct {
