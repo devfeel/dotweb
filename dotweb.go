@@ -409,6 +409,7 @@ func initInnerRouter(server *HttpServer) {
 	gInner.GET("/debug/pprof/:key", initPProf)
 	gInner.GET("/debug/freemem", freeMemory)
 	gInner.GET("/state", showServerState)
+	gInner.GET("/state/interval", showIntervalData)
 	gInner.GET("/query/:key", showQuery)
 }
 
@@ -426,9 +427,25 @@ func freeMemory(ctx Context) error {
 	return nil
 }
 
+func showIntervalData(ctx Context) error {
+	type data struct {
+		Time         string
+		RequestCount uint64
+		ErrorCount   uint64
+	}
+	queryKey := ctx.QueryString("querykey")
+
+	d := new(data)
+	d.Time = queryKey
+	d.RequestCount = core.GlobalState.QueryIntervalRequestData(queryKey)
+	d.ErrorCount = core.GlobalState.QueryIntervalErrorData(queryKey)
+	ctx.WriteJson(d)
+	return nil
+}
+
 //显示服务器状态信息
 func showServerState(ctx Context) error {
-	ctx.WriteString(jsonutil.GetJsonString(core.GlobalState))
+	ctx.WriteString(core.GlobalState.ShowHtmlData())
 	return nil
 }
 

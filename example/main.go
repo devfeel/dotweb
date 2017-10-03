@@ -8,6 +8,7 @@ import (
 	"github.com/devfeel/dotweb/session"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func main() {
@@ -31,7 +32,7 @@ func main() {
 	app.SetProductionMode()
 
 	//设置gzip开关
-	app.HttpServer.SetEnabledGzip(true)
+	//app.HttpServer.SetEnabledGzip(true)
 
 	//设置Session开关
 	app.HttpServer.SetEnabledSession(true)
@@ -75,8 +76,23 @@ func main() {
 
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, err := ctx.WriteStringC(201, "index => ", ctx.RemoteIP(), "我是首页")
-	return err
+	ctx.WriteString(ctx.Request().URL.Path)
+	//_, err := ctx.WriteStringC(201, "index => ", ctx.RemoteIP(), "我是首页")
+	return nil
+}
+
+func Time(ctx dotweb.Context) error {
+	minuteTimeLayout := "200601021504"
+	if t, err := time.Parse(minuteTimeLayout, "201709251541"); err != nil {
+		ctx.WriteString(err.Error())
+	} else {
+		now, _ := time.Parse(minuteTimeLayout, time.Now().Format(minuteTimeLayout))
+		ctx.WriteString(t)
+		ctx.WriteString(now)
+		ctx.WriteString(t.Sub(now))
+		//ctx.WriteString(t.Sub(time.Now()) > 5*time.Minute)
+	}
+	return nil
 }
 
 func IndexReg(ctx dotweb.Context) error {
@@ -126,11 +142,13 @@ func ReturnError(ctx dotweb.Context) error {
 
 func InitRoute(server *dotweb.HttpServer) {
 	server.GET("/", Index)
+	server.GET("/time", Time)
+	server.GET("/index", Index)
 	server.GET("/id/:id", IndexParam)
 	server.POST("/keypost", KeyPost)
 	server.POST("/jsonpost", JsonPost)
 	server.GET("/error", DefaultError)
 	server.GET("/returnerr", ReturnError)
 	server.GET("/redirect", Redirect)
-	server.Router().RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
+	//server.Router().RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
 }

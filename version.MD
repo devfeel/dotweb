@@ -1,5 +1,25 @@
 ## dotweb版本记录：
 
+#### Version 1.1
+* 主要新增集成基础统计数据
+* 【新增】dotweb/state接口，提供基础统计数据，主要数据说明：
+* 1、ServerStartTime 服务启动时间
+* 2、TotalRequestCount 服务启动以来累计请求数（排除了"/dotweb/"下系统自有页面的访问数）
+* 3、TotalErrorCount 服务启动以来累计错误数
+* 4、IntervalRequestData 按1分钟为间隔，默认保存最近60分钟，每分钟的请求数（排除了"/dotweb/"下系统自有页面的访问数）
+* 5、DetailRequestPageData 服务启动以来，每个页面的累计请求数（排除了"/dotweb/"下系统自有页面的访问数）
+* 6、IntervalErrorData 按1分钟为间隔，默认保存最近60分钟，每分钟的错误数
+* 7、DetailErrorPageData 服务启动以来，每个页面的累计错误数
+* 8、DetailErrorData 服务启动以来，每个异常的累计数
+* 9、DetailHttpCodeData 服务启动以来，每个Http状态码的累计数
+* 10、可通过 {host}/dotweb/state 获取数据
+* 【新增】dotweb/state/interval接口，提供按分钟级的基础数据查询
+* 主要数据说明：
+* 1、Time 表示查询时间的字符串，最小单位为分钟，例如：201709251200
+* 2、RequestCount 单位时间内累计请求数（排除了"/dotweb/"下系统自有页面的访问数）
+* 3、ErrorCount 单位时间内累计错误数
+* 2017-09-25 13:00
+
 #### Version 1.0.1
 * 新增logger.SetEnabledConsole，当设置SetDevelopmentMode时自动开启
 * SetEnabledConsole：自动向console输出dotweb基础日志，便于开发人员调试阶段实时查看
