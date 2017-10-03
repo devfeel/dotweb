@@ -28,7 +28,6 @@ type (
 		cache            cache.Cache
 		OfflineServer    servers.Server
 		Config           *config.Config
-		Modules          []*HttpModule
 		Middlewares      []Middleware
 		ExceptionHandler ExceptionHandle
 		NotFoundHandler  NotFoundHandle
@@ -58,7 +57,6 @@ func New() *DotWeb {
 	app := &DotWeb{
 		HttpServer:      NewHttpServer(),
 		OfflineServer:   servers.NewOfflineServer(),
-		Modules:         make([]*HttpModule, 0),
 		Middlewares:     make([]Middleware, 0),
 		AppContext:      core.NewItemContext(),
 		Config:          config.NewConfig(),
@@ -139,12 +137,6 @@ func (app *DotWeb) Use(m ...Middleware) {
 // UseRequestLog register RequestLog middleware
 func (app *DotWeb) UseRequestLog() {
 	app.Use(&RequestLogMiddleware{})
-}
-
-// Deprecated: Use the Middleware instead
-// RegisterModule 添加处理模块
-func (app *DotWeb) RegisterModule(module *HttpModule) {
-	app.Modules = append(app.Modules, module)
 }
 
 // SetExceptionHandle set custom error handler

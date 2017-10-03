@@ -66,6 +66,8 @@ type (
 		Write(code int, content []byte) (int, error)
 		WriteString(contents ...interface{}) (int, error)
 		WriteStringC(code int, contents ...interface{}) (int, error)
+		WriteHtml(contents ...interface{}) (int, error)
+		WriteHtmlC(code int, contents ...interface{}) (int, error)
 		WriteBlob(contentType string, b []byte) (int, error)
 		WriteBlobC(code int, contentType string, b []byte) (int, error)
 		WriteJson(i interface{}) (int, error)
@@ -437,19 +439,26 @@ func (ctx *HttpContext) Write(code int, content []byte) (int, error) {
 	}
 }
 
-// WriteString write string content to response
+// WriteString write (200, string, text/plain) to response
 func (ctx *HttpContext) WriteString(contents ...interface{}) (int, error) {
 	return ctx.WriteStringC(defaultHttpCode, contents...)
 }
 
-// WriteStringC write (httpCode, string) to response
+// WriteStringC write (httpCode, string, text/plain) to response
 func (ctx *HttpContext) WriteStringC(code int, contents ...interface{}) (int, error) {
 	content := fmt.Sprint(contents...)
-	if ctx.IsHijack() {
-		return ctx.hijackConn.WriteString(content)
-	} else {
-		return ctx.response.Write(code, []byte(content))
-	}
+	return ctx.WriteBlobC(code, "", []byte(content))
+}
+
+// WriteString write (200, string, text/html) to response
+func (ctx *HttpContext) WriteHtml(contents ...interface{}) (int, error) {
+	return ctx.WriteHtmlC(defaultHttpCode, contents...)
+}
+
+// WriteHtmlC write (httpCode, string, text/html) to response
+func (ctx *HttpContext) WriteHtmlC(code int, contents ...interface{}) (int, error) {
+	content := fmt.Sprint(contents...)
+	return ctx.WriteBlobC(code, MIMETextHTMLCharsetUTF8, []byte(content))
 }
 
 // WriteBlob write []byte content to response
