@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+#### Version 1.2.1
+* 启动日志增加dotweb ASCII art logo
+* 调整默认日志的时间毫秒段为4位
+* 2017-10-05 22:00
+
 #### Version 1.2
 * 国庆特别版 - 2017年的国庆，恰逢中秋双节，祝愿国家繁荣昌盛，祝愿代码艺术家们双节快乐！
 * 主要新增HttpModule模块、新增ServerConfig：EnabledIgnoreFavicon、完善HttpContext、完善debug日志输出

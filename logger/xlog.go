@@ -14,6 +14,7 @@ type chanLog struct {
 	Content   string
 	LogTarget string
 	LogLevel  string
+	isRaw     bool
 	logCtx    *logContext
 }
 
@@ -34,12 +35,16 @@ func NewXLog() *xLog {
 const (
 	defaultDateFormatForFileName = "2006_01_02"
 	defaultDateLayout            = "2006-01-02"
-	defaultFullTimeLayout        = "2006-01-02 15:04:05.999999"
+	defaultFullTimeLayout        = "2006-01-02 15:04:05.9999"
 	defaultTimeLayout            = "2006-01-02 15:04:05"
 )
 
 func (l *xLog) Debug(log string, logTarget string) {
 	l.Log(log, logTarget, LogLevel_Debug)
+}
+
+func (l *xLog) DebugRaw(log string, logTarget string) {
+	l.log(log, logTarget, LogLevel_Debug, true)
 }
 
 func (l *xLog) Info(log string, logTarget string) {
@@ -55,6 +60,10 @@ func (l *xLog) Error(log string, logTarget string) {
 }
 
 func (l *xLog) Log(log string, logTarget string, logLevel string) {
+	l.log(log, logTarget, logLevel, false)
+}
+
+func (l *xLog) log(log string, logTarget string, logLevel string, isRaw bool) {
 	if l.enabledLog {
 		skip := 3
 		logCtx, err := callerInfo(skip)
@@ -66,6 +75,7 @@ func (l *xLog) Log(log string, logTarget string, logLevel string) {
 			LogTarget: logTarget + "_" + logLevel,
 			Content:   log,
 			LogLevel:  logLevel,
+			isRaw:     isRaw,
 			logCtx:    logCtx,
 		}
 		l.logChan_Custom <- chanLog
@@ -106,7 +116,10 @@ func (l *xLog) writeLog(chanLog chanLog, level string) {
 		filePath = filePath + "_" + time.Now().Format(defaultDateFormatForFileName) + ".log"
 		break
 	}
-	log := fmt.Sprintf(fmt.Sprintf("[%s] %s [%s:%v] %s", chanLog.LogLevel, time.Now().Format(defaultFullTimeLayout), chanLog.logCtx.fileName, chanLog.logCtx.line, chanLog.Content))
+	log := chanLog.Content
+	if !chanLog.isRaw {
+		log = fmt.Sprintf(fmt.Sprintf("[%s] %s [%s:%v] %s", chanLog.LogLevel, time.Now().Format(defaultFullTimeLayout), chanLog.logCtx.fileName, chanLog.logCtx.line, chanLog.Content))
+	}
 	if l.enabledConsole {
 		fmt.Println(log)
 	}

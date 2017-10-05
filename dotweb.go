@@ -67,6 +67,10 @@ func New() *DotWeb {
 
 	//init logger
 	logger.InitLog()
+
+	logDotLogo()
+
+	logger.Logger().Debug("Dotweb Start New AppServer", LogTarget_HttpServer)
 	return app
 }
 
@@ -453,4 +457,12 @@ func showQuery(ctx Context) error {
 		ctx.WriteString("not support key => " + querykey)
 	}
 	return nil
+}
+
+func logDotLogo() {
+	logger.Logger().DebugRaw(`    ____           __                     __`, LogTarget_HttpServer)
+	logger.Logger().DebugRaw(`   / __ \  ____   / /_ _      __  ___    / /_`, LogTarget_HttpServer)
+	logger.Logger().DebugRaw(`  / / / / / __ \ / __/| | /| / / / _ \  / __ \`, LogTarget_HttpServer)
+	logger.Logger().DebugRaw(` / /_/ / / /_/ // /_  | |/ |/ / /  __/ / /_/ /`, LogTarget_HttpServer)
+	logger.Logger().DebugRaw(`/_____/  \____/ \__/  |__/|__/  \___/ /_.___/`, LogTarget_HttpServer)
 }

@@ -20,6 +20,7 @@ type AppLog interface {
 	SetEnabledConsole(enabled bool)
 	SetEnabledLog(enabledLog bool)
 	Debug(log string, logTarget string)
+	DebugRaw(log string, logTarget string)
 	Info(log string, logTarget string)
 	Warn(log string, logTarget string)
 	Error(log string, logTarget string)
