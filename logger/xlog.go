@@ -39,30 +39,32 @@ const (
 	defaultTimeLayout            = "2006-01-02 15:04:05"
 )
 
+// Debug debug log with default format
 func (l *xLog) Debug(log string, logTarget string) {
-	l.Log(log, logTarget, LogLevel_Debug)
+	l.log(log, logTarget, LogLevel_Debug, false)
 }
 
-func (l *xLog) DebugRaw(log string, logTarget string) {
+// Print debug log with no format
+func (l *xLog) Print(log string, logTarget string) {
 	l.log(log, logTarget, LogLevel_Debug, true)
 }
 
+// Info info log with default format
 func (l *xLog) Info(log string, logTarget string) {
-	l.Log(log, logTarget, LogLevel_Info)
+	l.log(log, logTarget, LogLevel_Info, false)
 }
 
+// Warn warn log with default format
 func (l *xLog) Warn(log string, logTarget string) {
-	l.Log(log, logTarget, LogLevel_Warn)
+	l.log(log, logTarget, LogLevel_Warn, false)
 }
 
+// Error error log with default format
 func (l *xLog) Error(log string, logTarget string) {
-	l.Log(log, logTarget, LogLevel_Error)
+	l.log(log, logTarget, LogLevel_Error, false)
 }
 
-func (l *xLog) Log(log string, logTarget string, logLevel string) {
-	l.log(log, logTarget, logLevel, false)
-}
-
+// log push log into chan
 func (l *xLog) log(log string, logTarget string, logLevel string, isRaw bool) {
 	if l.enabledLog {
 		skip := 3

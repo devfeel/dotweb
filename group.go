@@ -24,7 +24,7 @@ type (
 
 func NewGroup(prefix string, server *HttpServer) Group {
 	g := &xGroup{prefix: prefix, server: server}
-	logger.Logger().Debug("Dotweb:Group NewGroup ["+prefix+"]", LogTarget_HttpServer)
+	logger.Logger().Debug("DotWeb:Group NewGroup ["+prefix+"]", LogTarget_HttpServer)
 	return g
 }
 

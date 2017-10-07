@@ -1,5 +1,15 @@
 ## dotweb版本记录：
 
+#### Version 1.3
+* 国庆迭代第三波
+* 增加TLS支持
+* 1)ServerConfig增加EnabledTLS\TLSCertFile\TLSKeyFile三个配置项
+* 2)HttpServer增加SetEnabledTLS方法
+* 3)增加example/tls目录
+* 移除：移除DotWeb.StartWithConfig方法，使用配置方式时需显式调用dotweb.SetConfig方法
+* 进一步完善默认日志输出
+* 2017-10-07 22:00
+
 #### Version 1.2.1
 * 启动日志增加dotweb ASCII art logo
 * 调整默认日志的时间毫秒段为4位
