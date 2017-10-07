@@ -64,7 +64,7 @@ func (m *RequestLogMiddleware) Handle(ctx Context) error {
 	m.Next(ctx)
 	timetaken := int64(time.Now().Sub(ctx.(*HttpContext).startTime) / time.Millisecond)
 	log := ctx.Request().Url() + " " + logContext(ctx, timetaken)
-	logger.Logger().Log(log, LogTarget_HttpRequest, LogLevel_Debug)
+	logger.Logger().Debug(log, LogTarget_HttpRequest)
 	return nil
 }
 

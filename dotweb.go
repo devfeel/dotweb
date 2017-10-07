@@ -70,7 +70,7 @@ func New() *DotWeb {
 
 	logDotLogo()
 
-	logger.Logger().Debug("Dotweb Start New AppServer", LogTarget_HttpServer)
+	logger.Logger().Debug("DotWeb Start New AppServer", LogTarget_HttpServer)
 	return app
 }
 
@@ -158,7 +158,7 @@ func (app *DotWeb) SetNotFoundHandle(handler NotFoundHandle) {
 func (app *DotWeb) SetPProfConfig(enabledPProf bool, httpport int) {
 	app.Config.App.EnabledPProf = enabledPProf
 	app.Config.App.PProfPort = httpport
-	logger.Logger().Debug("Dotweb SetPProfConfig ["+strconv.FormatBool(enabledPProf)+", "+strconv.Itoa(httpport)+"]", LogTarget_HttpServer)
+	logger.Logger().Debug("DotWeb SetPProfConfig ["+strconv.FormatBool(enabledPProf)+", "+strconv.Itoa(httpport)+"]", LogTarget_HttpServer)
 }
 
 // SetLogger set user logger, the logger must implement logger.AppLog interface
@@ -271,24 +271,8 @@ func (app *DotWeb) SetConfig(config *config.Config) error {
 // StartServer start server with http port
 // if config the pprof, will be start pprof server
 func (app *DotWeb) StartServer(httpport int) error {
-	//start pprof server
-	if app.Config.App.EnabledPProf {
-		if app.Config.App.PProfPort == httpport {
-			errStr := "PProf Server and HttpServer have the same port"
-			logger.Logger().Warn("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] failed: "+errStr, LogTarget_HttpServer)
-		} else {
-			logger.Logger().Debug("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] Begin", LogTarget_HttpServer)
-			go func() {
-				err := http.ListenAndServe(":"+strconv.Itoa(app.Config.App.PProfPort), nil)
-				if err != nil {
-					logger.Logger().Warn("Dotweb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] error: "+err.Error(), LogTarget_HttpServer)
-				}
-			}()
-		}
-	}
 	addr := ":" + strconv.Itoa(httpport)
 	return app.ListenAndServe(addr)
-
 }
 
 // Start start app server with set config
@@ -319,8 +303,31 @@ func (app *DotWeb) MustStart() {
 // ListenAndServe start server with addr
 // not support pprof server auto start
 func (app *DotWeb) ListenAndServe(addr string) error {
-	initInnerRouter(app.HttpServer)
+	app.initServerEnvironment()
+	app.initInnerRouter()
 
+	if app.HttpServer.ServerConfig.EnabledTLS {
+		err := app.HttpServer.ListenAndServeTLS(addr, app.HttpServer.ServerConfig.TLSCertFile, app.HttpServer.ServerConfig.TLSKeyFile)
+		return err
+	} else {
+		err := app.HttpServer.ListenAndServe(addr)
+		return err
+	}
+
+}
+
+// init inner routers
+func (ds *DotWeb) initInnerRouter() {
+	//默认支持pprof信息查看
+	gInner := ds.HttpServer.Group("/dotweb")
+	gInner.GET("/debug/pprof/:key", initPProf)
+	gInner.GET("/debug/freemem", freeMemory)
+	gInner.GET("/state", showServerState)
+	gInner.GET("/state/interval", showIntervalData)
+	gInner.GET("/query/:key", showQuery)
+}
+
+func (app *DotWeb) initServerEnvironment() {
 	if app.ExceptionHandler == nil {
 		app.SetExceptionHandle(app.DefaultHTTPErrorHandler)
 	}
@@ -348,24 +355,18 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 	//add default httphandler with middlewares
 	app.Use(&xMiddleware{})
 
-	logger.Logger().Log("Dotweb:ListenAndServe["+addr+"] begin", LogTarget_HttpServer, LogLevel_Debug)
-	err := app.HttpServer.ListenAndServe(addr)
-	return err
-}
-
-// StartServerWithConfig start server with config
-func (app *DotWeb) StartServerWithConfig(config *config.Config) error {
-	err := app.SetConfig(config)
-	if err != nil {
-		return err
+	//start pprof server
+	if app.Config.App.EnabledPProf {
+		logger.Logger().Debug("DotWeb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] Begin", LogTarget_HttpServer)
+		go func() {
+			err := http.ListenAndServe(":"+strconv.Itoa(app.Config.App.PProfPort), nil)
+			if err != nil {
+				logger.Logger().Error("DotWeb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] error: "+err.Error(), LogTarget_HttpServer)
+				//panic the error
+				panic(err)
+			}
+		}()
 	}
-	//start server
-	port := config.Server.Port
-	if port <= 0 {
-		port = DefaultHttpPort
-	}
-	return app.StartServer(port)
-
 }
 
 // DefaultHTTPErrorHandler default exception handler
@@ -396,17 +397,6 @@ func (ds *DotWeb) Shutdown(ctx context.Context) error {
 // HTTPNotFound simple notfound function for Context
 func HTTPNotFound(ctx Context) {
 	http.NotFound(ctx.Response().Writer(), ctx.Request().Request)
-}
-
-// init inner routers
-func initInnerRouter(server *HttpServer) {
-	//默认支持pprof信息查看
-	gInner := server.Group("/dotweb")
-	gInner.GET("/debug/pprof/:key", initPProf)
-	gInner.GET("/debug/freemem", freeMemory)
-	gInner.GET("/state", showServerState)
-	gInner.GET("/state/interval", showIntervalData)
-	gInner.GET("/query/:key", showQuery)
 }
 
 //query pprof debug info
@@ -460,9 +450,9 @@ func showQuery(ctx Context) error {
 }
 
 func logDotLogo() {
-	logger.Logger().DebugRaw(`    ____           __                     __`, LogTarget_HttpServer)
-	logger.Logger().DebugRaw(`   / __ \  ____   / /_ _      __  ___    / /_`, LogTarget_HttpServer)
-	logger.Logger().DebugRaw(`  / / / / / __ \ / __/| | /| / / / _ \  / __ \`, LogTarget_HttpServer)
-	logger.Logger().DebugRaw(` / /_/ / / /_/ // /_  | |/ |/ / /  __/ / /_/ /`, LogTarget_HttpServer)
-	logger.Logger().DebugRaw(`/_____/  \____/ \__/  |__/|__/  \___/ /_.___/`, LogTarget_HttpServer)
+	logger.Logger().Print(`    ____           __                     __`, LogTarget_HttpServer)
+	logger.Logger().Print(`   / __ \  ____   / /_ _      __  ___    / /_`, LogTarget_HttpServer)
+	logger.Logger().Print(`  / / / / / __ \ / __/| | /| / / / _ \  / __ \`, LogTarget_HttpServer)
+	logger.Logger().Print(` / /_/ / / /_/ // /_  | |/ |/ / /  __/ / /_/ /`, LogTarget_HttpServer)
+	logger.Logger().Print(`/_____/  \____/ \__/  |__/|__/  \___/ /_.___/`, LogTarget_HttpServer)
 }

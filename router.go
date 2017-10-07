@@ -322,7 +322,7 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 						HttpBody:   errmsg,
 					}
 					logString := jsonutil.GetJsonString(logJson)
-					logger.Logger().Log(logString, LogTarget_HttpServer, LogLevel_Error)
+					logger.Logger().Error(logString, LogTarget_HttpServer)
 				}
 
 				//增加错误计数
@@ -366,7 +366,7 @@ func (r *router) wrapFileHandle(fileHandler http.Handler) RouterHandle {
 		fileHandler.ServeHTTP(httpCtx.Response().Writer(), httpCtx.Request().Request)
 		timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 		//HttpServer Logging
-		logger.Logger().Log(httpCtx.Request().Url()+" "+logRequest(httpCtx.Request().Request, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
+		logger.Logger().Debug(httpCtx.Request().Url()+" "+logRequest(httpCtx.Request().Request, timetaken), LogTarget_HttpRequest)
 	}
 }
 
@@ -432,10 +432,10 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 	handleName := handlerName(handle)
 	routeMethod = strings.ToUpper(routeMethod)
 	if _, exists := HttpMethodMap[routeMethod]; !exists {
-		logger.Logger().Log("Dotweb:Router:RegisterRoute failed [illegal method] ["+routeMethod+"] ["+path+"] ["+handleName+"]", LogTarget_HttpServer, LogLevel_Warn)
+		logger.Logger().Warn("DotWeb:Router:RegisterRoute failed [illegal method] ["+routeMethod+"] ["+path+"] ["+handleName+"]", LogTarget_HttpServer)
 		return nil
 	} else {
-		logger.Logger().Log("Dotweb:Router:RegisterRoute success ["+routeMethod+"] ["+path+"] ["+handleName+"]", LogTarget_HttpServer, LogLevel_Debug)
+		logger.Logger().Debug("DotWeb:Router:RegisterRoute success ["+routeMethod+"] ["+path+"] ["+handleName+"]", LogTarget_HttpServer)
 	}
 
 	//websocket mode,use default httpserver
@@ -581,14 +581,14 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 					HttpBody:   errmsg,
 				}
 				logString := jsonutil.GetJsonString(logJson)
-				logger.Logger().Log(logString, LogTarget_HttpServer, LogLevel_Error)
+				logger.Logger().Error(logString, LogTarget_HttpServer)
 
 				//增加错误计数
 				core.GlobalState.AddErrorCount(httpCtx.Request().Path(), fmt.Errorf("%v", err), 1)
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 			//HttpServer Logging
-			logger.Logger().Log(httpCtx.Request().Url()+" "+logWebsocketContext(httpCtx, timetaken), LogTarget_HttpRequest, LogLevel_Debug)
+			logger.Logger().Debug(httpCtx.Request().Url()+" "+logWebsocketContext(httpCtx, timetaken), LogTarget_HttpRequest)
 
 			//release request
 			req.release()

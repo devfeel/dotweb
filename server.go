@@ -9,6 +9,7 @@ import (
 
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/feature"
+	"github.com/devfeel/dotweb/framework/file"
 	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/logger"
 	"strconv"
@@ -82,7 +83,37 @@ func NewHttpServer() *HttpServer {
 // calls Serve to handle requests on incoming connections.
 func (server *HttpServer) ListenAndServe(addr string) error {
 	server.stdServer.Addr = addr
+	logger.Logger().Debug("DotWeb:HttpServer ListenAndServe ["+addr+"]", LogTarget_HttpServer)
 	return server.stdServer.ListenAndServe()
+}
+
+// ListenAndServeTLS listens on the TCP network address srv.Addr and
+// then calls Serve to handle requests on incoming TLS connections.
+// Accepted connections are configured to enable TCP keep-alives.
+//
+// Filenames containing a certificate and matching private key for the
+// server must be provided if neither the Server's TLSConfig.Certificates
+// nor TLSConfig.GetCertificate are populated. If the certificate is
+// signed by a certificate authority, the certFile should be the
+// concatenation of the server's certificate, any intermediates, and
+// the CA's certificate.
+//
+// If srv.Addr is blank, ":https" is used.
+//
+// ListenAndServeTLS always returns a non-nil error.
+func (server *HttpServer) ListenAndServeTLS(addr string, certFile, keyFile string) error {
+	server.stdServer.Addr = addr
+	//check tls config
+	if !file.Exist(certFile) {
+		logger.Logger().Error("DotWeb:HttpServer ListenAndServeTLS ["+addr+","+certFile+","+keyFile+"] error => Server EnabledTLS is true, but TLSCertFile not exists", LogTarget_HttpServer)
+		panic("Server EnabledTLS is true, but TLSCertFile not exists")
+	}
+	if !file.Exist(keyFile) {
+		logger.Logger().Error("DotWeb:HttpServer ListenAndServeTLS ["+addr+","+certFile+","+keyFile+"] error => Server EnabledTLS is true, but TLSKeyFile not exists", LogTarget_HttpServer)
+		panic("Server EnabledTLS is true, but TLSKeyFile not exists")
+	}
+	logger.Logger().Debug("DotWeb:HttpServer ListenAndServeTLS ["+addr+","+certFile+","+keyFile+"]", LogTarget_HttpServer)
+	return server.stdServer.ListenAndServeTLS(certFile, keyFile)
 }
 
 // ServeHTTP make sure request can be handled correctly
@@ -164,7 +195,7 @@ func (server *HttpServer) SetSessionConfig(storeConfig *session.StoreConfig) {
 	server.SessionConfig.Timeout = storeConfig.Maxlifetime
 	server.SessionConfig.SessionMode = storeConfig.StoreName
 	server.SessionConfig.ServerIP = storeConfig.ServerIP
-	logger.Logger().Debug("Dotweb:HttpServer SetSessionConfig ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
+	logger.Logger().Debug("DotWeb:HttpServer SetSessionConfig ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
 }
 
 // InitSessionManager init session manager
@@ -185,7 +216,7 @@ func (server *HttpServer) InitSessionManager() {
 		}
 		server.lock_session.Unlock()
 	}
-	logger.Logger().Debug("Dotweb:HttpServer InitSessionManager ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
+	logger.Logger().Debug("DotWeb:HttpServer InitSessionManager ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
 }
 
 // setDotApp 关联当前HttpServer实例对应的DotServer实例
@@ -282,37 +313,49 @@ func (server *HttpServer) SetRenderer(r Renderer) {
 // SetEnabledAutoHEAD set EnabledAutoHEAD true or false
 func (server *HttpServer) SetEnabledAutoHEAD(autoHEAD bool) {
 	server.ServerConfig.EnabledAutoHEAD = autoHEAD
-	logger.Logger().Debug("Dotweb:HttpServer SetEnabledAutoHEAD ["+strconv.FormatBool(autoHEAD)+"]", LogTarget_HttpServer)
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledAutoHEAD ["+strconv.FormatBool(autoHEAD)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledListDir 设置是否允许目录浏览,默认为false
 func (server *HttpServer) SetEnabledListDir(isEnabled bool) {
 	server.ServerConfig.EnabledListDir = isEnabled
-	logger.Logger().Debug("Dotweb:HttpServer SetEnabledListDir ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledListDir ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledSession 设置是否启用Session,默认为false
 func (server *HttpServer) SetEnabledSession(isEnabled bool) {
 	server.SessionConfig.EnabledSession = isEnabled
-	logger.Logger().Debug("Dotweb:HttpServer SetEnabledSession ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledSession ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledGzip 设置是否启用gzip,默认为false
 func (server *HttpServer) SetEnabledGzip(isEnabled bool) {
 	server.ServerConfig.EnabledGzip = isEnabled
-	logger.Logger().Debug("Dotweb:HttpServer SetEnabledGzip ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledGzip ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
+// SetEnabledIgnoreFavicon set IgnoreFavicon Enabled
+// default is false
 func (server *HttpServer) SetEnabledIgnoreFavicon(isEnabled bool) {
 	server.ServerConfig.EnabledIgnoreFavicon = isEnabled
-	logger.Logger().Debug("Dotweb:HttpServer SetEnabledIgnoreFavicon ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledIgnoreFavicon ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 	server.RegisterModule(getIgnoreFaviconModule())
+}
+
+// SetEnabledTLS set tls enabled
+// default is false
+// if it's true, must input certificate\private key fileName
+func (server *HttpServer) SetEnabledTLS(isEnabled bool, certFile, keyFile string) {
+	server.ServerConfig.EnabledTLS = isEnabled
+	server.ServerConfig.TLSCertFile = certFile
+	server.ServerConfig.TLSKeyFile = keyFile
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledTLS ["+strconv.FormatBool(isEnabled)+","+certFile+","+keyFile+"]", LogTarget_HttpServer)
 }
 
 // RegisterModule 添加处理模块
 func (server *HttpServer) RegisterModule(module *HttpModule) {
 	server.Modules = append(server.Modules, module)
-	logger.Logger().Debug("Dotweb:HttpServer RegisterModule ["+module.Name+"]", LogTarget_HttpServer)
+	logger.Logger().Debug("DotWeb:HttpServer RegisterModule ["+module.Name+"]", LogTarget_HttpServer)
 }
 
 type LogJson struct {

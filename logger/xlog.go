@@ -40,29 +40,26 @@ const (
 )
 
 func (l *xLog) Debug(log string, logTarget string) {
-	l.Log(log, logTarget, LogLevel_Debug)
+	l.log(log, logTarget, LogLevel_Debug, false)
 }
 
-func (l *xLog) DebugRaw(log string, logTarget string) {
+func (l *xLog) Print(log string, logTarget string) {
 	l.log(log, logTarget, LogLevel_Debug, true)
 }
 
 func (l *xLog) Info(log string, logTarget string) {
-	l.Log(log, logTarget, LogLevel_Info)
+	l.log(log, logTarget, LogLevel_Info, false)
 }
 
 func (l *xLog) Warn(log string, logTarget string) {
-	l.Log(log, logTarget, LogLevel_Warn)
+	l.log(log, logTarget, LogLevel_Warn, false)
 }
 
 func (l *xLog) Error(log string, logTarget string) {
-	l.Log(log, logTarget, LogLevel_Error)
+	l.log(log, logTarget, LogLevel_Error, false)
 }
 
-func (l *xLog) Log(log string, logTarget string, logLevel string) {
-	l.log(log, logTarget, logLevel, false)
-}
-
+// log push log into chan
 func (l *xLog) log(log string, logTarget string, logLevel string, isRaw bool) {
 	if l.enabledLog {
 		skip := 3

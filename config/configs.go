@@ -47,6 +47,9 @@ type (
 		EnabledAutoCORS      bool   `xml:"enabledautocors,attr"`      //设置是否自动跨域支持，若设置，默认“GET, POST, PUT, DELETE, OPTIONS”全部请求均支持跨域
 		EnabledIgnoreFavicon bool   `xml:"enabledignorefavicon,attr"` //设置是否忽略favicon.ico请求，若设置，网站将把所有favicon.ico请求直接空返回
 		Port                 int    `xml:"port,attr"`                 //端口
+		EnabledTLS           bool   `xml:"enabledtls,attr"`           //是否启用TLS模式
+		TLSCertFile          string `xml:"tlscertfile,attr"`          //TLS模式下Certificate证书文件地址
+		TLSKeyFile           string `xml:"tlskeyfile,attr"`           //TLS模式下秘钥文件地址
 		IndexPage            string `xml:"indexpage,attr"`            //默认index页面
 	}
 
