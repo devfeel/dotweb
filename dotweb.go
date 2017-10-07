@@ -305,14 +305,12 @@ func (app *DotWeb) MustStart() {
 func (app *DotWeb) ListenAndServe(addr string) error {
 	app.initServerEnvironment()
 	app.initInnerRouter()
-
 	if app.HttpServer.ServerConfig.EnabledTLS {
 		err := app.HttpServer.ListenAndServeTLS(addr, app.HttpServer.ServerConfig.TLSCertFile, app.HttpServer.ServerConfig.TLSKeyFile)
 		return err
-	} else {
-		err := app.HttpServer.ListenAndServe(addr)
-		return err
 	}
+	err := app.HttpServer.ListenAndServe(addr)
+	return err
 
 }
 
