@@ -315,9 +315,9 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 }
 
 // init inner routers
-func (ds *DotWeb) initInnerRouter() {
+func (app *DotWeb) initInnerRouter() {
 	//默认支持pprof信息查看
-	gInner := ds.HttpServer.Group("/dotweb")
+	gInner := app.HttpServer.Group("/dotweb")
 	gInner.GET("/debug/pprof/:key", initPProf)
 	gInner.GET("/debug/freemem", freeMemory)
 	gInner.GET("/state", showServerState)
@@ -368,11 +368,11 @@ func (app *DotWeb) initServerEnvironment() {
 }
 
 // DefaultHTTPErrorHandler default exception handler
-func (ds *DotWeb) DefaultHTTPErrorHandler(ctx Context, err error) {
+func (app *DotWeb) DefaultHTTPErrorHandler(ctx Context, err error) {
 	//输出内容
 	ctx.Response().Header().Set(HeaderContentType, CharsetUTF8)
 	//if in development mode, output the error info
-	if ds.IsDevelopmentMode() {
+	if app.IsDevelopmentMode() {
 		stack := string(debug.Stack())
 		ctx.WriteStringC(http.StatusInternalServerError, fmt.Sprintln(err)+stack)
 	} else {
@@ -382,14 +382,14 @@ func (ds *DotWeb) DefaultHTTPErrorHandler(ctx Context, err error) {
 
 // Close immediately stops the server.
 // It internally calls `http.Server#Close()`.
-func (ds *DotWeb) Close() error {
-	return ds.HttpServer.stdServer.Close()
+func (app *DotWeb) Close() error {
+	return app.HttpServer.stdServer.Close()
 }
 
 // Shutdown stops server the gracefully.
 // It internally calls `http.Server#Shutdown()`.
-func (ds *DotWeb) Shutdown(ctx context.Context) error {
-	return ds.HttpServer.stdServer.Shutdown(ctx)
+func (app *DotWeb) Shutdown(ctx context.Context) error {
+	return app.HttpServer.stdServer.Shutdown(ctx)
 }
 
 // HTTPNotFound simple notfound function for Context
