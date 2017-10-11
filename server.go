@@ -278,10 +278,18 @@ func (server *HttpServer) DELETE(path string, handle HttpHandle) RouterNode {
 	return server.Router().DELETE(path, handle)
 }
 
+// ServerFile is a shortcut for router.ServeFiles(path, filepath)
+// simple demo:server.ServerFile("/src/*filepath", "/var/www")
+func (server *HttpServer) ServerFile(path string, fileroot string) RouterNode {
+	return server.Router().ServerFile(path, fileroot)
+}
+
+// HiJack is a shortcut for router.HiJack(path, handle)
 func (server *HttpServer) HiJack(path string, handle HttpHandle) {
 	server.Router().HiJack(path, handle)
 }
 
+// WebSocket is a shortcut for router.WebSocket(path, handle)
 func (server *HttpServer) WebSocket(path string, handle HttpHandle) {
 	server.Router().WebSocket(path, handle)
 }

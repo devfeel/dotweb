@@ -1,5 +1,9 @@
 ## dotweb版本记录：
 
+#### Version 1.3.1
+* 增加HttpServer.ServerFile，以支持server快捷设置静态文件目录
+* 2017-10-11 22:00
+
 #### Version 1.3
 * 国庆迭代第三波
 * 增加TLS支持
