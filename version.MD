@@ -1,5 +1,18 @@
 ## dotweb版本记录：
 
+#### Version 1.3.2
+* 主要新增设置启用详细请求数据控制，新增MethodNotAllowedHandler自定义能力，完善数据统计逻辑
+* 新增设置启用详细请求数据控制：
+* 1) ServerStateInfo增加EnabledDetailRequestData，用于控制是否启用详细请求数据统计
+* 2) config.ServerConfig增加EnabledDetailRequestData设置，支持配置文件控制
+* 3) HttpServer增加SetEnabledDetailRequestData函数，用于代码设置是否启用详细请求数据统计
+* 4) fixed #63 状态数据，当url较多时，导致内存占用过大
+* 新增MethodNotAllowedHandler自定义能力
+* 1) dotweb增加DefaultMethodNotAllowedHandler、SetMethodNotAllowedHandle函数
+* 完善数据统计逻辑
+* 1) 404请求不计入详细请求数据统计
+* 2017-10-13 12:00
+
 #### Version 1.3.1
 * 增加HttpServer.ServerFile，以支持server快捷设置静态文件目录
 * 2017-10-11 22:00

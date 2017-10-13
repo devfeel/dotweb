@@ -254,7 +254,7 @@ func (ctx *HttpContext) Session() (state *session.SessionState) {
 		//return nil, errors.New("no effective http-server")
 		panic("no effective http-server")
 	}
-	if !ctx.httpServer.SessionConfig.EnabledSession {
+	if !ctx.httpServer.SessionConfig().EnabledSession {
 		//return nil, errors.New("http-server not enabled session")
 		panic("http-server not enabled session")
 	}
