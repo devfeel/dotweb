@@ -9,6 +9,7 @@
 * 4) fixed #63 状态数据，当url较多时，导致内存占用过大
 * 新增MethodNotAllowedHandler自定义能力
 * 1) dotweb增加DefaultMethodNotAllowedHandler、SetMethodNotAllowedHandle函数
+* 2) fixed #64 增加MethodNotAllowed自定义处理
 * 完善数据统计逻辑
 * 1) 404请求不计入详细请求数据统计
 * 2017-10-13 12:00
