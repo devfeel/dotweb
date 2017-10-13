@@ -195,8 +195,8 @@ func (app *DotWeb) SetConfig(config *config.Config) error {
 
 // StartServer start server with http port
 // if config the pprof, will be start pprof server
-func (app *DotWeb) StartServer(httpport int) error {
-	addr := ":" + strconv.Itoa(httpport)
+func (app *DotWeb) StartServer(httpPort int) error {
+	addr := ":" + strconv.Itoa(httpPort)
 	return app.ListenAndServe(addr)
 }
 
@@ -205,7 +205,7 @@ func (app *DotWeb) StartServer(httpport int) error {
 // if no set Server.Port, will be use DefaultHttpPort
 func (app *DotWeb) Start() error {
 	if app.Config == nil {
-		return errors.New("no config set!")
+		return errors.New("no config exists")
 	}
 	//start server
 	port := app.Config.Server.Port

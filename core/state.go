@@ -25,7 +25,7 @@ func init() {
 		TotalRequestCount:    0,
 		TotalErrorCount:      0,
 		IntervalRequestData:  NewItemContext(),
-		DetailRequestUrlData: NewItemContext(),
+		DetailRequestURLData: NewItemContext(),
 		IntervalErrorData:    NewItemContext(),
 		DetailErrorPageData:  NewItemContext(),
 		DetailErrorData:      NewItemContext(),
@@ -94,7 +94,7 @@ type ServerStateInfo struct {
 	//单位时间内请求数据 - 按分钟为单位
 	IntervalRequestData *ItemContext
 	//明细请求页面数据 - 以不带参数的访问url为key
-	DetailRequestUrlData *ItemContext
+	DetailRequestURLData *ItemContext
 	//该运行期间异常次数
 	TotalErrorCount uint64
 	//单位时间内异常次数 - 按分钟为单位
@@ -126,9 +126,9 @@ func (state *ServerStateInfo) ShowHtmlData() string {
 	data += "IntervalRequestData : " + jsonutil.GetJsonString(state.IntervalRequestData.GetCurrentMap())
 	state.IntervalRequestData.RUnlock()
 	data += "<br>"
-	state.DetailRequestUrlData.RLock()
-	data += "DetailRequestUrlData : " + jsonutil.GetJsonString(state.DetailRequestUrlData.GetCurrentMap())
-	state.DetailRequestUrlData.RUnlock()
+	state.DetailRequestURLData.RLock()
+	data += "DetailRequestUrlData : " + jsonutil.GetJsonString(state.DetailRequestURLData.GetCurrentMap())
+	state.DetailRequestURLData.RUnlock()
 	data += "<br>"
 	state.IntervalErrorData.RLock()
 	data += "IntervalErrorData : " + jsonutil.GetJsonString(state.IntervalErrorData.GetCurrentMap())
@@ -215,8 +215,8 @@ func (state *ServerStateInfo) handleInfo() {
 					if info.Code != http.StatusNotFound {
 						//set detail url data
 						key := strings.ToLower(info.URL)
-						val := state.DetailRequestUrlData.GetUInt64(key)
-						state.DetailRequestUrlData.Set(key, val+info.Num)
+						val := state.DetailRequestURLData.GetUInt64(key)
+						state.DetailRequestURLData.Set(key, val+info.Num)
 					}
 				}
 				//set interval data
