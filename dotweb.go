@@ -24,20 +24,25 @@ import (
 
 type (
 	DotWeb struct {
-		HttpServer       *HttpServer
-		cache            cache.Cache
-		OfflineServer    servers.Server
-		Config           *config.Config
-		Middlewares      []Middleware
-		ExceptionHandler ExceptionHandle
-		NotFoundHandler  NotFoundHandle
-		AppContext       *core.ItemContext
-		middlewareMap    map[string]MiddlewareFunc
-		middlewareMutex  *sync.RWMutex
+		HttpServer              *HttpServer
+		cache                   cache.Cache
+		OfflineServer           servers.Server
+		Config                  *config.Config
+		Middlewares             []Middleware
+		ExceptionHandler        ExceptionHandle
+		NotFoundHandler         NotFoundHandle
+		MethodNotAllowedHandler MethodNotAllowedHandle
+		AppContext              *core.ItemContext
+		middlewareMap           map[string]MiddlewareFunc
+		middlewareMutex         *sync.RWMutex
 	}
 
+	// ExceptionHandle 支持自定义异常处理代码能力
 	ExceptionHandle func(Context, error)
-	NotFoundHandle  func(http.ResponseWriter, *http.Request)
+	// MethodNotAllowedHandle fixed for #64 增加MethodNotAllowed自定义处理
+	MethodNotAllowedHandle func(Context)
+	// NotFoundHandle 支持自定义404处理代码能力
+	NotFoundHandle func(Context)
 
 	// Handle is a function that can be registered to a route to handle HTTP
 	// requests. Like http.HandlerFunc, but has a special parameter Context contain all request and response data.
@@ -153,6 +158,11 @@ func (app *DotWeb) SetNotFoundHandle(handler NotFoundHandle) {
 	app.NotFoundHandler = handler
 }
 
+// SetMethodNotAllowedHandle set custom 405 handler
+func (app *DotWeb) SetMethodNotAllowedHandle(handler MethodNotAllowedHandle) {
+	app.MethodNotAllowedHandler = handler
+}
+
 // SetPProfConfig set pprofserver config, default is disable
 // and don't use same port with StartServer
 func (app *DotWeb) SetPProfConfig(enabledPProf bool, httpport int) {
@@ -180,6 +190,59 @@ func (app *DotWeb) SetEnabledLog(enabledLog bool) {
 func (app *DotWeb) SetConfig(config *config.Config) error {
 	app.Config = config
 
+	return nil
+}
+
+// StartServer start server with http port
+// if config the pprof, will be start pprof server
+func (app *DotWeb) StartServer(httpPort int) error {
+	addr := ":" + strconv.Itoa(httpPort)
+	return app.ListenAndServe(addr)
+}
+
+// Start start app server with set config
+// If an exception occurs, will be return it
+// if no set Server.Port, will be use DefaultHttpPort
+func (app *DotWeb) Start() error {
+	if app.Config == nil {
+		return errors.New("no config exists")
+	}
+	//start server
+	port := app.Config.Server.Port
+	if port <= 0 {
+		port = DefaultHttpPort
+	}
+	return app.StartServer(port)
+}
+
+// MustStart start app server with set config
+// If an exception occurs, will be panic it
+// if no set Server.Port, will be use DefaultHttpPort
+func (app *DotWeb) MustStart() {
+	err := app.Start()
+	if err != nil {
+		panic(err)
+	}
+}
+
+// ListenAndServe start server with addr
+// not support pprof server auto start
+func (app *DotWeb) ListenAndServe(addr string) error {
+	app.initAppConfig()
+	app.initServerEnvironment()
+	app.initInnerRouter()
+	if app.HttpServer.ServerConfig().EnabledTLS {
+		err := app.HttpServer.ListenAndServeTLS(addr, app.HttpServer.ServerConfig().TLSCertFile, app.HttpServer.ServerConfig().TLSKeyFile)
+		return err
+	}
+	err := app.HttpServer.ListenAndServe(addr)
+	return err
+
+}
+
+// init App Config
+func (app *DotWeb) initAppConfig() {
+	config := app.Config
 	//log config
 	if config.App.LogPath != "" {
 		logger.SetLogPath(config.App.LogPath)
@@ -210,6 +273,11 @@ func (app *DotWeb) SetConfig(config *config.Config) error {
 	if config.Session.EnabledSession {
 		app.HttpServer.SetEnabledSession(config.Session.EnabledSession)
 		app.HttpServer.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP))
+	}
+
+	//设置启用详细请求数据统计
+	if config.Server.EnabledDetailRequestData {
+		core.GlobalState.EnabledDetailRequestData = config.Server.EnabledDetailRequestData
 	}
 
 	//register app's middleware
@@ -265,53 +333,6 @@ func (app *DotWeb) SetConfig(config *config.Config) error {
 			}
 		}
 	}
-	return nil
-}
-
-// StartServer start server with http port
-// if config the pprof, will be start pprof server
-func (app *DotWeb) StartServer(httpport int) error {
-	addr := ":" + strconv.Itoa(httpport)
-	return app.ListenAndServe(addr)
-}
-
-// Start start app server with set config
-// If an exception occurs, will be return it
-// if no set Server.Port, will be use DefaultHttpPort
-func (app *DotWeb) Start() error {
-	if app.Config == nil {
-		return errors.New("no config set!")
-	}
-	//start server
-	port := app.Config.Server.Port
-	if port <= 0 {
-		port = DefaultHttpPort
-	}
-	return app.StartServer(port)
-}
-
-// MustStart start app server with set config
-// If an exception occurs, will be panic it
-// if no set Server.Port, will be use DefaultHttpPort
-func (app *DotWeb) MustStart() {
-	err := app.Start()
-	if err != nil {
-		panic(err)
-	}
-}
-
-// ListenAndServe start server with addr
-// not support pprof server auto start
-func (app *DotWeb) ListenAndServe(addr string) error {
-	app.initServerEnvironment()
-	app.initInnerRouter()
-	if app.HttpServer.ServerConfig.EnabledTLS {
-		err := app.HttpServer.ListenAndServeTLS(addr, app.HttpServer.ServerConfig.TLSCertFile, app.HttpServer.ServerConfig.TLSKeyFile)
-		return err
-	}
-	err := app.HttpServer.ListenAndServe(addr)
-	return err
-
 }
 
 // init inner routers
@@ -325,14 +346,23 @@ func (app *DotWeb) initInnerRouter() {
 	gInner.GET("/query/:key", showQuery)
 }
 
+// init Server Environment
 func (app *DotWeb) initServerEnvironment() {
 	if app.ExceptionHandler == nil {
 		app.SetExceptionHandle(app.DefaultHTTPErrorHandler)
 	}
 
+	if app.NotFoundHandler == nil {
+		app.SetNotFoundHandle(app.DefaultNotFoundHandler)
+	}
+
+	if app.MethodNotAllowedHandler == nil {
+		app.SetMethodNotAllowedHandle(app.DefaultMethodNotAllowedHandler)
+	}
+
 	//init session manager
-	if app.HttpServer.SessionConfig.EnabledSession {
-		if app.HttpServer.SessionConfig.SessionMode == "" {
+	if app.HttpServer.SessionConfig().EnabledSession {
+		if app.HttpServer.SessionConfig().SessionMode == "" {
 			//panic("no set SessionConfig, but set enabledsession true")
 			logger.Logger().Warn("not set SessionMode, but set enabledsession true, now will use default runtime session", LogTarget_HttpServer)
 			app.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
@@ -378,6 +408,18 @@ func (app *DotWeb) DefaultHTTPErrorHandler(ctx Context, err error) {
 	} else {
 		ctx.WriteStringC(http.StatusInternalServerError, "Internal Server Error")
 	}
+}
+
+// DefaultNotFoundHandler default exception handler
+func (app *DotWeb) DefaultNotFoundHandler(ctx Context) {
+	ctx.Response().Header().Set(HeaderContentType, CharsetUTF8)
+	ctx.WriteStringC(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+}
+
+// DefaultMethodNotAllowedHandler default exception handler
+func (app *DotWeb) DefaultMethodNotAllowedHandler(ctx Context) {
+	ctx.Response().Header().Set(HeaderContentType, CharsetUTF8)
+	ctx.WriteStringC(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed))
 }
 
 // Close immediately stops the server.

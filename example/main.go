@@ -48,13 +48,14 @@ func main() {
 	//redis mode
 	//app.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6379", ""))
 
+	app.HttpServer.SetEnabledDetailRequestData(true)
+
 	//设置路由
 	InitRoute(app.HttpServer)
 
 	//自定义404输出
-	app.SetNotFoundHandle(func(w http.ResponseWriter, req *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("is't app's not found!"))
+	app.SetNotFoundHandle(func(ctx dotweb.Context) {
+		ctx.Response().Write(http.StatusNotFound, []byte("is't app's not found!"))
 	})
 
 	//设置HttpModule
