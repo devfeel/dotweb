@@ -64,21 +64,21 @@ type pool struct {
 
 //http request count info
 type RequestInfo struct {
-	Url  string
+	URL  string
 	Code int
 	Num  uint64
 }
 
 //error count info
 type ErrorInfo struct {
-	Url    string
+	URL    string
 	ErrMsg string
 	Num    uint64
 }
 
 //httpcode count info
 type HttpCodeInfo struct {
-	Url  string
+	URL  string
 	Code int
 	Num  uint64
 }
@@ -179,7 +179,7 @@ func (state *ServerStateInfo) AddErrorCount(page string, err error, num uint64) 
 func (state *ServerStateInfo) addRequestData(page string, code int, num uint64) {
 	//get from pool
 	info := state.infoPool.requestInfo.Get().(*RequestInfo)
-	info.Url = page
+	info.URL = page
 	info.Code = code
 	info.Num = num
 	state.dataChan_Request <- info
@@ -188,7 +188,7 @@ func (state *ServerStateInfo) addRequestData(page string, code int, num uint64) 
 func (state *ServerStateInfo) addErrorData(page string, err error, num uint64) {
 	//get from pool
 	info := state.infoPool.errorInfo.Get().(*ErrorInfo)
-	info.Url = page
+	info.URL = page
 	info.ErrMsg = err.Error()
 	info.Num = num
 	state.dataChan_Error <- info
@@ -197,7 +197,7 @@ func (state *ServerStateInfo) addErrorData(page string, err error, num uint64) {
 func (state *ServerStateInfo) addHTTPCodeData(page string, code int, num uint64) {
 	//get from pool
 	info := state.infoPool.httpCodeInfo.Get().(*HttpCodeInfo)
-	info.Url = page
+	info.URL = page
 	info.Code = code
 	info.Num = num
 	state.dataChan_HttpCode <- info
@@ -214,7 +214,7 @@ func (state *ServerStateInfo) handleInfo() {
 					//ignore 404 request
 					if info.Code != http.StatusNotFound {
 						//set detail url data
-						key := strings.ToLower(info.Url)
+						key := strings.ToLower(info.URL)
 						val := state.DetailRequestUrlData.GetUInt64(key)
 						state.DetailRequestUrlData.Set(key, val+info.Num)
 					}
@@ -230,7 +230,7 @@ func (state *ServerStateInfo) handleInfo() {
 		case info := <-state.dataChan_Error:
 			{
 				//set detail error page data
-				key := strings.ToLower(info.Url)
+				key := strings.ToLower(info.URL)
 				val := state.DetailErrorPageData.GetUInt64(key)
 				state.DetailErrorPageData.Set(key, val+info.Num)
 

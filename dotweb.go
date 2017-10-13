@@ -37,10 +37,12 @@ type (
 		middlewareMutex         *sync.RWMutex
 	}
 
+	// ExceptionHandle 支持自定义异常处理代码能力
 	ExceptionHandle func(Context, error)
-	//fixed for #64 增加MethodNotAllowed自定义处理
+	// MethodNotAllowedHandle fixed for #64 增加MethodNotAllowed自定义处理
 	MethodNotAllowedHandle func(Context)
-	NotFoundHandle         func(Context)
+	// NotFoundHandle 支持自定义404处理代码能力
+	NotFoundHandle func(Context)
 
 	// Handle is a function that can be registered to a route to handle HTTP
 	// requests. Like http.HandlerFunc, but has a special parameter Context contain all request and response data.
@@ -414,7 +416,7 @@ func (app *DotWeb) DefaultNotFoundHandler(ctx Context) {
 	ctx.WriteStringC(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 }
 
-// DefaultNotFoundHandler default exception handler
+// DefaultMethodNotAllowedHandler default exception handler
 func (app *DotWeb) DefaultMethodNotAllowedHandler(ctx Context) {
 	ctx.Response().Header().Set(HeaderContentType, CharsetUTF8)
 	ctx.WriteStringC(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed))

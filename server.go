@@ -368,7 +368,7 @@ func (server *HttpServer) SetEnabledTLS(isEnabled bool, certFile, keyFile string
 	logger.Logger().Debug("DotWeb:HttpServer SetEnabledTLS ["+strconv.FormatBool(isEnabled)+","+certFile+","+keyFile+"]", LogTarget_HttpServer)
 }
 
-// EnabledDetailRequestData 设置是否启用详细请求数据统计,默认为false
+// SetEnabledDetailRequestData 设置是否启用详细请求数据统计,默认为false
 func (server *HttpServer) SetEnabledDetailRequestData(isEnabled bool) {
 	server.ServerConfig().EnabledDetailRequestData = isEnabled
 	logger.Logger().Debug("DotWeb:HttpServer SetEnabledDetailRequestData ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
