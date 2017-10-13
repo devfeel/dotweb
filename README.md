@@ -205,18 +205,25 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 ## 7. Server Config
 #### HttpServer：
 * HttpServer.EnabledSession
+
   设置是否开启Session支持，目前支持runtime、redis两种模式，默认不开启
 * HttpServer.EnabledGzip
+
   设置是否开启Gzip支持，默认不开启
 * HttpServer.EnabledListDir
+
   设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
 * HttpServer.EnabledAutoHEAD
+
   设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
 * HttpServer.EnabledIgnoreFavicon
+
   设置是否忽略Favicon的请求，一般用于接口项目
 * HttpServer.EnabledDetailRequestData
+
   设置是否启用详细请求数据统计,默认为false，若设置该项，将启用ServerStateInfo中DetailRequestUrlData的统计
 * HttpServer.EnabledTLS
+
   设置是否启用TLS加密处理
 
 #### Run Mode
