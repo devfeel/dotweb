@@ -30,8 +30,8 @@ type (
 		Config                  *config.Config
 		Middlewares             []Middleware
 		ExceptionHandler        ExceptionHandle
-		NotFoundHandler         NotFoundHandle
-		MethodNotAllowedHandler MethodNotAllowedHandle
+		NotFoundHandler         StandardHandle // NotFoundHandler 支持自定义404处理代码能力
+		MethodNotAllowedHandler StandardHandle // MethodNotAllowedHandler fixed for #64 增加MethodNotAllowed自定义处理
 		AppContext              *core.ItemContext
 		middlewareMap           map[string]MiddlewareFunc
 		middlewareMutex         *sync.RWMutex
@@ -39,10 +39,9 @@ type (
 
 	// ExceptionHandle 支持自定义异常处理代码能力
 	ExceptionHandle func(Context, error)
-	// MethodNotAllowedHandle fixed for #64 增加MethodNotAllowed自定义处理
-	MethodNotAllowedHandle func(Context)
-	// NotFoundHandle 支持自定义404处理代码能力
-	NotFoundHandle func(Context)
+
+	// StandardHandle 标准处理函数，需传入Context参数
+	StandardHandle func(Context)
 
 	// Handle is a function that can be registered to a route to handle HTTP
 	// requests. Like http.HandlerFunc, but has a special parameter Context contain all request and response data.
@@ -73,7 +72,8 @@ func New() *DotWeb {
 	//init logger
 	logger.InitLog()
 
-	logDotLogo()
+	//print logo
+	printDotLogo()
 
 	logger.Logger().Debug("DotWeb Start New AppServer", LogTarget_HttpServer)
 	return app
@@ -154,12 +154,12 @@ func (app *DotWeb) SetExceptionHandle(handler ExceptionHandle) {
 }
 
 // SetNotFoundHandle set custom 404 handler
-func (app *DotWeb) SetNotFoundHandle(handler NotFoundHandle) {
+func (app *DotWeb) SetNotFoundHandle(handler StandardHandle) {
 	app.NotFoundHandler = handler
 }
 
 // SetMethodNotAllowedHandle set custom 405 handler
-func (app *DotWeb) SetMethodNotAllowedHandle(handler MethodNotAllowedHandle) {
+func (app *DotWeb) SetMethodNotAllowedHandle(handler StandardHandle) {
 	app.MethodNotAllowedHandler = handler
 }
 
@@ -489,7 +489,7 @@ func showQuery(ctx Context) error {
 	return nil
 }
 
-func logDotLogo() {
+func printDotLogo() {
 	logger.Logger().Print(`    ____           __                     __`, LogTarget_HttpServer)
 	logger.Logger().Print(`   / __ \  ____   / /_ _      __  ___    / /_`, LogTarget_HttpServer)
 	logger.Logger().Print(`  / / / / / __ \ / __/| | /| / / / _ \  / __ \`, LogTarget_HttpServer)
