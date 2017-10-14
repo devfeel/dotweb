@@ -50,7 +50,7 @@ type (
 )
 
 const (
-	DefaultHttpPort     = 80 //default http port
+	DefaultHttpPort     = 8080 //default http port; fixed for #70 UPDATE default http port 80 to 8080
 	RunMode_Development = "development"
 	RunMode_Production  = "production"
 )
