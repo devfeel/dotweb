@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+#### Version 1.3.3
+* fixed for #70 UPDATE default http port 80 to 8080
+* 增加StandardHandle，统一自定义Handle场景
+* 2017-10-14 20:00
+
 #### Version 1.3.2
 * 主要新增设置启用详细请求数据控制，新增MethodNotAllowedHandler自定义能力，完善数据统计逻辑
 * 新增设置启用详细请求数据控制：
