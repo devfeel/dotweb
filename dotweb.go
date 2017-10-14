@@ -49,7 +49,7 @@ type (
 )
 
 const (
-	DefaultHttpPort     = 8080 //default http port; fixed for #70 UPDATE default http port 80 to 8080
+	DefaultHTTPPort     = 8080 //DefaultHTTPPort default http port; fixed for #70 UPDATE default http port 80 to 8080
 	RunMode_Development = "development"
 	RunMode_Production  = "production"
 )
@@ -210,7 +210,7 @@ func (app *DotWeb) Start() error {
 	//start server
 	port := app.Config.Server.Port
 	if port <= 0 {
-		port = DefaultHttpPort
+		port = DefaultHTTPPort
 	}
 	return app.StartServer(port)
 }
