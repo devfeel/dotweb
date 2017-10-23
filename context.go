@@ -447,7 +447,7 @@ func (ctx *HttpContext) WriteString(contents ...interface{}) (int, error) {
 // WriteStringC write (httpCode, string, text/plain) to response
 func (ctx *HttpContext) WriteStringC(code int, contents ...interface{}) (int, error) {
 	content := fmt.Sprint(contents...)
-	return ctx.WriteBlobC(code, "", []byte(content))
+	return ctx.WriteBlobC(code, MIMETextPlainCharsetUTF8, []byte(content))
 }
 
 // WriteString write (200, string, text/html) to response
