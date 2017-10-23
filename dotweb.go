@@ -179,17 +179,20 @@ func (app *DotWeb) SetLogger(log logger.AppLog) {
 // SetLogPath set log root path
 func (app *DotWeb) SetLogPath(path string) {
 	logger.SetLogPath(path)
+	//fixed #74 dotweb.SetEnabledLog 无效
+	app.Config.App.LogPath = path
 }
 
 // SetEnabledLog set enabled log flag
 func (app *DotWeb) SetEnabledLog(enabledLog bool) {
 	logger.SetEnabledLog(enabledLog)
+	//fixed #74 dotweb.SetEnabledLog 无效
+	app.Config.App.EnabledLog = enabledLog
 }
 
 // SetConfig set config for app
 func (app *DotWeb) SetConfig(config *config.Config) error {
 	app.Config = config
-
 	return nil
 }
 
