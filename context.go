@@ -22,7 +22,7 @@ const (
 )
 
 const (
-	innerKey_AddView = "inner_AddView"
+	innerKeyAddView = "inner_AddView"
 )
 
 type (
@@ -437,12 +437,12 @@ func (ctx *HttpContext) ReadCookie(name string) (*http.Cookie, error) {
 // AddView add need parse views before View()
 func (ctx *HttpContext) AddView(names ...string) []string {
 	var views []string
-	item, exists := ctx.getInnerItems().Get(innerKey_AddView)
+	item, exists := ctx.getInnerItems().Get(innerKeyAddView)
 	if exists {
 		views = item.([]string)
 	}
 	views = append(views, names...)
-	ctx.getInnerItems().Set(innerKey_AddView, views)
+	ctx.getInnerItems().Set(innerKeyAddView, views)
 	return views
 }
 
@@ -456,7 +456,7 @@ func (ctx *HttpContext) ViewC(code int, name string) error {
 	ctx.response.SetStatusCode(code)
 	ctx.AddView(name)
 	var views []string
-	item, exists := ctx.getInnerItems().Get(innerKey_AddView)
+	item, exists := ctx.getInnerItems().Get(innerKeyAddView)
 	if exists {
 		views = item.([]string)
 	} else {
