@@ -23,7 +23,7 @@ func main() {
 	//set default template path, support multi path
 	//模板查找顺序从最后一个插入的元素开始往前找
 	//默认添加base、base/templates、base/views
-	app.HttpServer.Renderer().SetTemplatePath("d:/gotmp", "d:/tmp")
+	app.HttpServer.Renderer().SetTemplatePath("d:/gotmp/")
 
 	//启动 监控服务
 	//app.SetPProfConfig(true, 8081)
