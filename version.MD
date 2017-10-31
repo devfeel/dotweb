@@ -1,5 +1,14 @@
 ## dotweb版本记录：
 
+#### Version 1.3.4
+* 增强Render实现，新增多模板支持
+* Context新增AddView接口，用于传入多模板
+* 模板统一基于Renderer().SetTemplatePath设置的相对文件名
+* 特别的：布局模板需放在第一个被解析，比如：
+* ctx.AddView("_layout/layout.html")
+  err := ctx.View("dashbord/index.html")
+* 2017-10-31 10:00
+
 #### Version 1.3.3
 * fixed for #70 UPDATE default http port 80 to 8080
 * 增加StandardHandle，统一自定义Handle场景

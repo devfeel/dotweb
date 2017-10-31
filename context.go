@@ -21,6 +21,10 @@ const (
 	defaultHttpCode = http.StatusOK
 )
 
+const (
+	innerKeyAddView = "inner_AddView"
+)
+
 type (
 	Context interface {
 		Context() context.Context
@@ -61,6 +65,7 @@ type (
 		RemoveCookie(name string)
 		ReadCookieValue(name string) (string, error)
 		ReadCookie(name string) (*http.Cookie, error)
+		AddView(name ...string) []string
 		View(name string) error
 		ViewC(code int, name string) error
 		Write(code int, content []byte) (int, error)
@@ -93,6 +98,7 @@ type (
 		isEnd        bool //表示当前处理流程是否需要终止
 		httpServer   *HttpServer
 		sessionID    string
+		innerItems   *core.ItemContext
 		items        *core.ItemContext
 		viewData     *core.ItemContext
 		features     *xFeatureTools
@@ -110,6 +116,7 @@ func (ctx *HttpContext) reset(res *Response, r *Request, server *HttpServer, nod
 	ctx.isHijack = false
 	ctx.isWebSocket = false
 	ctx.httpServer = server
+	ctx.innerItems = nil
 	ctx.items = nil
 	ctx.isEnd = false
 	ctx.features = FeatureTools
@@ -130,6 +137,7 @@ func (ctx *HttpContext) release() {
 	ctx.httpServer = nil
 	ctx.isEnd = false
 	ctx.features = nil
+	ctx.innerItems = nil
 	ctx.items = nil
 	ctx.viewData = nil
 	ctx.sessionID = ""
@@ -224,7 +232,16 @@ func (ctx *HttpContext) Cache() cache.Cache {
 	return ctx.httpServer.DotApp.Cache()
 }
 
-// Items get request's tem context
+// getInnerItems get request's inner item context
+// lazy init when first use
+func (ctx *HttpContext) getInnerItems() *core.ItemContext {
+	if ctx.innerItems == nil {
+		ctx.innerItems = core.NewItemContext()
+	}
+	return ctx.innerItems
+}
+
+// Items get request's item context
 // lazy init when first use
 func (ctx *HttpContext) Items() *core.ItemContext {
 	if ctx.items == nil {
@@ -417,6 +434,18 @@ func (ctx *HttpContext) ReadCookie(name string) (*http.Cookie, error) {
 	return ctx.request.Cookie(name)
 }
 
+// AddView add need parse views before View()
+func (ctx *HttpContext) AddView(names ...string) []string {
+	var views []string
+	item, exists := ctx.getInnerItems().Get(innerKeyAddView)
+	if exists {
+		views = item.([]string)
+	}
+	views = append(views, names...)
+	ctx.getInnerItems().Set(innerKeyAddView, views)
+	return views
+}
+
 // View write view content to response
 func (ctx *HttpContext) View(name string) error {
 	return ctx.ViewC(defaultHttpCode, name)
@@ -425,7 +454,15 @@ func (ctx *HttpContext) View(name string) error {
 // ViewC write (httpCode, view content) to response
 func (ctx *HttpContext) ViewC(code int, name string) error {
 	ctx.response.SetStatusCode(code)
-	err := ctx.httpServer.Renderer().Render(ctx.response.Writer(), name, ctx.ViewData().GetCurrentMap(), ctx)
+	ctx.AddView(name)
+	var views []string
+	item, exists := ctx.getInnerItems().Get(innerKeyAddView)
+	if exists {
+		views = item.([]string)
+	} else {
+		return errors.New("get view info error")
+	}
+	err := ctx.httpServer.Renderer().Render(ctx.response.Writer(), ctx.ViewData().GetCurrentMap(), ctx, views...)
 	return err
 }
 
