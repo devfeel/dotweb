@@ -10,16 +10,21 @@ import (
 
 type Request struct {
 	*http.Request
+	httpCtx    *HttpContext
 	postBody   []byte
 	isReadBody bool
 	requestID  string
 }
 
 //reset response attr
-func (req *Request) reset(r *http.Request) {
+func (req *Request) reset(r *http.Request, ctx *HttpContext) {
 	req.Request = r
 	req.isReadBody = false
-	req.requestID = uuid.NewV4().String32()
+	if ctx.HttpServer().ServerConfig().EnabledRequestID {
+		req.requestID = uuid.NewV4().String32()
+	} else {
+		req.requestID = ""
+	}
 }
 
 func (req *Request) release() {
@@ -30,6 +35,8 @@ func (req *Request) release() {
 }
 
 // RequestID get unique ID with current request
+// must HttpServer.SetEnabledRequestID(true)
+// default is empty string
 func (req *Request) RequestID() string {
 	return req.requestID
 }

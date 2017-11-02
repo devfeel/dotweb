@@ -527,9 +527,9 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 	return func(ws *websocket.Conn) {
 		//get from pool
 		req := r.server.pool.request.Get().(*Request)
-		req.reset(ws.Request())
 		httpCtx := r.server.pool.context.Get().(*HttpContext)
 		httpCtx.reset(nil, req, r.server, nil, nil, handler)
+		req.reset(ws.Request(), httpCtx)
 		httpCtx.webSocket = &WebSocket{
 			Conn: ws,
 		}
