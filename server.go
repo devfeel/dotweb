@@ -140,9 +140,9 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			response := server.pool.response.Get().(*Response)
 			request := server.pool.request.Get().(*Request)
 			httpCtx := server.pool.context.Get().(*HttpContext)
+			httpCtx.reset(response, request, server, nil, nil, nil)
 			response.reset(w)
 			request.reset(req, httpCtx)
-			httpCtx.reset(response, request, server, nil, nil, nil)
 
 			//处理前置Module集合
 			for _, module := range server.Modules {

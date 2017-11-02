@@ -528,8 +528,8 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 		//get from pool
 		req := r.server.pool.request.Get().(*Request)
 		httpCtx := r.server.pool.context.Get().(*HttpContext)
-		req.reset(ws.Request(), httpCtx)
 		httpCtx.reset(nil, req, r.server, nil, nil, handler)
+		req.reset(ws.Request(), httpCtx)
 		httpCtx.webSocket = &WebSocket{
 			Conn: ws,
 		}
