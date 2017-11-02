@@ -138,10 +138,10 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		} else {
 			//get from pool
 			response := server.pool.response.Get().(*Response)
-			response.reset(w)
 			request := server.pool.request.Get().(*Request)
-			request.reset(req)
 			httpCtx := server.pool.context.Get().(*HttpContext)
+			response.reset(w)
+			request.reset(req, httpCtx)
 			httpCtx.reset(response, request, server, nil, nil, nil)
 
 			//处理前置Module集合
@@ -326,10 +326,20 @@ func (server *HttpServer) SetRenderer(r Renderer) {
 	server.render = r
 }
 
-// SetEnabledAutoHEAD set EnabledAutoHEAD true or false
-func (server *HttpServer) SetEnabledAutoHEAD(autoHEAD bool) {
-	server.ServerConfig().EnabledAutoHEAD = autoHEAD
-	logger.Logger().Debug("DotWeb:HttpServer SetEnabledAutoHEAD ["+strconv.FormatBool(autoHEAD)+"]", LogTarget_HttpServer)
+// SetEnabledAutoHEAD set route use auto head
+// set EnabledAutoHEAD true or false
+// default is false
+func (server *HttpServer) SetEnabledAutoHEAD(isEnabled bool) {
+	server.ServerConfig().EnabledAutoHEAD = isEnabled
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledAutoHEAD ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+}
+
+// SetEnabledRequestID set create unique request id per request
+// set EnabledRequestID true or false
+// default is false
+func (server *HttpServer) SetEnabledRequestID(isEnabled bool) {
+	server.ServerConfig().EnabledRequestID = isEnabled
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledRequestID ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledListDir 设置是否允许目录浏览,默认为false

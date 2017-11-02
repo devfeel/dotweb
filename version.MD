@@ -2,11 +2,13 @@
 
 #### Version 1.3.5
 * 提升UUID性能，调整UUID算法，新增UUID包
+* HttpServer新增设置是否启用唯一请求ID，默认不开启，开启后使用32位UUID，通过ctx.RequestID获取
+* 提供HttpServer.SetEnabledRequestID()函数
 * 提供uuid.V1\V2\V3\V4四类算法
 * move example/exception to devfeel/dotweb-example
 * move example/uploadfile to devfeel/dotweb-example
 * add cookbook link
-* 2017-11-02 14:00
+* 2017-11-02 16:00
 
 #### Version 1.3.4
 * 增强Render实现，新增多模板支持
