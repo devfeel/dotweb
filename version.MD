@@ -1,5 +1,22 @@
 ## dotweb版本记录：
 
+#### Version 1.3.5
+* 提升UUID性能，调整UUID算法，新增UUID包
+* 提供uuid.V1\V2\V3\V4四类算法
+* move example/exception to devfeel/dotweb-example
+* move example/uploadfile to devfeel/dotweb-example
+* add cookbook link
+* 2017-11-02 14:00
+
+#### Version 1.3.4
+* 增强Render实现，新增多模板支持
+* Context新增AddView接口，用于传入多模板
+* 模板统一基于Renderer().SetTemplatePath设置的相对文件名
+* 特别的：布局模板需放在第一个被解析，比如：
+* ctx.AddView("_layout/layout.html")
+  err := ctx.View("dashbord/index.html")
+* 2017-10-31 10:00
+
 #### Version 1.3.4
 * 增强Render实现，新增多模板支持
 * Context新增AddView接口，用于传入多模板

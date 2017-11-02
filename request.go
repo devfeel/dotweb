@@ -1,7 +1,7 @@
 package dotweb
 
 import (
-	"github.com/devfeel/dotweb/framework/crypto"
+	"github.com/devfeel/dotweb/framework/crypto/uuid"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -19,7 +19,7 @@ type Request struct {
 func (req *Request) reset(r *http.Request) {
 	req.Request = r
 	req.isReadBody = false
-	req.requestID = cryptos.GetUUID()
+	req.requestID = uuid.NewV4().String32()
 }
 
 func (req *Request) release() {
