@@ -19,7 +19,7 @@ type Request struct {
 func (req *Request) reset(r *http.Request) {
 	req.Request = r
 	req.isReadBody = false
-	req.requestID = uuid.NewV1().String32()
+	req.requestID = uuid.NewV4().String32()
 }
 
 func (req *Request) release() {
