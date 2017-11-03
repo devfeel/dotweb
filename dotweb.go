@@ -232,8 +232,12 @@ func (app *DotWeb) MustStart() {
 // not support pprof server auto start
 func (app *DotWeb) ListenAndServe(addr string) error {
 	app.initAppConfig()
+	app.initRegisterMiddleware()
+	app.initRegisterRoute()
+	app.initRegisterGroup()
 	app.initServerEnvironment()
 	app.initInnerRouter()
+
 	if app.HttpServer.ServerConfig().EnabledTLS {
 		err := app.HttpServer.ListenAndServeTLS(addr, app.HttpServer.ServerConfig().TLSCertFile, app.HttpServer.ServerConfig().TLSKeyFile)
 		return err
@@ -282,16 +286,25 @@ func (app *DotWeb) initAppConfig() {
 	if config.Server.EnabledDetailRequestData {
 		core.GlobalState.EnabledDetailRequestData = config.Server.EnabledDetailRequestData
 	}
+}
 
+// init register Middleware
+func (app *DotWeb) initRegisterMiddleware() {
+	config := app.Config
 	//register app's middleware
 	for _, m := range config.Middlewares {
-		if m.IsUse {
-			if mf, isok := app.GetMiddlewareFunc(m.Name); isok {
-				app.Use(mf())
-			}
+		if !m.IsUse {
+			continue
+		}
+		if mf, isok := app.GetMiddlewareFunc(m.Name); isok {
+			app.Use(mf())
 		}
 	}
+}
 
+// init register route
+func (app *DotWeb) initRegisterRoute() {
+	config := app.Config
 	//load router and register
 	for _, r := range config.Routers {
 		//fmt.Println("config.Routers ", i, " ", config.Routers[i])
@@ -299,38 +312,46 @@ func (app *DotWeb) initAppConfig() {
 			node := app.HttpServer.Router().RegisterRoute(strings.ToUpper(r.Method), r.Path, h)
 			//use middleware
 			for _, m := range r.Middlewares {
-				if m.IsUse {
-					if mf, isok := app.GetMiddlewareFunc(m.Name); isok {
-						node.Use(mf())
-					}
+				if !m.IsUse {
+					continue
+				}
+				if mf, isok := app.GetMiddlewareFunc(m.Name); isok {
+					node.Use(mf())
 				}
 			}
 		}
 	}
+}
 
+// init register route
+func (app *DotWeb) initRegisterGroup() {
+	config := app.Config
 	//support group
 	for _, v := range config.Groups {
-		if v.IsUse {
-			g := app.HttpServer.Group(v.Path)
-			//use middleware
-			for _, m := range v.Middlewares {
-				if m.IsUse {
-					if mf, isok := app.GetMiddlewareFunc(m.Name); isok {
-						g.Use(mf())
-					}
-				}
+		if !v.IsUse {
+			continue
+		}
+		g := app.HttpServer.Group(v.Path)
+		//use middleware
+		for _, m := range v.Middlewares {
+			if !m.IsUse {
+				continue
 			}
-			//init group's router
-			for _, r := range v.Routers {
-				if h, isok := app.HttpServer.Router().GetHandler(r.HandlerName); isok && r.IsUse {
-					node := g.RegisterRoute(strings.ToUpper(r.Method), r.Path, h)
-					//use middleware
-					for _, m := range r.Middlewares {
-						if m.IsUse {
-							if mf, isok := app.GetMiddlewareFunc(m.Name); isok {
-								node.Use(mf())
-							}
-						}
+			if mf, isok := app.GetMiddlewareFunc(m.Name); isok {
+				g.Use(mf())
+			}
+		}
+		//init group's router
+		for _, r := range v.Routers {
+			if h, isok := app.HttpServer.Router().GetHandler(r.HandlerName); isok && r.IsUse {
+				node := g.RegisterRoute(strings.ToUpper(r.Method), r.Path, h)
+				//use middleware
+				for _, m := range r.Middlewares {
+					if !m.IsUse {
+						continue
+					}
+					if mf, isok := app.GetMiddlewareFunc(m.Name); isok {
+						node.Use(mf())
 					}
 				}
 			}
