@@ -26,13 +26,14 @@ func init() {
 }
 
 // 重写生成连接池方法
-func newPool(redisIP string) *redis.Pool {
+// redisUrl: connection string, like "redis://:password@10.0.1.11:6379/0"
+func newPool(redisUrl string) *redis.Pool {
 
 	return &redis.Pool{
 		MaxIdle:   5,
 		MaxActive: 20, // max number of connections
 		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", redisIP)
+			c, err := redis.DialURL(redisUrl)
 			return c, err
 		},
 	}

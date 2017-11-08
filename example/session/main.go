@@ -15,30 +15,17 @@ func main() {
 	//设置dotserver日志目录
 	app.SetLogPath(file.GetCurrentDirectory())
 
-	//设置gzip开关
-	//app.HttpServer.SetEnabledGzip(true)
-
 	//设置Session开关
 	app.HttpServer.SetEnabledSession(true)
 
 	//设置Session配置
 	//runtime mode
-	app.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
+	//app.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
 	//redis mode
-	//app.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6371"))
+	app.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("redis://192.168.8.175:6379/1"))
 
 	//设置路由
 	InitRoute(app.HttpServer)
-
-	//设置HttpModule
-	//InitModule(app)
-
-	//启动 监控服务
-	//app.SetPProfConfig(true, 8081)
-
-	//全局容器
-	app.AppContext.Set("gstring", "gvalue")
-	app.AppContext.Set("gint", 1)
 
 	// 开始服务
 	port := 8080
@@ -57,7 +44,7 @@ func TestSession(ctx dotweb.Context) error {
 	user := UserInfo{UserName: "test", NickName: "testName"}
 	var userRead UserInfo
 
-	ctx.WriteString("welcome to dotweb - sessionid=> "+ctx.SessionID(), "\r\n")
+	ctx.WriteString("welcome to dotweb - CreateSession - sessionid=> "+ctx.SessionID(), "\r\n")
 	err := ctx.Session().Set("username", user)
 	if err != nil {
 		ctx.WriteString("session set error => ", err, "\r\n")
@@ -77,7 +64,7 @@ func TestReadSession(ctx dotweb.Context) error {
 
 	var userRead UserInfo
 
-	ctx.WriteString("welcome to dotweb - sessionid=> "+ctx.SessionID(), "\r\n")
+	ctx.WriteString("welcome to dotweb - ReadSession - sessionid=> "+ctx.SessionID(), "\r\n")
 
 	c := ctx.Session().Get("username")
 	if c != nil {
