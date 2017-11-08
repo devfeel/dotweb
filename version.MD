@@ -1,5 +1,13 @@
 ## dotweb版本记录：
 
+#### Version 1.3.6
+* 升级Redis库，当前版本为redigo V1.2.0
+* 修改Redis工具类中，pool的创建方法由Dial调整为DialUrl
+* 废弃：Redis连接字符串形式10.0.1.11:6379 不可再使用
+* 变更：Redis连接字符串形式变更为：redis://:password@10.0.1.11:6379/0
+* 更新 example/session
+* 2017-11-08 09:00
+
 #### Version 1.3.5
 * 提升UUID性能，调整UUID算法，新增UUID包
 * HttpServer新增设置是否启用唯一请求ID，默认不开启，开启后使用32位UUID，通过ctx.RequestID获取

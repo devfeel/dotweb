@@ -26,19 +26,20 @@ func init() {
 }
 
 // 重写生成连接池方法
-func newPool(redisIP string) *redis.Pool {
+// redisURL: connection string, like "redis://:password@10.0.1.11:6379/0"
+func newPool(redisURL string) *redis.Pool {
 
 	return &redis.Pool{
 		MaxIdle:   5,
 		MaxActive: 20, // max number of connections
 		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", redisIP)
+			c, err := redis.DialURL(redisURL)
 			return c, err
 		},
 	}
 }
 
-//获取指定Address的RedisClient
+//GetRedisClient 获取指定Address的RedisClient
 func GetRedisClient(address string) *RedisClient {
 	var redis *RedisClient
 	var mok bool
@@ -54,7 +55,7 @@ func GetRedisClient(address string) *RedisClient {
 	return redis
 }
 
-//获取指定key的内容, interface{}
+//GetObj 获取指定key的内容, interface{}
 func (rc *RedisClient) GetObj(key string) (interface{}, error) {
 	// 从连接池里面获得一个连接
 	conn := rc.pool.Get()
@@ -64,13 +65,13 @@ func (rc *RedisClient) GetObj(key string) (interface{}, error) {
 	return reply, errDo
 }
 
-//获取指定key的内容, string
+//Get 获取指定key的内容, string
 func (rc *RedisClient) Get(key string) (string, error) {
 	val, err := redis.String(rc.GetObj(key))
 	return val, err
 }
 
-//检查指定key是否存在
+//Exists 检查指定key是否存在
 func (rc *RedisClient) Exists(key string) (bool, error) {
 	// 从连接池里面获得一个连接
 	conn := rc.pool.Get()
@@ -84,7 +85,7 @@ func (rc *RedisClient) Exists(key string) (bool, error) {
 	return val > 0, err
 }
 
-//删除指定key
+//Del 删除指定key
 func (rc *RedisClient) Del(key string) (int64, error) {
 	// 从连接池里面获得一个连接
 	conn := rc.pool.Get()
@@ -98,7 +99,7 @@ func (rc *RedisClient) Del(key string) (int64, error) {
 	return val, err
 }
 
-//获取指定hashset的内容
+//HGet 获取指定hashset的内容
 func (rc *RedisClient) HGet(hashID string, field string) (string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
@@ -110,7 +111,7 @@ func (rc *RedisClient) HGet(hashID string, field string) (string, error) {
 	return val, err
 }
 
-//对存储在指定key的数值执行原子的加1操作
+//INCR 对存储在指定key的数值执行原子的加1操作
 func (rc *RedisClient) INCR(key string) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
@@ -122,7 +123,7 @@ func (rc *RedisClient) INCR(key string) (int, error) {
 	return val, err
 }
 
-//对存储在指定key的数值执行原子的减1操作
+//DECR 对存储在指定key的数值执行原子的减1操作
 func (rc *RedisClient) DECR(key string) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
@@ -134,7 +135,7 @@ func (rc *RedisClient) DECR(key string) (int, error) {
 	return val, err
 }
 
-//获取指定hashset的所有内容
+//HGetAll 获取指定hashset的所有内容
 func (rc *RedisClient) HGetAll(hashID string) (map[string]string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
@@ -142,7 +143,7 @@ func (rc *RedisClient) HGetAll(hashID string) (map[string]string, error) {
 	return reply, err
 }
 
-//设置指定hashset的内容
+//HSet 设置指定hashset的内容
 func (rc *RedisClient) HSet(hashID string, field string, val string) error {
 	conn := rc.pool.Get()
 	defer conn.Close()
@@ -150,7 +151,7 @@ func (rc *RedisClient) HSet(hashID string, field string, val string) error {
 	return err
 }
 
-//删除，并获得该列表中的最后一个元素，或阻塞，直到有一个可用
+//BRPop 删除，并获得该列表中的最后一个元素，或阻塞，直到有一个可用
 func (rc *RedisClient) BRPop(key string) (string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
@@ -162,7 +163,7 @@ func (rc *RedisClient) BRPop(key string) (string, error) {
 	}
 }
 
-//将所有指定的值插入到存于 key 的列表的头部
+//LPush 将所有指定的值插入到存于 key 的列表的头部
 func (rc *RedisClient) LPush(key string, val string) (int64, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
@@ -174,6 +175,7 @@ func (rc *RedisClient) LPush(key string, val string) (int64, error) {
 	}
 }
 
+//Set 设置指定Key/Value
 func (rc *RedisClient) Set(key string, val interface{}) (interface{}, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
@@ -181,7 +183,7 @@ func (rc *RedisClient) Set(key string, val interface{}) (interface{}, error) {
 	return val, err
 }
 
-//设置指定key的内容
+//SetWithExpire 设置指定key的内容
 func (rc *RedisClient) SetWithExpire(key string, val interface{}, timeOutSeconds int64) (interface{}, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
@@ -189,7 +191,7 @@ func (rc *RedisClient) SetWithExpire(key string, val interface{}, timeOutSeconds
 	return val, err
 }
 
-//设置指定key的过期时间
+//Expire 设置指定key的过期时间
 func (rc *RedisClient) Expire(key string, timeOutSeconds int64) (int64, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
@@ -197,7 +199,7 @@ func (rc *RedisClient) Expire(key string, timeOutSeconds int64) (int64, error) {
 	return val, err
 }
 
-//删除当前数据库里面的所有数据
+//FlushDB 删除当前数据库里面的所有数据
 //这个命令永远不会出现失败
 func (rc *RedisClient) FlushDB() {
 	conn := rc.pool.Get()
