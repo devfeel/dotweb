@@ -3,7 +3,8 @@
 #### Version 1.3.6
 * 升级Redis库，当前版本为redigo V1.2.0
 * 修改Redis工具类中，pool的创建方法由Dial调整为DialUrl
-* 连接字符串形式为：redis://:password@10.0.1.11:6379/0
+* 废弃：Redis连接字符串形式10.0.1.11:6379 不可再使用
+* 变更：Redis连接字符串形式变更为：redis://:password@10.0.1.11:6379/0
 * 更新 example/session
 * 2017-11-08 09:00
 
