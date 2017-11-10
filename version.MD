@@ -1,5 +1,14 @@
 ## dotweb版本记录：
 
+#### Version 1.3.7
+* 新增Classic初始化App方式，调整New初始化内容
+* 调整日志启用开关默认为false，可以通过SetEnabledLog(true)或者SetDevelopmentMode()启用
+* dotweb.New()仅初始化必要的组件，移除打印Logo，移除启动日志
+* dotweb.Classic()方式下，默认启用日志，默认启用RequestLog中间件，默认打印logo以及启动日志
+* dotweb.SetDevelopmentMode()在原有启用屏幕打印的基础上，增加默认开启日志开关
+* 新增 example/start
+* 2017-11-10 21:30
+
 #### Version 1.3.6
 * 升级Redis库，当前版本为redigo V1.2.0
 * 修改Redis工具类中，pool的创建方法由Dial调整为DialUrl
