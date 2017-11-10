@@ -231,7 +231,7 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 #### Run Mode
 * 新增development、production模式
 * 默认development，通过DotWeb.SetDevelopmentMode\DotWeb.SetProductionMode开启相关模式
-* 若设置development模式，未处理异常会输出异常详细信息，并且dotweb基础日志会同时向console输出
+* 若设置development模式，未处理异常会输出异常详细信息，同时启用日志开关，同时启用日志console打印
 * 未来会拓展更多运行模式的配置
 
 
