@@ -8,7 +8,7 @@ import (
 
 func main(){
 	app := dotweb.Classic()
-	app := dotweb.New()
+	//app := dotweb.New()
 	//开启development模式
 	app.SetDevelopmentMode()
 
