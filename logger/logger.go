@@ -29,7 +29,7 @@ type AppLog interface {
 var (
 	appLog         AppLog
 	DefaultLogPath string
-	EnabledLog     bool = true
+	EnabledLog     bool = false
 	EnabledConsole bool = false
 )
 

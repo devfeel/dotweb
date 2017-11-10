@@ -54,9 +54,8 @@ const (
 	RunMode_Production  = "production"
 )
 
-/*
-* 创建DotServer实例，返回指针
- */
+
+//New create and return DotApp instance
 func New() *DotWeb {
 	app := &DotWeb{
 		HttpServer:      NewHttpServer(),
@@ -71,10 +70,20 @@ func New() *DotWeb {
 
 	//init logger
 	logger.InitLog()
+	return app
+}
 
+// Classic create and return DotApp instance
+// 1.SetEnabledLog(true)
+// 2.use RequestLog Middleware
+// 3.print logo
+func Classic() *DotWeb {
+	app := New()
+
+	app.SetEnabledLog(true)
+	app.UseRequestLog()
 	//print logo
 	printDotLogo()
-
 	logger.Logger().Debug("DotWeb Start New AppServer", LogTarget_HttpServer)
 	return app
 }
@@ -118,8 +127,11 @@ func (app *DotWeb) IsDevelopmentMode() bool {
 }
 
 // SetDevelopmentMode set run mode on development mode
+// 1.SetEnabledLog(true)
+// 2.SetEnabledConsole(true)
 func (app *DotWeb) SetDevelopmentMode() {
 	app.Config.App.RunMode = RunMode_Development
+	app.SetEnabledLog(true)
 	logger.SetEnabledConsole(true)
 }
 
