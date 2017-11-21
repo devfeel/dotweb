@@ -1,10 +1,12 @@
 // redisclient
+
+// redis 命令的使用方式参考
+// http://doc.redisfans.com/index.html
 package redisutil
 
 import (
 	"github.com/garyburd/redigo/redis"
 	"sync"
-	"fmt"
 )
 
 type RedisClient struct {
@@ -78,20 +80,12 @@ func (rc *RedisClient) Exists(key string) (bool, error) {
 	conn := rc.pool.Get()
 	// 连接完关闭，其实没有关闭，是放回池里，也就是队列里面，等待下一个重用
 	defer conn.Close()
-	reply, errDo := conn.Do("EXISTS", key)
-	if errDo == nil && reply == nil {
-		return false, nil
-	}
-	val, err := redis.Int(reply, errDo)
-	return val > 0, err
+
+	reply, errDo := redis.Bool(conn.Do("EXISTS", key))
+	return reply, errDo
 }
 
-<<<<<<< HEAD
-
-//删除指定key
-=======
 //Del 删除指定key
->>>>>>> devfeel/master
 func (rc *RedisClient) Del(key string) (int64, error) {
 	// 从连接池里面获得一个连接
 	conn := rc.pool.Get()
@@ -102,18 +96,6 @@ func (rc *RedisClient) Del(key string) (int64, error) {
 		return 0, nil
 	}
 	val, err := redis.Int64(reply, errDo)
-	return val, err
-}
-
-//HGet 获取指定hashset的内容
-func (rc *RedisClient) HGet(hashID string, field string) (string, error) {
-	conn := rc.pool.Get()
-	defer conn.Close()
-	reply, errDo := conn.Do("HGET", hashID, field)
-	if errDo == nil && reply == nil {
-		return "", nil
-	}
-	val, err := redis.String(reply, errDo)
 	return val, err
 }
 
@@ -141,6 +123,59 @@ func (rc *RedisClient) DECR(key string) (int, error) {
 	return val, err
 }
 
+
+//Append 如果 key 已经存在并且是一个字符串， APPEND 命令将 value 追加到 key 原来的值的末尾。
+// 如果 key 不存在， APPEND 就简单地将给定 key 设为 value ，就像执行 SET key value 一样。
+func (rc *RedisClient) Append(key string, val interface{}) (interface{}, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+	reply, errDo := conn.Do("APPEND", key, val)
+	if errDo == nil && reply == nil {
+		return 0, nil
+	}
+	val, err := redis.Uint64(reply, errDo)
+	return val, err
+}
+
+//Set 设置指定Key/Value
+func (rc *RedisClient) Set(key string, val interface{}) (interface{}, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.String(conn.Do("SET", key, val))
+	return val, err
+}
+
+//SetWithExpire 设置指定key的内容
+func (rc *RedisClient) SetWithExpire(key string, val interface{}, timeOutSeconds int64) (interface{}, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.String(conn.Do("SET", key, val, "EX", timeOutSeconds))
+	return val, err
+}
+
+//SetNX  将 key 的值设为 value ，当且仅当 key 不存在。
+// 若给定的 key 已经存在，则 SETNX 不做任何动作。 成功返回1, 失败返回0
+func (rc *RedisClient) SetNX(key, value string) (interface{}, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+
+	val, err := conn.Do("SETNX", key, value)
+	return val, err
+}
+
+
+//HGet 获取指定hashset的内容
+func (rc *RedisClient) HGet(hashID string, field string) (string, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+	reply, errDo := conn.Do("HGET", hashID, field)
+	if errDo == nil && reply == nil {
+		return "", nil
+	}
+	val, err := redis.String(reply, errDo)
+	return val, err
+}
+
 //HGetAll 获取指定hashset的所有内容
 func (rc *RedisClient) HGetAll(hashID string) (map[string]string, error) {
 	conn := rc.pool.Get()
@@ -156,6 +191,44 @@ func (rc *RedisClient) HSet(hashID string, field string, val string) error {
 	_, err := conn.Do("HSET", hashID, field, val)
 	return err
 }
+
+//HSetNX 设置指定hashset的内容, 如果field不存在, 该操作无效
+func (rc *RedisClient) HSetNX(key, field, value string) (interface{}, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+
+	val, err := conn.Do("HSETNX", key, field, value)
+	return val, err
+}
+
+//HLen 返回哈希表 key 中域的数量, 当 key 不存在时，返回0
+func (rc *RedisClient) HLen(key string) (int64, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+
+	val, err := redis.Int64(conn.Do("HLEN", key))
+	return val, err
+}
+
+//HDel 设置指定hashset的内容, 如果field不存在, 该操作无效, 返回0
+func (rc *RedisClient) HDel(args ...interface{}) (int64, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+
+	val, err := redis.Int64(conn.Do("HDEL", args...))
+	return val, err
+}
+
+//HVals 返回哈希表 key 中所有域的值, 当 key 不存在时，返回空
+func (rc *RedisClient) HVals(key string) (interface{}, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+
+	val, err := redis.Strings(conn.Do("HVALS", key))
+	return val, err
+}
+
+
 
 //BRPop 删除，并获得该列表中的最后一个元素，或阻塞，直到有一个可用
 func (rc *RedisClient) BRPop(key string) (string, error) {
@@ -181,21 +254,6 @@ func (rc *RedisClient) LPush(key string, val string) (int64, error) {
 	}
 }
 
-//Set 设置指定Key/Value
-func (rc *RedisClient) Set(key string, val interface{}) (interface{}, error) {
-	conn := rc.pool.Get()
-	defer conn.Close()
-	val, err := conn.Do("SET", key, val)
-	return val, err
-}
-
-//SetWithExpire 设置指定key的内容
-func (rc *RedisClient) SetWithExpire(key string, val interface{}, timeOutSeconds int64) (interface{}, error) {
-	conn := rc.pool.Get()
-	defer conn.Close()
-	val, err := conn.Do("SET", key, val, "EX", timeOutSeconds)
-	return val, err
-}
 
 //Expire 设置指定key的过期时间
 func (rc *RedisClient) Expire(key string, timeOutSeconds int64) (int64, error) {
@@ -214,7 +272,6 @@ func (rc *RedisClient) FlushDB() {
 }
 
 
-
 //返回一个从连接池获取的redis连接,  需要手动释放redis连接
 func (rc *RedisClient) ConnGet() redis.Conn{
 	conn := rc.pool.Get()
@@ -223,38 +280,51 @@ func (rc *RedisClient) ConnGet() redis.Conn{
 }
 
 
-func (rc *RedisClient) Append(key string, val interface{}) (interface{}, error) {
+
+func (rc *RedisClient) SAdd(args ...interface{}) (int64, error){
 	conn := rc.pool.Get()
 	defer conn.Close()
-	reply, errDo := conn.Do("APPEND", key, val)
-	if errDo == nil && reply == nil {
-		return 0, nil
-	}
-	val, err := redis.Uint64(reply, errDo)
+
+	val, err := redis.Int64(conn.Do("SADD", args...))
 	return val, err
 }
 
-
-func (rc *RedisClient) SetNX(key, value string) (interface{}, error){
+func (rc *RedisClient) SCard(key string) (int64, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 
-	val, err := conn.Do("SETNX", key, value)
+	val, err := redis.Int64(conn.Do("SCARD", key))
 	return val, err
 }
 
-func (rc *RedisClient) HSetNX(key, field, value string) (interface{}, error) {
+func (rc *RedisClient) SPop(key string) (string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 
-	val, err := conn.Do("HSETNX", key, field, value)
+	val, err := redis.String(conn.Do("SPOP", key))
 	return val, err
 }
 
-func (rc *RedisClient) HLen(key string) (int64, error) {
+func (rc *RedisClient) SRandMember(args ...interface{}) (string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 
-	val, err := redis.Int64(conn.Do("HLEN", key))
+	val, err := redis.String(conn.Do("SRANDMEMBER", args...))
+	return val, err
+}
+
+func (rc *RedisClient) SRem(args ...interface{}) (string, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+
+	val, err := redis.String(conn.Do("SREM", args...))
+	return val, err
+}
+
+func (rc *RedisClient) DBSize()(int64, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+
+	val, err := redis.Int64(conn.Do("DBSIZE"))
 	return val, err
 }
