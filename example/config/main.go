@@ -34,7 +34,7 @@ func main() {
 	}
 
 	fmt.Println("dotweb.StartServer => " + fmt.Sprint(appConfig))
-	err = app.StartServer(appConfig.Server.Port)
+	err = app.Start()
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 

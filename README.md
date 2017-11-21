@@ -3,10 +3,13 @@ Simple and easy go web micro framework
 
 document: https://www.kancloud.cn/devfeel/dotweb/346608
 
+CookBook: https://www.kancloud.cn/devfeel/dotweb/439314
+
+[![Gitter](https://badges.gitter.im/devfeel/dotweb.svg)](https://gitter.im/devfeel-dotweb/wechat)
 [![GoDoc](https://godoc.org/github.com/devfeel/dotweb?status.svg)](https://godoc.org/github.com/devfeel/dotweb)
 [![Go Report Card](https://goreportcard.com/badge/github.com/devfeel/dotweb)](https://goreportcard.com/report/github.com/devfeel/dotweb)
 [![Go Build Card](https://travis-ci.org/devfeel/dotweb.svg?branch=master)](https://travis-ci.org/devfeel/dotweb.svg?branch=master)
-
+<a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=836e11667837ad674462a4a97fb21fba487cd3dff5b2e1ca0d7ea4c2324b4574"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="Golang-Devfeel" title="Golang-Devfeel"></a>
 ## 1. Install
 
 ```
@@ -36,6 +39,7 @@ func StartServer() error {
 ## 3. Features
 * 支持静态路由、参数路由、组路由
 * 路由支持文件/目录服务，支持设置是否允许目录浏览
+* HttpModule支持，支持路由之前全局级别的自定义代码能力
 * 中间件支持，支持App、Group、Router级别的设置 - https://github.com/devfeel/middleware
 * Feature支持，可绑定HttpServer全局启用
 * 支持STRING/JSON/JSONP/HTML格式输出
@@ -43,108 +47,14 @@ func StartServer() error {
 * 统一的日志处理
 * 支持Hijack与websocket
 * 内建Cache支持
+* 内建TLS支持
 * 支持接入第三方模板引擎（需实现dotweb.Renderer接口）
 * 模块可配置化，85%模块可通过配置维护
+* 自集成基础统计数据，并支持按分钟为单位的间隔时间统计数据输出
 
 #### Config Example
-dotweb.conf
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<config>
-<app logpath="d:/gotmp/" enabledlog="true" runmode="development"/>
-<offline offline="false" offlinetext="server is offline!" offlineurl="" />
-<server isrun="true" port="8080" indexpage="index.html" enabledgzip="false" enabledlistdir="false" enabledautohead="true"/>
-<session enabled="true" mode="runtime" timeout="20"/>
-<middlewares>
-    <middleware name="applog" isuse="true" />
-</middlewares>
-<routers>
-    <router method="GET" path="/index" handler="Index" isuse="true">
-         <middleware name="urllog" isuse="true" />
-    </router>
-    <router method="GET" path="/redirect" handler="Redirect" isuse="true"></router>
-    <router method="GET" path="/error" handler="DefaultError" isuse="true"></router>
-</routers>
-<groups>
-    <group path="/admin" isuse="true">
-        <middleware name="grouplog" isuse="true" />
-        <middleware name="simpleauth" isuse="true" />
-        <router method="GET" path="/login" handler="Login" isuse="true"></router>
-        <router method="GET" path="/logout" handler="Logout" isuse="true"></router>
-    </group>
-</groups>
-</config>　
-```
-dotweb.json.conf
-```json
-{
-    "app": {
-        "logpath": "d:/",
-        "enabledlog": false,
-        "runmode": "development",
-        "pprofport": 8081,
-        "enabledpprof": true
-    },
-    "offline": {
-        "offline": false,
-        "offlinetext": "",
-        "offlineurl": ""
-    },
-    "server": {
-        "enabledlistdir": false,
-        "enabledgzip": false,
-        "enabledautohead": true,
-        "enabledautocors": false,
-        "port": 8080
-    },
-    "session": {
-        "enabled": true,
-        "mode": "runtime",
-        "timeout": 20,
-        "serverip": ""
-    },
-    "routers": [
-        {
-            "method": "get",
-            "path": "/index",
-            "HandlerName": "Index",
-            "isuse": true
-        },
-        {
-            "method": "get",
-            "path": "/redirect",
-            "HandlerName": "Redirect",
-            "isuse": true
-        },
-        {
-            "method": "get",
-            "path": "/error",
-            "HandlerName": "DefaultError",
-            "isuse": true
-        }
-    ],
-    "Groups": [
-        {
-            "Path": "/admin",
-            "Routers": [
-                {
-                    "Method": "GET",
-                    "Path": "/login",
-                    "HandlerName": "Login",
-                    "IsUse": true
-                },
-                {
-                    "Method": "GET",
-                    "Path": "/logout",
-                    "HandlerName": "Logout",
-                    "IsUse": true
-                }
-            ],
-            "IsUse": true
-        }
-    ]
-}
-```
+* [dotweb.conf](https://github.com/devfeel/dotweb/blob/master/example/config/dotweb.conf)
+* [dotweb.json](https://github.com/devfeel/dotweb/blob/master/example/config/dotweb.json.conf)
 
 ## 4. Router
 #### 1) 常规路由
@@ -296,15 +206,32 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 
 ## 7. Server Config
 #### HttpServer：
-* HttpServer.EnabledSession 设置是否开启Session支持，目前支持runtime、redis两种模式，默认不开启
-* HttpServer.EnabledGzip 设置是否开启Gzip支持，默认不开启
-* HttpServer.EnabledListDir 设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
-* HttpServer.EnabledAutoHEAD 设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
+* HttpServer.EnabledSession
+
+  设置是否开启Session支持，目前支持runtime、redis两种模式，默认不开启
+* HttpServer.EnabledGzip
+
+  设置是否开启Gzip支持，默认不开启
+* HttpServer.EnabledListDir
+
+  设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
+* HttpServer.EnabledAutoHEAD
+
+  设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
+* HttpServer.EnabledIgnoreFavicon
+
+  设置是否忽略Favicon的请求，一般用于接口项目
+* HttpServer.EnabledDetailRequestData
+
+  设置是否启用详细请求数据统计,默认为false，若设置该项，将启用ServerStateInfo中DetailRequestUrlData的统计
+* HttpServer.EnabledTLS
+
+  设置是否启用TLS加密处理
 
 #### Run Mode
 * 新增development、production模式
 * 默认development，通过DotWeb.SetDevelopmentMode\DotWeb.SetProductionMode开启相关模式
-* 若设置development模式，未处理异常会输出异常详细信息
+* 若设置development模式，未处理异常会输出异常详细信息，同时启用日志开关，同时启用日志console打印
 * 未来会拓展更多运行模式的配置
 
 
@@ -352,4 +279,5 @@ redis - github.com/garyburd/redigo/redis
 目前已经有几位朋友在为框架一起做努力，我们将在合适的时间向大家展现，谢谢他们的支持！
 
 ## Contact Us
-QQ-Group：193409346
+#### QQ-Group：193409346 - <a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=836e11667837ad674462a4a97fb21fba487cd3dff5b2e1ca0d7ea4c2324b4574"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="Golang-Devfeel" title="Golang-Devfeel"></a>
+#### Gitter：[![Gitter](https://badges.gitter.im/devfeel/dotweb.svg)](https://gitter.im/devfeel-dotweb/wechat)
