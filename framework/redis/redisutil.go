@@ -4,6 +4,7 @@ package redisutil
 import (
 	"github.com/garyburd/redigo/redis"
 	"sync"
+	"fmt"
 )
 
 type RedisClient struct {
@@ -83,6 +84,7 @@ func (rc *RedisClient) Exists(key string) (bool, error) {
 	val, err := redis.Int(reply, errDo)
 	return val > 0, err
 }
+
 
 //删除指定key
 func (rc *RedisClient) Del(key string) (int64, error) {
@@ -203,4 +205,50 @@ func (rc *RedisClient) FlushDB() {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	conn.Do("FLUSHALL")
+}
+
+
+
+//返回一个从连接池获取的redis连接,  需要手动释放redis连接
+func (rc *RedisClient) ConnGet() redis.Conn{
+	conn := rc.pool.Get()
+
+	return conn
+}
+
+
+func (rc *RedisClient) Append(key string, val interface{}) (interface{}, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+	reply, errDo := conn.Do("APPEND", key, val)
+	if errDo == nil && reply == nil {
+		return 0, nil
+	}
+	val, err := redis.Uint64(reply, errDo)
+	return val, err
+}
+
+
+func (rc *RedisClient) SetNX(key, value string) (interface{}, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+
+	val, err := conn.Do("SETNX", key, value)
+	return val, err
+}
+
+func (rc *RedisClient) HSetNX(key, field, value string) (interface{}, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+
+	val, err := conn.Do("HSETNX", key, field, value)
+	return val, err
+}
+
+func (rc *RedisClient) HLen(key string) (int64, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+
+	val, err := redis.Int64(conn.Do("HLEN", key))
+	return val, err
 }
