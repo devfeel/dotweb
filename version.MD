@@ -1,5 +1,137 @@
 ## dotweb版本记录：
 
+#### Version 1.3.7
+* 新增Classic初始化App方式，调整New初始化内容
+* 调整日志启用开关默认为false，可以通过SetEnabledLog(true)或者SetDevelopmentMode()启用
+* dotweb.New()仅初始化必要的组件，移除打印Logo，移除启动日志
+* dotweb.Classic()方式下，默认启用日志，默认启用RequestLog中间件，默认打印logo以及启动日志
+* dotweb.SetDevelopmentMode()在原有启用屏幕打印的基础上，增加默认开启日志开关
+* 新增 example/start
+* 2017-11-10 21:30
+
+#### Version 1.3.6
+* 升级Redis库，当前版本为redigo V1.2.0
+* 修改Redis工具类中，pool的创建方法由Dial调整为DialUrl
+* 废弃：Redis连接字符串形式10.0.1.11:6379 不可再使用
+* 变更：Redis连接字符串形式变更为：redis://:password@10.0.1.11:6379/0
+* 更新 example/session
+* 2017-11-08 09:00
+
+#### Version 1.3.5
+* 提升UUID性能，调整UUID算法，新增UUID包
+* HttpServer新增设置是否启用唯一请求ID，默认不开启，开启后使用32位UUID，通过ctx.RequestID获取
+* 提供HttpServer.SetEnabledRequestID()函数
+* 提供uuid.V1\V2\V3\V4四类算法
+* move example/exception to devfeel/dotweb-example
+* move example/uploadfile to devfeel/dotweb-example
+* add cookbook link
+* 2017-11-02 16:00
+
+#### Version 1.3.4
+* 增强Render实现，新增多模板支持
+* Context新增AddView接口，用于传入多模板
+* 模板统一基于Renderer().SetTemplatePath设置的相对文件名
+* 特别的：布局模板需放在第一个被解析，比如：
+* ctx.AddView("_layout/layout.html")
+  err := ctx.View("dashbord/index.html")
+* 2017-10-31 10:00
+
+#### Version 1.3.4
+* 增强Render实现，新增多模板支持
+* Context新增AddView接口，用于传入多模板
+* 模板统一基于Renderer().SetTemplatePath设置的相对文件名
+* 特别的：布局模板需放在第一个被解析，比如：
+* ctx.AddView("_layout/layout.html")
+  err := ctx.View("dashbord/index.html")
+* 2017-10-31 10:00
+
+#### Version 1.3.3
+* fixed for #70 UPDATE default http port 80 to 8080
+* 增加StandardHandle，统一自定义Handle场景
+* 2017-10-14 20:00
+
+#### Version 1.3.2
+* 主要新增设置启用详细请求数据控制，新增MethodNotAllowedHandler自定义能力，完善数据统计逻辑
+* 新增设置启用详细请求数据控制：
+* 1) ServerStateInfo增加EnabledDetailRequestData，用于控制是否启用详细请求数据统计
+* 2) config.ServerConfig增加EnabledDetailRequestData设置，支持配置文件控制
+* 3) HttpServer增加SetEnabledDetailRequestData函数，用于代码设置是否启用详细请求数据统计
+* 4) fixed #63 状态数据，当url较多时，导致内存占用过大
+* 新增MethodNotAllowedHandler自定义能力
+* 1) dotweb增加DefaultMethodNotAllowedHandler、SetMethodNotAllowedHandle函数
+* 2) fixed #64 增加MethodNotAllowed自定义处理
+* 完善数据统计逻辑
+* 1) 404请求不计入详细请求数据统计
+* 2017-10-13 12:00
+
+#### Version 1.3.1
+* 增加HttpServer.ServerFile，以支持server快捷设置静态文件目录
+* 2017-10-11 22:00
+
+#### Version 1.3
+* 国庆迭代第三波
+* 增加TLS支持
+* 1)ServerConfig增加EnabledTLS\TLSCertFile\TLSKeyFile三个配置项
+* 2)HttpServer增加SetEnabledTLS方法
+* 3)增加example/tls目录
+* 移除：移除DotWeb.StartWithConfig方法，使用配置方式时需显式调用dotweb.SetConfig方法
+* 进一步完善默认日志输出
+* 2017-10-07 22:00
+
+#### Version 1.2.1
+* 启动日志增加dotweb ASCII art logo
+* 调整默认日志的时间毫秒段为4位
+* 2017-10-05 22:00
+
+#### Version 1.2
+* 国庆特别版 - 2017年的国庆，恰逢中秋双节，祝愿国家繁荣昌盛，祝愿代码艺术家们双节快乐！
+* 主要新增HttpModule模块、新增ServerConfig：EnabledIgnoreFavicon、完善HttpContext、完善debug日志输出
+* 【新增】HttpModule模块，提供路由之前全局级别的自定义代码能力
+* 1、新增module文件，将原dotweb文件中HttpMoule定义转移至module文件，新增Name属性
+* 2、新增getIgnoreFaviconModule函数用于创建基础Module用于EnabledIgnoreFavicon特性
+* 3、HttpServer新增RegisterModule函数，用于注册自定义HttpModule
+* 4、增加代码示例-根据参数动态变更访问路由 - package: example/httpmodule
+* 【新增】忽视favicon文件请求能力
+* 1、通过ServerConfig：EnabledIgnoreFavicon设置，默认不启用
+* 2、当启用该选项时，请求/facicon.ico文件时，将默认反馈空
+* 3、配置文件server节点增加enabledignorefavicon设置项
+* 【完善】HttpContext，使相关接口更清晰
+* 1、新增WriteHtml、WriteHtmlC函数，默认设置Context-Type:text/html; charset=utf-8
+* 3、注意，若在同一个请求期间，多次调用WriteHtml与WriteString，以最后一次调用的Context-Type为准
+* 【完善】debug日志输出，使dotweb启动过程更清晰
+* 1、新增Group创建日志
+* 2、新增ServerConfig设置日志
+* 3、新增设置Session参数日志
+* 4、新增Session初始化日志
+* 5、新增RegisterModule日志
+* 2017-10-03 14:00
+
+#### Version 1.1
+* 主要新增集成基础统计数据
+* 【新增】dotweb/state接口，提供基础统计数据，主要数据说明：
+* 1、ServerStartTime 服务启动时间
+* 2、TotalRequestCount 服务启动以来累计请求数（排除了"/dotweb/"下系统自有页面的访问数）
+* 3、TotalErrorCount 服务启动以来累计错误数
+* 4、IntervalRequestData 按1分钟为间隔，默认保存最近60分钟，每分钟的请求数（排除了"/dotweb/"下系统自有页面的访问数）
+* 5、DetailRequestPageData 服务启动以来，每个页面的累计请求数（排除了"/dotweb/"下系统自有页面的访问数）
+* 6、IntervalErrorData 按1分钟为间隔，默认保存最近60分钟，每分钟的错误数
+* 7、DetailErrorPageData 服务启动以来，每个页面的累计错误数
+* 8、DetailErrorData 服务启动以来，每个异常的累计数
+* 9、DetailHttpCodeData 服务启动以来，每个Http状态码的累计数
+* 10、可通过 {host}/dotweb/state 获取数据
+* 【新增】dotweb/state/interval接口，提供按分钟级的基础数据查询
+* 主要数据说明：
+* 1、Time 表示查询时间的字符串，最小单位为分钟，例如：201709251200
+* 2、RequestCount 单位时间内累计请求数（排除了"/dotweb/"下系统自有页面的访问数）
+* 3、ErrorCount 单位时间内累计错误数
+* 2017-09-25 13:00
+
+#### Version 1.0.1
+* 新增logger.SetEnabledConsole，当设置SetDevelopmentMode时自动开启
+* SetEnabledConsole：自动向console输出dotweb基础日志，便于开发人员调试阶段实时查看
+* 完善日志、注释
+* 2017-08-31 08:30
+
 #### Version 1.0.0
 * dotweb正式进入1.0时代，感谢大家！
 * HttpServer新增IndexPage(),返回当前Server默认首页名称，支持配置文件配置，如果未配置，自动读取默认值：DefaultIndexPage = "index.html"

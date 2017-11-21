@@ -56,14 +56,14 @@ func (f *xFeatureTools) SetGzip(httpCtx *HttpContext) {
 func (f *xFeatureTools) InitFeatures(server *HttpServer, httpCtx *HttpContext) {
 
 	//gzip
-	if server.ServerConfig.EnabledGzip {
+	if server.ServerConfig().EnabledGzip {
 		FeatureTools.SetGzip(httpCtx)
 	}
 
 	//session
 	//if exists client-sessionid, use it
 	//if not exists client-sessionid, new one
-	if server.SessionConfig.EnabledSession {
+	if server.SessionConfig().EnabledSession {
 		FeatureTools.SetSession(httpCtx)
 	}
 
@@ -78,7 +78,7 @@ func (f *xFeatureTools) InitFeatures(server *HttpServer, httpCtx *HttpContext) {
 }
 
 func (f *xFeatureTools) ReleaseFeatures(server *HttpServer, httpCtx *HttpContext) {
-	if server.ServerConfig.EnabledGzip {
+	if server.ServerConfig().EnabledGzip {
 		var w io.Writer
 		w = httpCtx.Response().Writer().(*gzipResponseWriter).Writer
 		w.(*gzip.Writer).Close()

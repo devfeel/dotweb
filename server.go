@@ -9,6 +9,10 @@ import (
 
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/feature"
+	"github.com/devfeel/dotweb/framework/file"
+	"github.com/devfeel/dotweb/framework/json"
+	"github.com/devfeel/dotweb/logger"
+	"strconv"
 )
 
 const (
@@ -18,25 +22,15 @@ const (
 )
 
 type (
-	// Deprecated: Use the Middleware instead
-	// HttpModule struct
-	HttpModule struct {
-		//响应请求时作为 HTTP 执行管线链中的第一个事件发生
-		OnBeginRequest func(Context)
-		//响应请求时作为 HTTP 执行管线链中的最后一个事件发生。
-		OnEndRequest func(Context)
-	}
-
 	//HttpServer定义
 	HttpServer struct {
 		stdServer      *http.Server
 		router         Router
+		Modules        []*HttpModule
 		DotApp         *DotWeb
 		sessionManager *session.SessionManager
 		lock_session   *sync.RWMutex
 		pool           *pool
-		ServerConfig   *config.ServerNode
-		SessionConfig  *config.SessionNode
 		binder         Binder
 		render         Renderer
 		offline        bool
@@ -70,11 +64,10 @@ func NewHttpServer() *HttpServer {
 				},
 			},
 		},
-		ServerConfig:  config.NewServerNode(),
-		SessionConfig: config.NewSessionNode(),
-		lock_session:  new(sync.RWMutex),
-		binder:        newBinder(),
-		Features:      &feature.Feature{},
+		Modules:      make([]*HttpModule, 0),
+		lock_session: new(sync.RWMutex),
+		binder:       newBinder(),
+		Features:     &feature.Feature{},
 	}
 	//设置router
 	server.router = NewRouter(server)
@@ -82,11 +75,51 @@ func NewHttpServer() *HttpServer {
 	return server
 }
 
+// ServerConfig a shortcut for App.Config.ServerConfig
+func (server *HttpServer) ServerConfig() *config.ServerNode {
+	return server.DotApp.Config.Server
+}
+
+// SessionConfig a shortcut for App.Config.SessionConfig
+func (server *HttpServer) SessionConfig() *config.SessionNode {
+	return server.DotApp.Config.Session
+}
+
 // ListenAndServe listens on the TCP network address srv.Addr and then
 // calls Serve to handle requests on incoming connections.
 func (server *HttpServer) ListenAndServe(addr string) error {
 	server.stdServer.Addr = addr
+	logger.Logger().Debug("DotWeb:HttpServer ListenAndServe ["+addr+"]", LogTarget_HttpServer)
 	return server.stdServer.ListenAndServe()
+}
+
+// ListenAndServeTLS listens on the TCP network address srv.Addr and
+// then calls Serve to handle requests on incoming TLS connections.
+// Accepted connections are configured to enable TCP keep-alives.
+//
+// Filenames containing a certificate and matching private key for the
+// server must be provided if neither the Server's TLSConfig.Certificates
+// nor TLSConfig.GetCertificate are populated. If the certificate is
+// signed by a certificate authority, the certFile should be the
+// concatenation of the server's certificate, any intermediates, and
+// the CA's certificate.
+//
+// If srv.Addr is blank, ":https" is used.
+//
+// ListenAndServeTLS always returns a non-nil error.
+func (server *HttpServer) ListenAndServeTLS(addr string, certFile, keyFile string) error {
+	server.stdServer.Addr = addr
+	//check tls config
+	if !file.Exist(certFile) {
+		logger.Logger().Error("DotWeb:HttpServer ListenAndServeTLS ["+addr+","+certFile+","+keyFile+"] error => Server EnabledTLS is true, but TLSCertFile not exists", LogTarget_HttpServer)
+		panic("Server EnabledTLS is true, but TLSCertFile not exists")
+	}
+	if !file.Exist(keyFile) {
+		logger.Logger().Error("DotWeb:HttpServer ListenAndServeTLS ["+addr+","+certFile+","+keyFile+"] error => Server EnabledTLS is true, but TLSKeyFile not exists", LogTarget_HttpServer)
+		panic("Server EnabledTLS is true, but TLSKeyFile not exists")
+	}
+	logger.Logger().Debug("DotWeb:HttpServer ListenAndServeTLS ["+addr+","+certFile+","+keyFile+"]", LogTarget_HttpServer)
+	return server.stdServer.ListenAndServeTLS(certFile, keyFile)
 }
 
 // ServeHTTP make sure request can be handled correctly
@@ -94,6 +127,8 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	//针对websocket与调试信息特殊处理
 	if checkIsWebSocketRequest(req) {
 		http.DefaultServeMux.ServeHTTP(w, req)
+		//增加状态计数
+		core.GlobalState.AddRequestCount(req.URL.Path, defaultHttpCode, 1)
 	} else {
 		//设置header信息
 		w.Header().Set(HeaderServer, DefaultServerName)
@@ -103,16 +138,32 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		} else {
 			//get from pool
 			response := server.pool.response.Get().(*Response)
-			response.reset(w)
 			request := server.pool.request.Get().(*Request)
-			request.reset(req)
 			httpCtx := server.pool.context.Get().(*HttpContext)
 			httpCtx.reset(response, request, server, nil, nil, nil)
+			response.reset(w)
+			request.reset(req, httpCtx)
+
+			//处理前置Module集合
+			for _, module := range server.Modules {
+				if module.OnBeginRequest != nil {
+					module.OnBeginRequest(httpCtx)
+				}
+			}
+
+			if !httpCtx.IsEnd() {
+				server.Router().ServeHTTP(httpCtx)
+			}
+
+			//处理后置Module集合
+			for _, module := range server.Modules {
+				if module.OnEndRequest != nil {
+					module.OnEndRequest(httpCtx)
+				}
+			}
 
 			//增加状态计数
-			core.GlobalState.AddRequestCount(1)
-
-			server.Router().ServeHTTP(httpCtx)
+			core.GlobalState.AddRequestCount(httpCtx.Request().Path(), httpCtx.Response().HttpCode(), 1)
 
 			//release response
 			response.release()
@@ -139,27 +190,28 @@ func (server *HttpServer) SetOffline(offline bool, offlineText string, offlineUr
 
 // IndexPage default index page name
 func (server *HttpServer) IndexPage() string {
-	if server.ServerConfig.IndexPage == "" {
+	if server.ServerConfig().IndexPage == "" {
 		return DefaultIndexPage
 	} else {
-		return server.ServerConfig.IndexPage
+		return server.ServerConfig().IndexPage
 	}
 }
 
 // SetSessionConfig set session store config
 func (server *HttpServer) SetSessionConfig(storeConfig *session.StoreConfig) {
 	//sync session config
-	server.SessionConfig.Timeout = storeConfig.Maxlifetime
-	server.SessionConfig.SessionMode = storeConfig.StoreName
-	server.SessionConfig.ServerIP = storeConfig.ServerIP
+	server.SessionConfig().Timeout = storeConfig.Maxlifetime
+	server.SessionConfig().SessionMode = storeConfig.StoreName
+	server.SessionConfig().ServerIP = storeConfig.ServerIP
+	logger.Logger().Debug("DotWeb:HttpServer SetSessionConfig ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
 }
 
 // InitSessionManager init session manager
 func (server *HttpServer) InitSessionManager() {
 	storeConfig := new(session.StoreConfig)
-	storeConfig.Maxlifetime = server.SessionConfig.Timeout
-	storeConfig.StoreName = server.SessionConfig.SessionMode
-	storeConfig.ServerIP = server.SessionConfig.ServerIP
+	storeConfig.Maxlifetime = server.SessionConfig().Timeout
+	storeConfig.StoreName = server.SessionConfig().SessionMode
+	storeConfig.ServerIP = server.SessionConfig().ServerIP
 
 	if server.sessionManager == nil {
 		//设置Session
@@ -172,6 +224,7 @@ func (server *HttpServer) InitSessionManager() {
 		}
 		server.lock_session.Unlock()
 	}
+	logger.Logger().Debug("DotWeb:HttpServer InitSessionManager ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
 }
 
 // setDotApp 关联当前HttpServer实例对应的DotServer实例
@@ -181,7 +234,7 @@ func (server *HttpServer) setDotApp(dotApp *DotWeb) {
 
 // GetSessionManager get session manager in current httpserver
 func (server *HttpServer) GetSessionManager() *session.SessionManager {
-	if !server.SessionConfig.EnabledSession {
+	if !server.SessionConfig().EnabledSession {
 		return nil
 	}
 	return server.sessionManager
@@ -233,10 +286,18 @@ func (server *HttpServer) DELETE(path string, handle HttpHandle) RouterNode {
 	return server.Router().DELETE(path, handle)
 }
 
+// ServerFile is a shortcut for router.ServeFiles(path, filepath)
+// simple demo:server.ServerFile("/src/*filepath", "/var/www")
+func (server *HttpServer) ServerFile(path string, fileroot string) RouterNode {
+	return server.Router().ServerFile(path, fileroot)
+}
+
+// HiJack is a shortcut for router.HiJack(path, handle)
 func (server *HttpServer) HiJack(path string, handle HttpHandle) {
 	server.Router().HiJack(path, handle)
 }
 
+// WebSocket is a shortcut for router.WebSocket(path, handle)
 func (server *HttpServer) WebSocket(path string, handle HttpHandle) {
 	server.Router().WebSocket(path, handle)
 }
@@ -265,24 +326,68 @@ func (server *HttpServer) SetRenderer(r Renderer) {
 	server.render = r
 }
 
-// SetEnabledAutoHEAD set EnabledAutoHEAD true or false
-func (server *HttpServer) SetEnabledAutoHEAD(autoHEAD bool) {
-	server.ServerConfig.EnabledAutoHEAD = autoHEAD
+// SetEnabledAutoHEAD set route use auto head
+// set EnabledAutoHEAD true or false
+// default is false
+func (server *HttpServer) SetEnabledAutoHEAD(isEnabled bool) {
+	server.ServerConfig().EnabledAutoHEAD = isEnabled
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledAutoHEAD ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+}
+
+// SetEnabledRequestID set create unique request id per request
+// set EnabledRequestID true or false
+// default is false
+func (server *HttpServer) SetEnabledRequestID(isEnabled bool) {
+	server.ServerConfig().EnabledRequestID = isEnabled
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledRequestID ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledListDir 设置是否允许目录浏览,默认为false
 func (server *HttpServer) SetEnabledListDir(isEnabled bool) {
-	server.ServerConfig.EnabledListDir = isEnabled
+	server.ServerConfig().EnabledListDir = isEnabled
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledListDir ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledSession 设置是否启用Session,默认为false
 func (server *HttpServer) SetEnabledSession(isEnabled bool) {
-	server.SessionConfig.EnabledSession = isEnabled
+	server.SessionConfig().EnabledSession = isEnabled
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledSession ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledGzip 设置是否启用gzip,默认为false
 func (server *HttpServer) SetEnabledGzip(isEnabled bool) {
-	server.ServerConfig.EnabledGzip = isEnabled
+	server.ServerConfig().EnabledGzip = isEnabled
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledGzip ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+}
+
+// SetEnabledIgnoreFavicon set IgnoreFavicon Enabled
+// default is false
+func (server *HttpServer) SetEnabledIgnoreFavicon(isEnabled bool) {
+	server.ServerConfig().EnabledIgnoreFavicon = isEnabled
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledIgnoreFavicon ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	server.RegisterModule(getIgnoreFaviconModule())
+}
+
+// SetEnabledTLS set tls enabled
+// default is false
+// if it's true, must input certificate\private key fileName
+func (server *HttpServer) SetEnabledTLS(isEnabled bool, certFile, keyFile string) {
+	server.ServerConfig().EnabledTLS = isEnabled
+	server.ServerConfig().TLSCertFile = certFile
+	server.ServerConfig().TLSKeyFile = keyFile
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledTLS ["+strconv.FormatBool(isEnabled)+","+certFile+","+keyFile+"]", LogTarget_HttpServer)
+}
+
+// SetEnabledDetailRequestData 设置是否启用详细请求数据统计,默认为false
+func (server *HttpServer) SetEnabledDetailRequestData(isEnabled bool) {
+	server.ServerConfig().EnabledDetailRequestData = isEnabled
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledDetailRequestData ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+}
+
+// RegisterModule 添加处理模块
+func (server *HttpServer) RegisterModule(module *HttpModule) {
+	server.Modules = append(server.Modules, module)
+	logger.Logger().Debug("DotWeb:HttpServer RegisterModule ["+module.Name+"]", LogTarget_HttpServer)
 }
 
 type LogJson struct {

@@ -54,6 +54,11 @@ func (r *Response) SetWriter(w http.ResponseWriter) *Response {
 	return r
 }
 
+//HttpCode return http code format int
+func (r *Response) HttpCode() int {
+	return r.Status
+}
+
 func (r *Response) Body() []byte {
 	return r.body
 }

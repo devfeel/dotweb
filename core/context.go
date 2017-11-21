@@ -80,6 +80,17 @@ func (ctx *ItemContext) GetInt(key string) int {
 	return value.(int)
 }
 
+/*
+* 读取指定key在AppContext中的内容，以int格式输出
+ */
+func (ctx *ItemContext) GetUInt64(key string) uint64 {
+	value, exists := ctx.Get(key)
+	if !exists {
+		return 0
+	}
+	return value.(uint64)
+}
+
 //check exists key
 func (ctx *ItemContext) Exists(key string) bool {
 	_, exists := ctx.contextMap[key]

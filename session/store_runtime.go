@@ -32,8 +32,10 @@ func (store *RuntimeStore) SessionRead(sessionId string) (*SessionState, error) 
 		return element.Value.(*SessionState), nil
 	}
 	store.lock.RUnlock()
-	store.lock.Lock()
+
+	//if sessionId of state not exist, create a new state
 	state := NewSessionState(store, sessionId, make(map[interface{}]interface{}))
+	store.lock.Lock()
 	element := store.list.PushFront(state)
 	store.sessions[sessionId] = element
 	store.lock.Unlock()
@@ -52,15 +54,17 @@ func (store *RuntimeStore) SessionExist(sessionId string) bool {
 
 //SessionUpdate update session state in store
 func (store *RuntimeStore) SessionUpdate(state *SessionState) error {
-
-	if element, ok := store.sessions[state.sessionId]; ok{	//state has exist
+	store.lock.RLock()
+	if element, ok := store.sessions[state.sessionId]; ok { //state has exist
 		go store.SessionAccess(state.sessionId)
-		element.Value.(*SessionState).values = state.values		//only assist update whole session state
+		store.lock.RUnlock()
+		element.Value.(*SessionState).values = state.values //only assist update whole session state
 		return nil
 	}
+	store.lock.RUnlock()
 
 	//if sessionId of state not exist, create a new state
-	new_state := NewSessionState(store,state.sessionId,state.values)
+	new_state := NewSessionState(store, state.sessionId, state.values)
 	store.lock.Lock()
 	new_element := store.list.PushFront(new_state)
 	store.sessions[state.sessionId] = new_element
