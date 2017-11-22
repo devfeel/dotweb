@@ -55,8 +55,30 @@ func StartServer() error {
 #### Config Example
 * [dotweb.conf](https://github.com/devfeel/dotweb/blob/master/example/config/dotweb.conf)
 * [dotweb.json](https://github.com/devfeel/dotweb/blob/master/example/config/dotweb.json.conf)
+ 
+## 4. Performance
 
-## 4. Router
+DotWeb | 1.9.2 | 16core16G |   |   |   |   |   |   |   |   |   |   |  
+-- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | --
+cpu | 内存 | Samples | Average | Median | 90%Line | 95%Line | 99%Line | Min | Max | Error% | Throughput | Received KB/Sec | Send KB/Sec
+40% | 39M | 15228356 | 19 | 4 | 43 | 72 | 204 | 0 | 2070 | 0.00% | 48703.47 | 7514.79 | 8656.28
+40% | 42M | 15485189 | 18 | 4 | 41 | 63 | 230 | 0 | 3250 | 0.00% | 49512.99 | 7639.7 | 8800.16
+40% | 44M | 15700385 | 18 | 3 | 41 | 64 | 233 | 0 | 2083 | 0.00% | 50203.32 | 7746.22 | 8922.86
+  |   |   |   |   |   |   |   |   |   |   |   |   |  
+ECHO | 1.9.2 | 16core16G |   |   |   |   |   |   |   |   |   |   |  
+cpu | 内存 | Samples | Average | Median | 90%Line | 95%Line | 99%Line | Min | Max | Error% | Throughput | Received KB/Sec | Send KB/Sec
+38% | 35M | 15307586 | 19 | 4 | 44 | 76 | 181 | 0 | 1808 | 0.00% | 48951.22 | 6166.71 | 9034.94
+36% | 35M | 15239058 | 19 | 4 | 45 | 76 | 178 | 0 | 2003 | 0.00% | 48734.26 | 6139.37 | 8994.9
+37% | 37M | 15800585 | 18 | 3 | 41 | 66 | 229 | 0 | 2355 | 0.00% | 50356.09 | 6343.68 | 9294.24
+  |   |   |   |   |   |   |   |   |   |   |   |   |  
+Gin  |  1.9.2 |  16core16G  |   |   |   |   |   |   |   |   |   |   |  
+cpu | 内存 | Samples | Average | Median | 90%Line | 95%Line | 99%Line | Min | Max | Error% | Throughput | Received KB/Sec | Send KB/Sec
+36% | 36M | 15109143 | 19 | 6 | 44 | 71 | 175 | 0 | 3250 | 0.00% | 48151.87 | 5877.91 | 8746.33
+36% | 40M | 15255749 | 19 | 5 | 43 | 70 | 189 | 0 | 3079 | 0.00% | 48762.53 | 5952.45 | 8857.25
+36% | 40M | 15385401 | 18 | 4 | 42 | 66 | 227 | 0 | 2312 | 0.00% | 49181.03 | 6003.54 | 8933.27
+
+
+## 5. Router
 #### 1) 常规路由
 * 支持GET\POST\HEAD\OPTIONS\PUT\PATCH\DELETE 这几类请求方法
 * 支持HiJack\WebSocket\ServerFile三类特殊应用
@@ -138,7 +160,7 @@ test：
 <br>curl http://127.0.0.1/user/profile
 
 
-## 5. Binder
+## 6. Binder
 * HttpContext.Bind(interface{})
 * Support data from json、xml、Form
 ```go
@@ -158,7 +180,7 @@ func(ctx *dotweb.HttpContext) TestBind{
 
 ```
 
-## 6. Middleware
+## 7. Middleware
 #### Middleware
 * 支持粒度：App、Group、RouterNode
 * DotWeb.Use(m ...Middleware)
@@ -204,7 +226,7 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 }
 ```
 
-## 7. Server Config
+## 8. Server Config
 #### HttpServer：
 * HttpServer.EnabledSession
 
@@ -235,7 +257,7 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 * 未来会拓展更多运行模式的配置
 
 
-## 8. Exception
+## 9. Exception
 #### 500 error
 * Default: 当发生未处理异常时，会根据RunMode向页面输出默认错误信息或者具体异常信息，并返回 500 错误头
 * User-defined: 通过DotServer.SetExceptionHandle(handler *ExceptionHandle)实现自定义异常处理逻辑
@@ -247,22 +269,6 @@ type ExceptionHandle func(Context, error)
 * User-defined: 通过DotWeb.SetNotFoundHandle(handler NotFoundHandle)实现自定义404处理逻辑
 ```go
 type NotFoundHandle  func(http.ResponseWriter, *http.Request)
-```
-
-## 9. Session
-#### Support store in runtime、redis
-* default is disabled, you must use app.HttpServer.SetEnabledSession(true) to enabled it
-* runtime:store in runtime memory
-* redis:store in redis,redis-key named with dotweb:session:xxxxxxxxxxxx
-```go
-//enabled session
-dotapp.HttpServer.SetEnabledSession(true)
-//use runtime mode
-dotapp.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
-//use redis mode
-dotapp.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("127.0.0.1:6379"))
-//use session with DotWeb.Context
-ctx.Session().Set(key, value)
 ```
 
 ## Dependency
