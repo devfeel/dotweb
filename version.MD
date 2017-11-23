@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+#### Version 1.3.8
+* 完善redisutil,增加对hset、set的操作支持
+* 感谢 @chacha923 的pr
+* 2017-11-23 00:00
+
 #### Version 1.3.7
 * 新增Classic初始化App方式，调整New初始化内容
 * 调整日志启用开关默认为false，可以通过SetEnabledLog(true)或者SetDevelopmentMode()启用
