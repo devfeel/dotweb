@@ -30,13 +30,13 @@ type Cache interface {
 	ClearAll() error
 }
 
-//new runtime cache
+// NewRuntimeCache new runtime cache
 func NewRuntimeCache() Cache {
 	return runtime.NewRuntimeCache()
 }
 
-//new redis cache
-//must set serverIp like "redis://:password@10.0.1.11:6379/0"
-func NewRedisCache(serverIp string) Cache {
-	return redis.NewRedisCache(serverIp)
+// NewRedisCache create new redis cache
+// must set serverURL like "redis://:password@10.0.1.11:6379/0"
+func NewRedisCache(serverURL string) Cache {
+	return redis.NewRedisCache(serverURL)
 }

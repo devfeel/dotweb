@@ -12,25 +12,25 @@ var (
 // RedisCache is redis cache adapter.
 // it contains serverIp for redis conn.
 type RedisCache struct {
-	serverIp string //connection string, like "10.0.1.11:6379"
+	serverURL string //connection string, like "redis://:password@10.0.1.11:6379/0"
 }
 
 // NewRedisCache returns a new *RedisCache.
-func NewRedisCache(serverIp string) *RedisCache {
-	cache := RedisCache{serverIp: serverIp}
+func NewRedisCache(serverURL string) *RedisCache {
+	cache := RedisCache{serverURL: serverURL}
 	return &cache
 }
 
 // Exists check item exist in redis cache.
 func (ca *RedisCache) Exists(key string) (bool, error) {
-	redisClient := redisutil.GetRedisClient(ca.serverIp)
+	redisClient := redisutil.GetRedisClient(ca.serverURL)
 	exists, err := redisClient.Exists(key)
 	return exists, err
 }
 
 // Incr increase int64 counter in redis cache.
 func (ca *RedisCache) Incr(key string) (int64, error) {
-	redisClient := redisutil.GetRedisClient(ca.serverIp)
+	redisClient := redisutil.GetRedisClient(ca.serverURL)
 	val, err := redisClient.INCR(key)
 	if err != nil {
 		return 0, err
@@ -40,7 +40,7 @@ func (ca *RedisCache) Incr(key string) (int64, error) {
 
 // Decr decrease counter in redis cache.
 func (ca *RedisCache) Decr(key string) (int64, error) {
-	redisClient := redisutil.GetRedisClient(ca.serverIp)
+	redisClient := redisutil.GetRedisClient(ca.serverURL)
 	val, err := redisClient.DECR(key)
 	if err != nil {
 		return 0, err
@@ -51,7 +51,7 @@ func (ca *RedisCache) Decr(key string) (int64, error) {
 // Get cache from redis cache.
 // if non-existed or expired, return nil.
 func (ca *RedisCache) Get(key string) (interface{}, error) {
-	redisClient := redisutil.GetRedisClient(ca.serverIp)
+	redisClient := redisutil.GetRedisClient(ca.serverURL)
 	reply, err := redisClient.GetObj(key)
 	return reply, err
 }
@@ -59,7 +59,7 @@ func (ca *RedisCache) Get(key string) (interface{}, error) {
 //  returns value string format by given key
 // if non-existed or expired, return "".
 func (ca *RedisCache) GetString(key string) (string, error) {
-	redisClient := redisutil.GetRedisClient(ca.serverIp)
+	redisClient := redisutil.GetRedisClient(ca.serverURL)
 	reply, err := redisClient.Get(key)
 	return reply, err
 }
@@ -99,7 +99,7 @@ func (ca *RedisCache) GetInt64(key string) (int64, error) {
 // Set cache to redis.
 // ttl is second, if ttl is 0, it will be forever.
 func (ca *RedisCache) Set(key string, value interface{}, ttl int64) error {
-	redisClient := redisutil.GetRedisClient(ca.serverIp)
+	redisClient := redisutil.GetRedisClient(ca.serverURL)
 	_, err := redisClient.SetWithExpire(key, value, ttl)
 	return err
 }
@@ -107,7 +107,7 @@ func (ca *RedisCache) Set(key string, value interface{}, ttl int64) error {
 // Delete item in redis cacha.
 // if not exists, we think it's success
 func (ca *RedisCache) Delete(key string) error {
-	redisClient := redisutil.GetRedisClient(ca.serverIp)
+	redisClient := redisutil.GetRedisClient(ca.serverURL)
 	_, err := redisClient.Del(key)
 	return err
 }
@@ -115,7 +115,7 @@ func (ca *RedisCache) Delete(key string) error {
 // ClearAll will delete all item in redis cache.
 // never error
 func (ca *RedisCache) ClearAll() error {
-	redisClient := redisutil.GetRedisClient(ca.serverIp)
+	redisClient := redisutil.GetRedisClient(ca.serverURL)
 	redisClient.FlushDB()
 	return nil
 }
