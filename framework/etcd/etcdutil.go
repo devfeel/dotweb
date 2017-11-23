@@ -3,7 +3,6 @@ package etcdutil
 import (
 	"github.com/coreos/etcd/clientv3"
 	"time"
-	"github.com/gpmgo/gopm/modules/cli"
 )
 
 func NewEtcdClientV3(endPoints []string, dialTimeout time.Duration) (*clientv3.Client, error){
@@ -24,6 +23,5 @@ func NewEtcdClientV3(endPoints []string, dialTimeout time.Duration) (*clientv3.C
 }
 
 func BasicEtcdOperate(){
-	cli, _ := NewEtcdClientV3(nil, 10)
-
+	
 }
