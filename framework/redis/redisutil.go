@@ -1,6 +1,6 @@
 // redisclient
 
-// redis 命令的使用方式参考
+// Package redisutil 命令的使用方式参考
 // http://doc.redisfans.com/index.html
 package redisutil
 
