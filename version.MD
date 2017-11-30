@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+#### Version 1.3.9
+* Request新增FormFiles接口，用于支持多文件上传
+* fixed #92 支持多文件同时上传
+* 2017-11-30 17:00:00
+
 #### Version 1.3.8
 * 完善redisutil,增加对hset、set的操作支持
 * 感谢 @chacha923 的pr
