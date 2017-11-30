@@ -10,6 +10,7 @@ import (
 
 const (
 	defaultTagName = "form"
+	jsonTagName = "json"
 )
 
 type (
@@ -38,8 +39,13 @@ func (b *binder) Bind(i interface{}, ctx Context) (err error) {
 	//	strings.HasPrefix(ctype, MIMETextHTML):
 	//	err = reflects.ConvertMapToStruct(defaultTagName, i, ctx.FormValues())
 	default:
+		//check is use json tag, fixed for issue #91
+		tagName := defaultTagName
+		if ctx.HttpServer().ServerConfig().EnabledBindUseJsonTag{
+			tagName = jsonTagName
+		}
 		//no check content type for fixed issue #6
-		err = reflects.ConvertMapToStruct(defaultTagName, i, ctx.Request().FormValues())
+		err = reflects.ConvertMapToStruct(tagName, i, ctx.Request().FormValues())
 	}
 	return err
 }

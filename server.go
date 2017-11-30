@@ -360,6 +360,13 @@ func (server *HttpServer) SetEnabledGzip(isEnabled bool) {
 	logger.Logger().Debug("DotWeb:HttpServer SetEnabledGzip ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
+// SetEnabledBindUseJsonTag 设置bind是否启用json标签,默认为false, fixed for issue #91
+func (server *HttpServer) SetEnabledBindUseJsonTag(isEnabled bool) {
+	server.ServerConfig().EnabledBindUseJsonTag = isEnabled
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledBindUseJsonTag ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+}
+
+
 // SetEnabledIgnoreFavicon set IgnoreFavicon Enabled
 // default is false
 func (server *HttpServer) SetEnabledIgnoreFavicon(isEnabled bool) {

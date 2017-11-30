@@ -47,6 +47,7 @@ type (
 		EnabledAutoHEAD          bool   `xml:"enabledautohead,attr"`          //设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
 		EnabledAutoCORS          bool   `xml:"enabledautocors,attr"`          //设置是否自动跨域支持，若设置，默认“GET, POST, PUT, DELETE, OPTIONS”全部请求均支持跨域
 		EnabledIgnoreFavicon     bool   `xml:"enabledignorefavicon,attr"`     //设置是否忽略favicon.ico请求，若设置，网站将把所有favicon.ico请求直接空返回
+		EnabledBindUseJsonTag 	 bool   `xml:"enabledbindusejsontag,attr"`	  //设置bind是否启用json标签,默认不启用,若设置，bind自动识别json tag,忽略form tag
 		Port                     int    `xml:"port,attr"`                     //端口
 		EnabledTLS               bool   `xml:"enabledtls,attr"`               //是否启用TLS模式
 		TLSCertFile              string `xml:"tlscertfile,attr"`              //TLS模式下Certificate证书文件地址

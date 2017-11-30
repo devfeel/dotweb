@@ -3,6 +3,10 @@
 #### Version 1.3.9
 * Request新增FormFiles接口，用于支持多文件上传
 * fixed #92 支持多文件同时上传
+* Server支持SetEnabledBindUseJsonTag接口，用于设置bind是否启用json标签,默认为false
+* fixed #91 GET方式请求，根据传参执行bind方法，字段tag目前只支持form，可以考虑兼容json标签
+* 感谢 @githubityu
+* 完善 example/bind
 * 2017-11-30 17:00:00
 
 #### Version 1.3.8
