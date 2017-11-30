@@ -17,6 +17,8 @@ func main() {
 	//这里仅为示例，默认情况下，开启的模式就是development模式
 	app.SetDevelopmentMode()
 
+	//使用json标签
+	app.HttpServer.SetEnabledBindUseJsonTag(true)
 	//设置gzip开关
 	//app.HttpServer.SetEnabledGzip(true)
 
@@ -51,9 +53,13 @@ func TestBind(ctx dotweb.Context) error {
 }
 
 func GetBind(ctx dotweb.Context) error {
+	//type UserInfo struct {
+	//	UserName string `form:"user"`
+	//	Sex      int    `form:"sex"`
+	//}
 	type UserInfo struct {
-		UserName string `form:"user"`
-		Sex      int    `form:"sex"`
+		UserName string `json:"user"`
+		Sex      int    `json:"sex"`
 	}
 	user := new(UserInfo)
 	errstr := "no error"

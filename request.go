@@ -46,20 +46,17 @@ func (req *Request) QueryStrings() url.Values {
 	return req.URL.Query()
 }
 
-/*
-* 获取原始查询字符串
- */
+// RawQuery 获取原始查询字符串
 func (req *Request) RawQuery() string {
 	return req.URL.RawQuery
 }
 
-/*
-* 根据指定key获取在Get请求中对应参数值
- */
+// QueryString 根据指定key获取在Get请求中对应参数值
 func (req *Request) QueryString(key string) string {
 	return req.URL.Query().Get(key)
 }
 
+// FormFile get file by form key
 func (req *Request) FormFile(key string) (*UploadFile, error) {
 	file, header, err := req.Request.FormFile(key)
 	if err != nil {
@@ -69,9 +66,26 @@ func (req *Request) FormFile(key string) (*UploadFile, error) {
 	}
 }
 
-/*
-* 获取包括post、put和get内的值
- */
+// FormFiles get multi files
+// fixed #92
+func (req *Request) FormFiles()(map[string]*UploadFile, error){
+	files := make(map[string]*UploadFile)
+	req.parseForm()
+	if req.Request.MultipartForm == nil || req.Request.MultipartForm.File == nil {
+		return nil, http.ErrMissingFile
+	}
+	for key, fileMap:=range req.Request.MultipartForm.File{
+		if len(fileMap) > 0{
+			file, err := fileMap[0].Open()
+			if err== nil{
+				files[key] = NewUploadFile(file, fileMap[0])
+			}
+		}
+	}
+	return files, nil
+}
+
+// FormValues 获取包括post、put和get内的值
 func (req *Request) FormValues() map[string][]string {
 	req.parseForm()
 	return map[string][]string(req.Form)
@@ -90,10 +104,12 @@ func (req *Request) parseForm() error {
 	return nil
 }
 
+// ContentType get ContentType
 func (req *Request) ContentType() string {
 	return req.Header.Get(HeaderContentType)
 }
 
+// QueryHeader query header value by key
 func (req *Request) QueryHeader(key string) string {
 	return req.Header.Get(key)
 }
@@ -151,6 +167,7 @@ func (req *Request) IsAJAX() bool {
 	return req.Header.Get(HeaderXRequestedWith) == "XMLHttpRequest"
 }
 
+// Url get request url
 func (req *Request) Url() string {
 	return req.URL.String()
 }
