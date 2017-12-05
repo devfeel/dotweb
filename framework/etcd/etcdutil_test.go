@@ -1,32 +1,36 @@
 package etcdutil
 
 import (
-	"github.com/coreos/etcd/clientv3"
-	"fmt"
 	"testing"
+	"fmt"
 	"context"
-	"time"
 )
 
-var cli *clientv3.Client
+var cli *EtcdClient
+
 var err error
 
 func init() {
-	cli, err = NewEtcdClientV3(nil, 10)
+	cli, err = NewEtcdClient(0)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 }
 
-func TestBasicEtcdOperate(t *testing.T) {
-	resp, _:= cli.Grant(context.TODO(), 10)
-	ctx, _:= context.WithTimeout(context.Background(), 5*time.Second)
-	rsp, err:=cli.Put(ctx,"root/game/node-2",`{"addr":"192.168.1.1:9999"}`,clientv3.WithLease(resp.ID))
-
-	if err != nil {
-		fmt.Println(err.Error())
+func TestEtcdPut(t *testing.T) {
+	defer cli.Close()
+	putErr := cli.SimplePut("foo", "bar")
+	if putErr != nil {
+		fmt.Println(putErr)
 		return
 	}
+	fmt.Println("success")
+}
 
-	fmt.Println(rsp.OpResponse().Put().Header.String())
+func TestEtcdGet(t *testing.T) {
+	val, getErr := cli.SimpleGet("foo")
+	if getErr != nil {
+		fmt.Println(getErr)
+	}
+	fmt.Println(val)
 }
