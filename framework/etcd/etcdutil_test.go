@@ -3,7 +3,8 @@ package etcdutil
 import (
 	"testing"
 	"fmt"
-	"context"
+	"os"
+	"time"
 )
 
 var cli *EtcdClient
@@ -11,9 +12,10 @@ var cli *EtcdClient
 var err error
 
 func init() {
-	cli, err = NewEtcdClient(0)
+	cli, err = NewEtcdClient(10*time.Second)
 	if err != nil {
 		fmt.Println(err.Error())
+		os.Exit(2)
 	}
 }
 

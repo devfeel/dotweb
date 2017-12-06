@@ -5,7 +5,7 @@ import (
 	"time"
 	"context"
 )
-
+//etcd util only support go1.9+ !!!
 type EtcdClient struct {
 	client *clientv3.Client
 }
