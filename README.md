@@ -114,8 +114,9 @@ import (
 
 func main() {
     dotapp := dotweb.New()
-    dotapp.HttpServer.GET("/hello", func(ctx *dotweb.HttpContext) {
+    dotapp.HttpServer.GET("/hello", func(ctx dotweb.Context) error{
         ctx.WriteString("hello world!")
+	return nil
     })
     dotapp.StartServer(80)
 }
