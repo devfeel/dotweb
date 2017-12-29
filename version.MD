@@ -1,5 +1,16 @@
 ## dotweb版本记录：
 
+#### Version 1.4.0
+* 强化Bind能力，添加BindJsonBody接口，不对Content-Type进行判定，直接获取req.Body进行json序列化
+* 基础Bind机制：
+ 1)如果识别到Content-Type = application/json  会尝试使用json序列化到struct
+ 2)如果识别到Content-Type = application/xml  会尝试使用xml序列化到struct
+ 3)非以上类型，会默认识别form的key/value模式匹配
+* Context.Request()新增PostValues接口，包含 POST, PATCH, or PUT请求集合，以map[string][]string返回
+* 更正Readme部分文字描述
+* 完善example/bind
+* 2017-12-29 16:00:00
+
 #### Version 1.3.9
 * Request新增FormFiles接口，用于支持多文件上传
 * fixed #92 支持多文件同时上传

@@ -58,6 +58,7 @@ type (
 		Attachment(file string, name string) error
 		Inline(file string, name string) error
 		Bind(i interface{}) error
+		BindJsonBody(i interface{}) error
 		GetRouterName(key string) string
 		RemoteIP() string
 		SetCookieValue(name, value string, maxAge int)
@@ -379,13 +380,17 @@ func (ctx *HttpContext) contentDisposition(file, name, dispositionType string) (
 	return
 }
 
-/*
-* 支持Json、Xml、Form提交的属性绑定
- */
+// Bind decode req.Body or form-value to struct
 func (ctx *HttpContext) Bind(i interface{}) error {
 	return ctx.httpServer.Binder().Bind(i, ctx)
 }
 
+// BindJsonBody default use json decode req.Body to struct
+func (ctx *HttpContext) BindJsonBody(i interface{}) error {
+	return ctx.httpServer.Binder().BindJsonBody(i, ctx)
+}
+
+// GetRouterName get router name
 func (ctx *HttpContext) GetRouterName(key string) string {
 	return ctx.routerParams.ByName(key)
 }

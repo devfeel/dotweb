@@ -85,10 +85,16 @@ func (req *Request) FormFiles()(map[string]*UploadFile, error){
 	return files, nil
 }
 
-// FormValues 获取包括post、put和get内的值
+// FormValues including both the URL field's query parameters and the POST or PUT form data
 func (req *Request) FormValues() map[string][]string {
 	req.parseForm()
 	return map[string][]string(req.Form)
+}
+
+// PostValues contains the parsed form data from POST, PATCH, or PUT body parameters
+func (req *Request) PostValues() map[string][]string {
+	req.parseForm()
+	return map[string][]string(req.PostForm)
 }
 
 func (req *Request) parseForm() error {
