@@ -17,11 +17,13 @@ type (
 	// Binder is the interface that wraps the Bind method.
 	Binder interface {
 		Bind(interface{}, Context) error
+		BindJsonBody(interface{}, Context) error
 	}
 
 	binder struct{}
 )
 
+//Bind decode req.Body or form-value to struct
 func (b *binder) Bind(i interface{}, ctx Context) (err error) {
 	req := ctx.Request()
 	ctype := req.Header.Get(HeaderContentType)
@@ -47,6 +49,17 @@ func (b *binder) Bind(i interface{}, ctx Context) (err error) {
 		//no check content type for fixed issue #6
 		err = reflects.ConvertMapToStruct(tagName, i, ctx.Request().FormValues())
 	}
+	return err
+}
+
+//BindJsonBody default use json decode req.Body to struct
+func (b *binder) BindJsonBody(i interface{}, ctx Context) (err error) {
+	req := ctx.Request()
+	if req.Body == nil {
+		err = errors.New("request body can't be empty")
+		return err
+	}
+	err = json.NewDecoder(req.Body).Decode(i)
 	return err
 }
 

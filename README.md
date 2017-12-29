@@ -170,13 +170,14 @@ type UserInfo struct {
 		Sex      int    `form:"sex"`
 }
 
-func(ctx *dotweb.HttpContext) TestBind{
+func TestBind(ctx dotweb.HttpContext) error{
         user := new(UserInfo)
         if err := ctx.Bind(user); err != nil {
         	 ctx.WriteString("err => " + err.Error())
         }else{
              ctx.WriteString("TestBind " + fmt.Sprint(user))
         }
+        return nil
 }
 
 ```
@@ -281,6 +282,9 @@ redis - github.com/garyburd/redigo/redis
 ## 相关项目
 #### <a href="https://github.com/devfeel/tokenserver" target="_blank">TokenServer</a>
 项目简介：token服务，提供token一致性服务以及相关的全局ID生成服务等
+
+#### <a href="https://github.com/devfeel/longweb" target="_blank">LongWeb</a>
+项目简介：http长连接网关服务，提供Websocket及长轮询服务
 
 ## 贡献名单
 目前已经有几位朋友在为框架一起做努力，我们将在合适的时间向大家展现，谢谢他们的支持！
