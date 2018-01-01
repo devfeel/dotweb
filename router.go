@@ -491,6 +491,7 @@ func (r *router) add(method, path string, handle RouterHandle, m ...Middleware) 
 	}
 	//fmt.Println("Handle => ", method, " - ", *root, " - ", path)
 	outnode = root.addRoute(path, handle, m...)
+	outnode.fullPath = path
 	r.allNodeMap[method+"_"+path] = outnode
 	return
 }

@@ -25,6 +25,8 @@ type Middleware interface {
 	SetNext(m Middleware)
 	Next(ctx Context) error
 	Exclude(routers ...string)
+	HasExclude() bool
+	ExistsExcludeRouter(router string) bool
 }
 
 //middleware 基础类，应用可基于此实现完整Moddleware
@@ -60,6 +62,12 @@ func (bm *BaseMiddlware) Next(ctx Context) error {
 			return httpCtx.Handler()(ctx)
 		}
 	} else {
+		//check exclude config
+		if ctx.RouterNode().Node().hasExcludeMiddleware && bm.next.HasExclude() {
+			if bm.next.ExistsExcludeRouter(ctx.RouterNode().Node().fullPath) {
+				return bm.next.Next(ctx)
+			}
+		}
 		return bm.next.Handle(ctx)
 	}
 	return nil
@@ -71,10 +79,29 @@ func (bm *BaseMiddlware) Exclude(routers ...string) {
 		bm.excludeRouters = make(map[string]struct{})
 	}
 	for _, v := range routers {
-		if _, exists := bm.excludeRouters[v]; !exists {
-			bm.excludeRouters[v] = struct{}{}
-		}
+		bm.excludeRouters[v] = struct{}{}
 	}
+}
+
+// HasExclude check has set exclude router
+func (bm *BaseMiddlware) HasExclude() bool {
+	if bm.excludeRouters == nil {
+		return false
+	}
+	if len(bm.excludeRouters) > 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+// ExistsExcludeRouter check is exists router in exclude map
+func (bm *BaseMiddlware) ExistsExcludeRouter(router string) bool {
+	if bm.excludeRouters == nil {
+		return false
+	}
+	_, exists := bm.excludeRouters[router]
+	return exists
 }
 
 type xMiddleware struct {

@@ -1,10 +1,13 @@
 ## dotweb版本记录：
 
 #### Version 1.4.1
-* 优化dotweb结构，调整部分内部函数名称，增加initBindMiddleware
-* 重构Middleware实现
+* dotweb新增ExcludeUse接口，用于设置指定排除路由的中间件
+* 重构Middleware实现,优化dotweb结构，重构部分内部函数名称
 * Node新增AppMiddlewares与GroupMiddlewares，用于存储App级、Group级的中间件实例
-* Middleware新增Exclude(routers ...string)函数，用于指定不生效的路由
+* Middleware新增Exclude相关接口
+* Exclude(routers ...string)函数，用于指定不生效的路由
+* HasExclude() bool函数，用于判定当前中间件实例是否存在排除路由
+* ExistsExcludeRouter(router string) bool函数，用于判定当前中间件实例的排除路由中是否存在指定路由
 * middleware执行优先级：
 - 优先级1：app级别middleware
 - 优先级2：group级别middleware

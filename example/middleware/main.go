@@ -30,9 +30,8 @@ func main() {
 	//app.UseRequestLog()
 	app.Use(
 		NewAccessFmtLog("app"),
-		NewAccessFmtLog("app2"),
-	//NewSimpleAuth("admin"),
 	)
+	app.ExcludeUse(NewAccessFmtLog("appex"), "/", "/")
 
 	//启动 监控服务
 	app.SetPProfConfig(true, 8081)

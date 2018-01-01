@@ -143,11 +143,11 @@ func (app *DotWeb) SetProductionMode() {
 // ExcludeUse registers a middleware exclude routers
 // like exclude /index or /query/:id
 func (app *DotWeb) ExcludeUse(m Middleware, routers ...string) {
-	middlewareLen := len(app.Middlewares) - 1
+	middlewareLen := len(app.Middlewares)
 	if m != nil {
 		m.Exclude(routers...)
-		if middlewareLen >= 0 {
-			app.Middlewares[middlewareLen].SetNext(m)
+		if middlewareLen > 0 {
+			app.Middlewares[middlewareLen-1].SetNext(m)
 		}
 		app.Middlewares = append(app.Middlewares, m)
 	}
@@ -396,7 +396,11 @@ func (app *DotWeb) initBindMiddleware() {
 	for path, node := range router.allNodeMap {
 		logger.Logger().Debug("DotWeb initBindMiddleware "+path+" "+fmt.Sprint(node), LogTarget_HttpServer)
 		node.appMiddlewares = app.Middlewares
-
+		for _, m := range node.appMiddlewares {
+			if m.HasExclude() && m.ExistsExcludeRouter(node.fullPath) {
+				node.hasExcludeMiddleware = true
+			}
+		}
 	}
 }
 
