@@ -1,5 +1,17 @@
 ## dotweb版本记录：
 
+#### Version 1.4.1
+* 优化dotweb结构，调整部分内部函数名称，增加initBindMiddleware
+* 重构Middleware实现
+* Node新增AppMiddlewares与GroupMiddlewares，用于存储App级、Group级的中间件实例
+* Middleware新增Exclude(routers ...string)函数，用于指定不生效的路由
+* middleware执行优先级：
+- 优先级1：app级别middleware
+- 优先级2：group级别middleware
+- 优先级：router级别middleware
+* 更新example/middleware
+* 2018-01-01 23:00:00
+
 #### Version 1.4.0
 * 强化Bind能力，添加BindJsonBody接口，不对Content-Type进行判定，直接获取req.Body进行json序列化
 * 基础Bind机制：

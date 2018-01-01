@@ -30,7 +30,19 @@ func NewGroup(prefix string, server *HttpServer) Group {
 
 // Use implements `Router#Use()` for sub-routes within the Group.
 func (g *xGroup) Use(m ...Middleware) Group {
-	g.middlewares = append(g.middlewares, m...)
+	if len(m) <= 0 {
+		return g
+	}
+	step := len(g.middlewares) - 1
+	for i := range m {
+		if m[i] != nil {
+			if step >= 0 {
+				g.middlewares[step].SetNext(m[i])
+			}
+			g.middlewares = append(g.middlewares, m[i])
+			step++
+		}
+	}
 	return g
 }
 
@@ -79,6 +91,7 @@ func (g *xGroup) RegisterRoute(method, path string, handler HttpHandle) RouterNo
 }
 
 func (g *xGroup) add(method, path string, handler HttpHandle) RouterNode {
-	node := g.server.Router().RegisterRoute(method, g.prefix+path, handler).Use(g.middlewares...)
+	node := g.server.Router().RegisterRoute(method, g.prefix+path, handler)
+	node.Node().groupMiddlewares = g.middlewares
 	return node
 }

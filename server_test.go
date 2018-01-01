@@ -43,15 +43,13 @@ func TestSesionConfig(t *testing.T) {
 	test.Nil(t, sessionManager)
 
 	//switch EnabledSession flag
-	server.SessionConfig.EnabledSession = true
+	server.SessionConfig().EnabledSession = true
 	sessionManager = server.GetSessionManager()
 
 	test.NotNil(t, sessionManager)
 	test.Equal(t, server.sessionManager.CookieName, session.DefaultSessionCookieName)
 	test.Equal(t, server.sessionManager.GCLifetime, int64(session.DefaultSessionGCLifeTime))
 }
-
-
 
 func Index(ctx Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")

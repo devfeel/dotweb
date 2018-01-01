@@ -54,7 +54,6 @@ const (
 	RunMode_Production  = "production"
 )
 
-
 //New create and return DotApp instance
 func New() *DotWeb {
 	app := &DotWeb{
@@ -139,6 +138,19 @@ func (app *DotWeb) SetDevelopmentMode() {
 func (app *DotWeb) SetProductionMode() {
 	app.Config.App.RunMode = RunMode_Production
 	logger.SetEnabledConsole(false)
+}
+
+// ExcludeUse registers a middleware exclude routers
+// like exclude /index or /query/:id
+func (app *DotWeb) ExcludeUse(m Middleware, routers ...string) {
+	middlewareLen := len(app.Middlewares) - 1
+	if m != nil {
+		m.Exclude(routers...)
+		if middlewareLen >= 0 {
+			app.Middlewares[middlewareLen].SetNext(m)
+		}
+		app.Middlewares = append(app.Middlewares, m)
+	}
 }
 
 // Use registers a middleware
@@ -244,10 +256,14 @@ func (app *DotWeb) MustStart() {
 // not support pprof server auto start
 func (app *DotWeb) ListenAndServe(addr string) error {
 	app.initAppConfig()
-	app.initRegisterMiddleware()
-	app.initRegisterRoute()
-	app.initRegisterGroup()
+	app.initRegisterConfigMiddleware()
+	app.initRegisterConfigRoute()
+	app.initRegisterConfigGroup()
+
 	app.initServerEnvironment()
+
+	app.initBindMiddleware()
+
 	app.initInnerRouter()
 
 	if app.HttpServer.ServerConfig().EnabledTLS {
@@ -300,8 +316,8 @@ func (app *DotWeb) initAppConfig() {
 	}
 }
 
-// init register Middleware
-func (app *DotWeb) initRegisterMiddleware() {
+// init register config's Middleware
+func (app *DotWeb) initRegisterConfigMiddleware() {
 	config := app.Config
 	//register app's middleware
 	for _, m := range config.Middlewares {
@@ -314,8 +330,8 @@ func (app *DotWeb) initRegisterMiddleware() {
 	}
 }
 
-// init register route
-func (app *DotWeb) initRegisterRoute() {
+// init register config's route
+func (app *DotWeb) initRegisterConfigRoute() {
 	config := app.Config
 	//load router and register
 	for _, r := range config.Routers {
@@ -335,8 +351,8 @@ func (app *DotWeb) initRegisterRoute() {
 	}
 }
 
-// init register route
-func (app *DotWeb) initRegisterGroup() {
+// init register config's route
+func (app *DotWeb) initRegisterConfigGroup() {
 	config := app.Config
 	//support group
 	for _, v := range config.Groups {
@@ -368,6 +384,19 @@ func (app *DotWeb) initRegisterGroup() {
 				}
 			}
 		}
+	}
+}
+
+// init bind app's middleware to router node
+func (app *DotWeb) initBindMiddleware() {
+	//add default httphandler with middlewares
+	app.Use(&xMiddleware{})
+
+	router := app.HttpServer.Router().(*router)
+	for path, node := range router.allNodeMap {
+		logger.Logger().Debug("DotWeb initBindMiddleware "+path+" "+fmt.Sprint(node), LogTarget_HttpServer)
+		node.appMiddlewares = app.Middlewares
+
 	}
 }
 
@@ -415,9 +444,6 @@ func (app *DotWeb) initServerEnvironment() {
 	if app.HttpServer.Renderer() == nil {
 		app.HttpServer.SetRenderer(NewInnerRenderer())
 	}
-
-	//add default httphandler with middlewares
-	app.Use(&xMiddleware{})
 
 	//start pprof server
 	if app.Config.App.EnabledPProf {

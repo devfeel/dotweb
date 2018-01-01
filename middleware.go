@@ -3,22 +3,34 @@ package dotweb
 import (
 	"github.com/devfeel/dotweb/framework/convert"
 	"github.com/devfeel/dotweb/logger"
-	"reflect"
 	"time"
 )
 
+const (
+	middleware_App    = "app"
+	middleware_Group  = "group"
+	middleware_Router = "router"
+)
+
 type MiddlewareFunc func() Middleware
+
+//middleware执行优先级：
+//优先级1：app级别middleware
+//优先级2：group级别middleware
+//优先级3：router级别middleware
 
 // Middleware middleware interface
 type Middleware interface {
 	Handle(ctx Context) error
 	SetNext(m Middleware)
 	Next(ctx Context) error
+	Exclude(routers ...string)
 }
 
 //middleware 基础类，应用可基于此实现完整Moddleware
 type BaseMiddlware struct {
-	next Middleware
+	next           Middleware
+	excludeRouters map[string]struct{}
 }
 
 func (bm *BaseMiddlware) SetNext(m Middleware) {
@@ -26,7 +38,43 @@ func (bm *BaseMiddlware) SetNext(m Middleware) {
 }
 
 func (bm *BaseMiddlware) Next(ctx Context) error {
-	return bm.next.Handle(ctx)
+	httpCtx := ctx.(*HttpContext)
+	if httpCtx.middlewareStep == "" {
+		httpCtx.middlewareStep = middleware_App
+	}
+	if bm.next == nil {
+		if httpCtx.middlewareStep == middleware_App {
+			httpCtx.middlewareStep = middleware_Group
+			if len(httpCtx.RouterNode().GroupMiddlewares()) > 0 {
+				return httpCtx.RouterNode().GroupMiddlewares()[0].Handle(ctx)
+			}
+		}
+		if httpCtx.middlewareStep == middleware_Group {
+			httpCtx.middlewareStep = middleware_Router
+			if len(httpCtx.RouterNode().Middlewares()) > 0 {
+				return httpCtx.RouterNode().Middlewares()[0].Handle(ctx)
+			}
+		}
+
+		if httpCtx.middlewareStep == middleware_Router {
+			return httpCtx.Handler()(ctx)
+		}
+	} else {
+		return bm.next.Handle(ctx)
+	}
+	return nil
+}
+
+// Exclude Exclude this middleware with router
+func (bm *BaseMiddlware) Exclude(routers ...string) {
+	if bm.excludeRouters == nil {
+		bm.excludeRouters = make(map[string]struct{})
+	}
+	for _, v := range routers {
+		if _, exists := bm.excludeRouters[v]; !exists {
+			bm.excludeRouters[v] = struct{}{}
+		}
+	}
 }
 
 type xMiddleware struct {
@@ -35,24 +83,14 @@ type xMiddleware struct {
 }
 
 func (x *xMiddleware) Handle(ctx Context) error {
-	len := len(ctx.RouterNode().Middlewares())
-	if x.IsEnd {
-		return ctx.Handler()(ctx)
-	} else {
-		if x.next == nil {
-			if len <= 0 {
-				return ctx.Handler()(ctx)
-			} else {
-				if reflect.TypeOf(ctx.RouterNode().Middlewares()[len-1]).String() != "*dotweb.xMiddleware" {
-					ctx.RouterNode().Use(&xMiddleware{IsEnd: true})
-				}
-				return ctx.RouterNode().Middlewares()[0].Handle(ctx)
-			}
-		} else {
-			return x.Next(ctx)
-		}
+	httpCtx := ctx.(*HttpContext)
+	if httpCtx.middlewareStep == "" {
+		httpCtx.middlewareStep = middleware_App
 	}
-
+	if x.IsEnd {
+		return httpCtx.Handler()(ctx)
+	}
+	return x.Next(ctx)
 }
 
 //请求日志中间件

@@ -80,6 +80,8 @@ type (
 
 	RouterNode interface {
 		Use(m ...Middleware) *Node
+		AppMiddlewares() []Middleware
+		GroupMiddlewares() []Middleware
 		Middlewares() []Middleware
 		Node() *Node
 	}
@@ -93,8 +95,8 @@ type (
 	// router is a http.Handler which can be used to dispatch requests to different
 	// handler functions via configurable routes
 	router struct {
-		Nodes map[string]*Node
-
+		Nodes        map[string]*Node
+		allNodeMap   map[string]*Node
 		server       *HttpServer
 		handlerMap   map[string]HttpHandle
 		handlerMutex *sync.RWMutex
@@ -157,6 +159,7 @@ func NewRouter(server *HttpServer) *router {
 		RedirectTrailingSlash: true,
 		RedirectFixedPath:     true,
 		HandleOPTIONS:         true,
+		allNodeMap:            make(map[string]*Node),
 		server:                server,
 		handlerMap:            make(map[string]HttpHandle),
 		handlerMutex:          new(sync.RWMutex),
@@ -309,11 +312,18 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 
 		//处理用户handle
 		var ctxErr error
-		if len(r.server.DotApp.Middlewares) > 0 {
-			ctxErr = r.server.DotApp.Middlewares[0].Handle(httpCtx)
+		//if len(r.server.DotApp.Middlewares) > 0 {
+		//	ctxErr = r.server.DotApp.Middlewares[0].Handle(httpCtx)
+		//} else {
+		//	ctxErr = handler(httpCtx)
+		//}
+
+		if len(httpCtx.routerNode.AppMiddlewares()) > 0 {
+			ctxErr = httpCtx.routerNode.AppMiddlewares()[0].Handle(httpCtx)
 		} else {
 			ctxErr = handler(httpCtx)
 		}
+
 		if ctxErr != nil {
 			//handler the exception
 			if r.server.DotApp.ExceptionHandler != nil {
@@ -481,6 +491,7 @@ func (r *router) add(method, path string, handle RouterHandle, m ...Middleware) 
 	}
 	//fmt.Println("Handle => ", method, " - ", *root, " - ", path)
 	outnode = root.addRoute(path, handle, m...)
+	r.allNodeMap[method+"_"+path] = outnode
 	return
 }
 
