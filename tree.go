@@ -41,15 +41,19 @@ const (
 )
 
 type Node struct {
-	path        string
-	wildChild   bool
-	nType       nodeType
-	maxParams   uint8
-	indices     string
-	children    []*Node
-	middlewares []Middleware
-	handle      RouterHandle
-	priority    uint32
+	path                 string
+	fullPath             string
+	hasExcludeMiddleware bool
+	wildChild            bool
+	nType                nodeType
+	maxParams            uint8
+	indices              string
+	children             []*Node
+	appMiddlewares       []Middleware
+	groupMiddlewares     []Middleware
+	middlewares          []Middleware
+	handle               RouterHandle
+	priority             uint32
 }
 
 //Use registers a middleware
@@ -68,6 +72,14 @@ func (n *Node) Use(m ...Middleware) *Node {
 		}
 	}
 	return n
+}
+
+func (n *Node) AppMiddlewares() []Middleware {
+	return n.appMiddlewares
+}
+
+func (n *Node) GroupMiddlewares() []Middleware {
+	return n.groupMiddlewares
 }
 
 func (n *Node) Middlewares() []Middleware {

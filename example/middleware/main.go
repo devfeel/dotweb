@@ -27,11 +27,11 @@ func main() {
 
 	//InitModule(app)
 
-	app.UseRequestLog()
+	//app.UseRequestLog()
 	app.Use(
 		NewAccessFmtLog("app"),
-	//NewSimpleAuth("admin"),
 	)
+	app.ExcludeUse(NewAccessFmtLog("appex"), "/", "/")
 
 	//启动 监控服务
 	app.SetPProfConfig(true, 8081)
@@ -51,6 +51,7 @@ func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
 	//fmt.Println(time.Now(), "Index Handler")
 	_, err := ctx.WriteString("index  => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
+	fmt.Println(ctx.RouterNode().GroupMiddlewares())
 	return err
 }
 

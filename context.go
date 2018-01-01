@@ -87,24 +87,25 @@ type (
 	HttpContext struct {
 		context context.Context
 		//暂未启用
-		cancle       context.CancelFunc
-		request      *Request
-		routerNode   RouterNode
-		routerParams Params
-		response     *Response
-		webSocket    *WebSocket
-		hijackConn   *HijackConn
-		isWebSocket  bool
-		isHijack     bool
-		isEnd        bool //表示当前处理流程是否需要终止
-		httpServer   *HttpServer
-		sessionID    string
-		innerItems   *core.ItemContext
-		items        *core.ItemContext
-		viewData     *core.ItemContext
-		features     *xFeatureTools
-		handler      HttpHandle
-		startTime    time.Time
+		cancle         context.CancelFunc
+		middlewareStep string
+		request        *Request
+		routerNode     RouterNode
+		routerParams   Params
+		response       *Response
+		webSocket      *WebSocket
+		hijackConn     *HijackConn
+		isWebSocket    bool
+		isHijack       bool
+		isEnd          bool //表示当前处理流程是否需要终止
+		httpServer     *HttpServer
+		sessionID      string
+		innerItems     *core.ItemContext
+		items          *core.ItemContext
+		viewData       *core.ItemContext
+		features       *xFeatureTools
+		handler        HttpHandle
+		startTime      time.Time
 	}
 )
 
@@ -129,6 +130,7 @@ func (ctx *HttpContext) reset(res *Response, r *Request, server *HttpServer, nod
 func (ctx *HttpContext) release() {
 	ctx.request = nil
 	ctx.response = nil
+	ctx.middlewareStep = ""
 	ctx.routerNode = nil
 	ctx.routerParams = nil
 	ctx.webSocket = nil
