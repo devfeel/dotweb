@@ -1,7 +1,7 @@
 ## dotweb版本记录：
 
 #### Version 1.4.1
-* dotweb新增ExcludeUse接口，用于设置指定排除路由的中间件
+* dotweb新增ExcludeUse接口，用于设置指定排除路由的中间件，fixed for #94 建议增加exuse方法用来实现exclude uri功能
 * 调整dotweb部分内部函数名称
 * 重构Middleware实现,优化代码结构，使流程更清晰
 * Node新增AppMiddlewares与GroupMiddlewares，用于存储App级、Group级的中间件实例
