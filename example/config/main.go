@@ -40,14 +40,12 @@ func main() {
 
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, err := ctx.WriteString("index => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
-	return err
+	return ctx.WriteString("index => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
 }
 
 func GetAppSet(ctx dotweb.Context) error {
 	key := ctx.QueryString("key")
-	_, err := ctx.WriteString(ctx.Request().Url(), " => key = ", ctx.AppSetConfig().GetString(key))
-	return err
+	return ctx.WriteString(ctx.Request().Url(), " => key = ", ctx.AppSetConfig().GetString(key))
 }
 
 func DefaultPanic(ctx dotweb.Context) error {
@@ -65,13 +63,11 @@ func Redirect(ctx dotweb.Context) error {
 }
 
 func Login(ctx dotweb.Context) error {
-	_, err := ctx.WriteString("login => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
-	return err
+	return ctx.WriteString("login => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
 }
 
 func Logout(ctx dotweb.Context) error {
-	_, err := ctx.WriteString("logout => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
-	return err
+	return ctx.WriteString("logout => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
 }
 
 func RegisterHandler(server *dotweb.HttpServer) {

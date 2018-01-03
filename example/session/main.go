@@ -56,7 +56,7 @@ func TestSession(ctx dotweb.Context) error {
 		ctx.WriteString("session read failed, get nil", "\r\n")
 	}
 
-	_, err = ctx.WriteString("userinfo=>" + fmt.Sprintln(userRead))
+	return ctx.WriteString("userinfo=>" + fmt.Sprintln(userRead))
 	return err
 }
 
@@ -73,8 +73,7 @@ func TestReadSession(ctx dotweb.Context) error {
 		ctx.WriteString("session read failed, get nil", "\r\n")
 	}
 
-	_, err := ctx.WriteString("userinfo=>" + fmt.Sprintln(userRead))
-	return err
+	return ctx.WriteString("userinfo=>" + fmt.Sprintln(userRead))
 }
 
 func InitRoute(server *dotweb.HttpServer) {

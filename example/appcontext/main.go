@@ -42,8 +42,7 @@ func Index(ctx dotweb.Context) error {
 	gint := ctx.AppContext().GetInt("gint")
 	ctx.AppContext().Set("index", "index-v")
 	ctx.AppContext().Set("user", "user-v")
-	_, err := ctx.WriteString("index -> " + gstring + ";" + strconv.Itoa(gint))
-	return err
+	return ctx.WriteString("index -> " + gstring + ";" + strconv.Itoa(gint))
 }
 
 //you can curl http://127.0.0.1:8080/2
@@ -51,8 +50,7 @@ func Index2(ctx dotweb.Context) error {
 	gindex := ctx.AppContext().GetString("index")
 	ctx.AppContext().Remove("index")
 	user, _ := ctx.AppContext().Once("user")
-	_, err := ctx.WriteString("index -> " + gindex + ";" + fmt.Sprint(user))
-	return err
+	return ctx.WriteString("index -> " + gindex + ";" + fmt.Sprint(user))
 }
 
 func InitRoute(server *dotweb.HttpServer) {

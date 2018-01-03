@@ -1,7 +1,26 @@
 ## dotweb版本记录：
 
+#### Version 1.4.2
+* Context新增QueryInt\QueryInt64接口，用于简化获取Int类型的Get参数，如果参数未传入或不是合法整形，返回0
+* Context接口调整：除Write外，其他WriteXXX接口，返回值从(int, error)调整为error
+* 带来的变化：
+```
+	app.HttpServer.GET("/index", func(ctx dotweb.Context) error{
+		_, err := ctx.WriteString("welcome to my first web!")
+		return err
+	})
+```
+简化为
+```
+	app.HttpServer.GET("/index", func(ctx dotweb.Context) error{
+		return ctx.WriteString("welcome to my first web!")
+	})
+```
+* 同步更新example代码
+* 2018-01-03 22:00
+
 #### Version 1.4.1
-* dotweb新增ExcludeUse接口，用于设置指定排除路由的中间件
+* dotweb新增ExcludeUse接口，用于设置指定排除路由的中间件，fixed for #94 建议增加exuse方法用来实现exclude uri功能
 * 调整dotweb部分内部函数名称
 * 重构Middleware实现,优化代码结构，使流程更清晰
 * Node新增AppMiddlewares与GroupMiddlewares，用于存储App级、Group级的中间件实例

@@ -50,8 +50,7 @@ func One(ctx dotweb.Context) error {
 		g = err.Error()
 	}
 	_, err = ctx.Cache().Incr("count")
-	_, err = ctx.WriteString("One [" + g + "] " + fmt.Sprint(err))
-	return err
+	return ctx.WriteString("One [" + g + "] " + fmt.Sprint(err))
 }
 
 func Two(ctx dotweb.Context) error {
@@ -61,8 +60,7 @@ func Two(ctx dotweb.Context) error {
 	}
 	_, err = ctx.Cache().Incr("count")
 	c, _ := ctx.Cache().GetString("count")
-	_, err = ctx.WriteString("Two [" + g + "] [" + c + "] " + fmt.Sprint(err))
-	return err
+	return ctx.WriteString("Two [" + g + "] [" + c + "] " + fmt.Sprint(err))
 }
 
 func InitRoute(server *dotweb.HttpServer) {

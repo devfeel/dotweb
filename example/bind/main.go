@@ -48,8 +48,7 @@ func TestBind(ctx dotweb.Context) error {
 
 	}
 
-	_, err := ctx.WriteString("TestBind [" + errstr + "] " + fmt.Sprint(user))
-	return err
+	return ctx.WriteString("TestBind [" + errstr + "] " + fmt.Sprint(user))
 }
 
 func GetBind(ctx dotweb.Context) error {
@@ -69,8 +68,7 @@ func GetBind(ctx dotweb.Context) error {
 
 	}
 
-	_, err := ctx.WriteString("GetBind [" + errstr + "] " + fmt.Sprint(user))
-	return err
+	return ctx.WriteString("GetBind [" + errstr + "] " + fmt.Sprint(user))
 }
 
 func PostJsonBind(ctx dotweb.Context) error{
@@ -86,8 +84,7 @@ func PostJsonBind(ctx dotweb.Context) error{
 
 	}
 
-	_, err := ctx.WriteString("PostBind [" + errstr + "] " + fmt.Sprint(user))
-	return err
+	return ctx.WriteString("PostBind [" + errstr + "] " + fmt.Sprint(user))
 }
 
 func InitRoute(server *dotweb.HttpServer) {

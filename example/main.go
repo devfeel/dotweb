@@ -98,35 +98,30 @@ func Time(ctx dotweb.Context) error {
 
 func IndexReg(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, err := ctx.WriteString("welcome to dotweb")
-	return err
+	return ctx.WriteString("welcome to dotweb")
 }
 
 func IndexParam(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, err := ctx.WriteString("IndexParam", ctx.GetRouterName("id"))
-	return err
+	return ctx.WriteString("IndexParam", ctx.GetRouterName("id"))
 }
 
 func KeyPost(ctx dotweb.Context) error {
 	username1 := ctx.PostFormValue("username")
 	username2 := ctx.FormValue("username")
 	username3 := ctx.PostFormValue("username")
-	_, err := ctx.WriteString("username:" + username1 + " - " + username2 + " - " + username3)
-	return err
+	return ctx.WriteString("username:" + username1 + " - " + username2 + " - " + username3)
 }
 
 func JsonPost(ctx dotweb.Context) error {
-	_, err := ctx.WriteString("body:" + string(ctx.Request().PostBody()))
-	return err
+	return ctx.WriteString("body:" + string(ctx.Request().PostBody()))
 }
 
 func DefaultError(ctx dotweb.Context) error {
 	//panic("my panic error!")
 	i := 0
 	b := 2 / i
-	_, err := ctx.WriteString(b)
-	return err
+	return ctx.WriteString(b)
 }
 
 func Redirect(ctx dotweb.Context) error {
