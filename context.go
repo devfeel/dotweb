@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"strconv"
 )
 
 const (
@@ -52,6 +53,8 @@ type (
 		IsEnd() bool
 		Redirect(code int, targetUrl string) error
 		QueryString(key string) string
+		QueryInt(key string) int
+		QueryInt64(key string) int64
 		FormValue(key string) string
 		PostFormValue(key string) string
 		File(file string) (err error)
@@ -70,18 +73,18 @@ type (
 		View(name string) error
 		ViewC(code int, name string) error
 		Write(code int, content []byte) (int, error)
-		WriteString(contents ...interface{}) (int, error)
-		WriteStringC(code int, contents ...interface{}) (int, error)
-		WriteHtml(contents ...interface{}) (int, error)
-		WriteHtmlC(code int, contents ...interface{}) (int, error)
-		WriteBlob(contentType string, b []byte) (int, error)
-		WriteBlobC(code int, contentType string, b []byte) (int, error)
-		WriteJson(i interface{}) (int, error)
-		WriteJsonC(code int, i interface{}) (int, error)
-		WriteJsonBlob(b []byte) (int, error)
-		WriteJsonBlobC(code int, b []byte) (int, error)
-		WriteJsonp(callback string, i interface{}) (int, error)
-		WriteJsonpBlob(callback string, b []byte) (size int, err error)
+		WriteString(contents ...interface{}) error
+		WriteStringC(code int, contents ...interface{}) error
+		WriteHtml(contents ...interface{}) error
+		WriteHtmlC(code int, contents ...interface{}) error
+		WriteBlob(contentType string, b []byte) error
+		WriteBlobC(code int, contentType string, b []byte) error
+		WriteJson(i interface{}) error
+		WriteJsonC(code int, i interface{}) error
+		WriteJsonBlob(b []byte) error
+		WriteJsonBlobC(code int, b []byte) error
+		WriteJsonp(callback string, i interface{}) error
+		WriteJsonpBlob(callback string, b []byte) error
 	}
 
 	HttpContext struct {
@@ -320,6 +323,35 @@ func (ctx *HttpContext) QueryString(key string) string {
 	return ctx.request.QueryString(key)
 }
 
+// QueryInt get query key with int format
+// if not exists or not int type, return 0
+func (ctx *HttpContext) QueryInt(key string) int {
+	param := ctx.request.QueryString(key)
+	if param == "" {
+		return 0
+	}
+	val, err:=strconv.Atoi(param)
+	if err != nil{
+		return 0
+	}
+	return val
+}
+
+// QueryInt64 get query key with int64 format
+// if not exists or not int64 type, return 0
+func (ctx *HttpContext) QueryInt64(key string) int64 {
+	param := ctx.request.QueryString(key)
+	if param == "" {
+		return 0
+	}
+	val, err:=strconv.ParseInt(param, 10, 64)
+	if err != nil{
+		return 0
+	}
+	return val
+}
+
+
 /*
 * 根据指定key获取包括在post、put和get内的值
  */
@@ -484,94 +516,97 @@ func (ctx *HttpContext) Write(code int, content []byte) (int, error) {
 }
 
 // WriteString write (200, string, text/plain) to response
-func (ctx *HttpContext) WriteString(contents ...interface{}) (int, error) {
+func (ctx *HttpContext) WriteString(contents ...interface{}) error {
 	return ctx.WriteStringC(defaultHttpCode, contents...)
 }
 
 // WriteStringC write (httpCode, string, text/plain) to response
-func (ctx *HttpContext) WriteStringC(code int, contents ...interface{}) (int, error) {
+func (ctx *HttpContext) WriteStringC(code int, contents ...interface{}) error {
 	content := fmt.Sprint(contents...)
 	return ctx.WriteBlobC(code, MIMETextPlainCharsetUTF8, []byte(content))
 }
 
 // WriteString write (200, string, text/html) to response
-func (ctx *HttpContext) WriteHtml(contents ...interface{}) (int, error) {
+func (ctx *HttpContext) WriteHtml(contents ...interface{}) error {
 	return ctx.WriteHtmlC(defaultHttpCode, contents...)
 }
 
 // WriteHtmlC write (httpCode, string, text/html) to response
-func (ctx *HttpContext) WriteHtmlC(code int, contents ...interface{}) (int, error) {
+func (ctx *HttpContext) WriteHtmlC(code int, contents ...interface{}) error {
 	content := fmt.Sprint(contents...)
 	return ctx.WriteBlobC(code, MIMETextHTMLCharsetUTF8, []byte(content))
 }
 
 // WriteBlob write []byte content to response
-func (ctx *HttpContext) WriteBlob(contentType string, b []byte) (int, error) {
+func (ctx *HttpContext) WriteBlob(contentType string, b []byte) error {
 	return ctx.WriteBlobC(defaultHttpCode, contentType, b)
 }
 
 // WriteBlobC write (httpCode, []byte) to response
-func (ctx *HttpContext) WriteBlobC(code int, contentType string, b []byte) (int, error) {
+func (ctx *HttpContext) WriteBlobC(code int, contentType string, b []byte) error {
 	if contentType != "" {
 		ctx.response.SetContentType(contentType)
 	}
 	if ctx.IsHijack() {
-		return ctx.hijackConn.WriteBlob(b)
+		_, err := ctx.hijackConn.WriteBlob(b)
+		return err
 	} else {
-		return ctx.response.Write(code, b)
+		_, err :=  ctx.response.Write(code, b)
+		return err
 	}
 }
 
 // WriteJson write (httpCode, json string) to response
 // auto convert interface{} to json string
-func (ctx *HttpContext) WriteJson(i interface{}) (int, error) {
+func (ctx *HttpContext) WriteJson(i interface{}) error {
 	return ctx.WriteJsonC(defaultHttpCode, i)
 }
 
 // WriteJsonC write (httpCode, json string) to response
 // auto convert interface{} to json string
-func (ctx *HttpContext) WriteJsonC(code int, i interface{}) (int, error) {
+func (ctx *HttpContext) WriteJsonC(code int, i interface{}) error{
 	b, err := json.Marshal(i)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	return ctx.WriteJsonBlobC(code, b)
 }
 
 // WriteJsonBlob write json []byte to response
-func (ctx *HttpContext) WriteJsonBlob(b []byte) (int, error) {
+func (ctx *HttpContext) WriteJsonBlob(b []byte) error {
 	return ctx.WriteJsonBlobC(defaultHttpCode, b)
 }
 
 // WriteJsonBlobC write (httpCode, json []byte) to response
-func (ctx *HttpContext) WriteJsonBlobC(code int, b []byte) (int, error) {
+func (ctx *HttpContext) WriteJsonBlobC(code int, b []byte) error {
 	return ctx.WriteBlobC(code, MIMEApplicationJSONCharsetUTF8, b)
 }
 
 // WriteJsonp write jsonp string to response
-func (ctx *HttpContext) WriteJsonp(callback string, i interface{}) (int, error) {
+func (ctx *HttpContext) WriteJsonp(callback string, i interface{}) error {
 	b, err := json.Marshal(i)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	return ctx.WriteJsonpBlob(callback, b)
 }
 
 // WriteJsonpBlob write jsonp string as []byte to response
-func (ctx *HttpContext) WriteJsonpBlob(callback string, b []byte) (size int, err error) {
+func (ctx *HttpContext) WriteJsonpBlob(callback string, b []byte) error {
+	var err error
 	ctx.response.SetContentType(MIMEApplicationJavaScriptCharsetUTF8)
 	//特殊处理，如果为hijack，需要先行WriteBlob头部
 	if ctx.IsHijack() {
-		if size, err = ctx.hijackConn.WriteBlob([]byte(ctx.hijackConn.header + "\r\n")); err != nil {
-			return
+		if _, err = ctx.hijackConn.WriteBlob([]byte(ctx.hijackConn.header + "\r\n")); err != nil {
+			return err
 		}
 	}
-	if size, err = ctx.WriteBlob("", []byte(callback+"(")); err != nil {
-		return
+	if err = ctx.WriteBlob("", []byte(callback+"(")); err != nil {
+		return err
 	}
-	if size, err = ctx.WriteBlob("", b); err != nil {
-		return
+	if err = ctx.WriteBlob("", b); err != nil {
+		return err
 	}
-	size, err = ctx.WriteBlob("", []byte(");"))
-	return
+	err = ctx.WriteBlob("", []byte(");"))
+	return err
 }

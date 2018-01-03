@@ -25,8 +25,7 @@ func StartServer() error {
 	app.SetLogPath("/home/logs/wwwroot/")
 	//set route
 	app.HttpServer.GET("/index", func(ctx dotweb.Context) error{
-		_, err := ctx.WriteString("welcome to my first web!")
-		return err
+		return ctx.WriteString("welcome to my first web!")
 	})
 	//begin server
 	err := app.StartServer(80)
@@ -115,8 +114,7 @@ import (
 func main() {
     dotapp := dotweb.New()
     dotapp.HttpServer.GET("/hello", func(ctx dotweb.Context) error{
-        ctx.WriteString("hello world!")
-	return nil
+        return ctx.WriteString("hello world!")
     })
     dotapp.StartServer(80)
 }
@@ -135,14 +133,12 @@ import (
 func main() {
     dotapp := dotweb.New()
     dotapp.HttpServer.GET("/hello/:name", func(ctx dotweb.Context) error{
-        _, err := ctx.WriteString("hello " + ctx.GetRouterName("name"))
-        return err
+        return ctx.WriteString("hello " + ctx.GetRouterName("name"))
     })
     dotapp.HttpServer.GET("/news/:category/:newsid", func(ctx dotweb.Context) error{
     	category := ctx.GetRouterName("category")
 	    newsid := ctx.GetRouterName("newsid")
-        _, err := ctx.WriteString("news info: category=" + category + " newsid=" + newsid)
-        return err
+        return ctx.WriteString("news info: category=" + category + " newsid=" + newsid)
     })
     dotapp.StartServer(80)
 }
@@ -173,11 +169,10 @@ type UserInfo struct {
 func TestBind(ctx dotweb.HttpContext) error{
         user := new(UserInfo)
         if err := ctx.Bind(user); err != nil {
-        	 ctx.WriteString("err => " + err.Error())
+        	 return ctx.WriteString("err => " + err.Error())
         }else{
-             ctx.WriteString("TestBind " + fmt.Sprint(user))
+             return ctx.WriteString("TestBind " + fmt.Sprint(user))
         }
-        return nil
 }
 
 ```

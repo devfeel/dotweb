@@ -31,8 +31,7 @@ func main() {
 
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, err := ctx.WriteString("index")
-	return err
+	return ctx.WriteString("index")
 }
 
 func InitRoute(server *dotweb.HttpServer) {

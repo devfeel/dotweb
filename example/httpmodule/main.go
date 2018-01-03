@@ -54,8 +54,7 @@ func main() {
 func Index(ctx dotweb.Context) error {
 	ctx.Items().Set("count", 2)
 	ctx.WriteString(ctx.Request().Path() + ":Items.Count=> " + ctx.Items().GetString("count"))
-	_, err := ctx.WriteString("\r\n")
-	return err
+	return ctx.WriteString("\r\n")
 }
 
 func WHtml(ctx dotweb.Context) error {
