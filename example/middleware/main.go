@@ -19,23 +19,15 @@ func main() {
 	//开启development模式
 	app.SetDevelopmentMode()
 
-	//设置gzip开关
-	//app.SetEnabledGzip(true)
-
-
-	//InitModule(app)
-
-	//app.UseRequestLog()
-	app.Use(
-		NewAccessFmtLog("app"),
-	)
 	exAccessFmtLog := NewAccessFmtLog("appex")
 	exAccessFmtLog.Exclude("/index")
 	exAccessFmtLog.Exclude("/v1/machines/queryIP/:IP")
 	app.Use(exAccessFmtLog)
 
 	app.ExcludeUse(NewAccessFmtLog("appex1"), "/")
-
+	app.Use(
+		NewAccessFmtLog("app"),
+	)
 	//设置路由
 	InitRoute(app.HttpServer)
 

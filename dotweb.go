@@ -19,6 +19,7 @@ import (
 	"github.com/devfeel/dotweb/logger"
 	"github.com/devfeel/dotweb/servers"
 	"github.com/devfeel/dotweb/session"
+	"reflect"
 	"sync"
 )
 
@@ -35,6 +36,7 @@ type (
 		AppContext              *core.ItemContext
 		middlewareMap           map[string]MiddlewareFunc
 		middlewareMutex         *sync.RWMutex
+		StartMode               string
 	}
 
 	// ExceptionHandle 支持自定义异常处理代码能力
@@ -52,6 +54,9 @@ const (
 	DefaultHTTPPort     = 8080 //DefaultHTTPPort default http port; fixed for #70 UPDATE default http port 80 to 8080
 	RunMode_Development = "development"
 	RunMode_Production  = "production"
+
+	StartMode_New     = "New"
+	StartMode_Classic = "Classic"
 )
 
 //New create and return DotApp instance
@@ -64,8 +69,12 @@ func New() *DotWeb {
 		Config:          config.NewConfig(),
 		middlewareMap:   make(map[string]MiddlewareFunc),
 		middlewareMutex: new(sync.RWMutex),
+		StartMode:       StartMode_New,
 	}
 	app.HttpServer.setDotApp(app)
+	//add default httphandler with middlewares
+	//fixed for issue #100
+	app.Use(&xMiddleware{})
 
 	//init logger
 	logger.InitLog()
@@ -78,6 +87,7 @@ func New() *DotWeb {
 // 3.print logo
 func Classic() *DotWeb {
 	app := New()
+	app.StartMode = StartMode_Classic
 
 	app.SetEnabledLog(true)
 	app.UseRequestLog()
@@ -264,7 +274,9 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 
 	app.initBindMiddleware()
 
-	app.initInnerRouter()
+	if app.StartMode == StartMode_Classic {
+		app.UseDotwebRouter()
+	}
 
 	if app.HttpServer.ServerConfig().EnabledTLS {
 		err := app.HttpServer.ListenAndServeTLS(addr, app.HttpServer.ServerConfig().TLSCertFile, app.HttpServer.ServerConfig().TLSKeyFile)
@@ -389,23 +401,22 @@ func (app *DotWeb) initRegisterConfigGroup() {
 
 // init bind app's middleware to router node
 func (app *DotWeb) initBindMiddleware() {
-	//add default httphandler with middlewares
-	app.Use(&xMiddleware{})
-
 	router := app.HttpServer.Router().(*router)
 	for path, node := range router.allNodeMap {
-		logger.Logger().Debug("DotWeb initBindMiddleware "+path+" "+fmt.Sprint(node), LogTarget_HttpServer)
 		node.appMiddlewares = app.Middlewares
 		for _, m := range node.appMiddlewares {
 			if m.HasExclude() && m.ExistsExcludeRouter(node.fullPath) {
+				logger.Logger().Debug("DotWeb initBindMiddleware "+path+" "+reflect.TypeOf(m).String()+" exclude", LogTarget_HttpServer)
 				node.hasExcludeMiddleware = true
+			} else {
+				logger.Logger().Debug("DotWeb initBindMiddleware "+path+" "+reflect.TypeOf(m).String()+" match", LogTarget_HttpServer)
 			}
 		}
 	}
 }
 
 // init inner routers
-func (app *DotWeb) initInnerRouter() {
+func (app *DotWeb) UseDotwebRouter() {
 	//默认支持pprof信息查看
 	gInner := app.HttpServer.Group("/dotweb")
 	gInner.GET("/debug/pprof/:key", initPProf)
