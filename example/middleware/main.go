@@ -19,19 +19,17 @@ func main() {
 	//开启development模式
 	app.SetDevelopmentMode()
 
-	//设置gzip开关
-	//app.SetEnabledGzip(true)
+	exAccessFmtLog := NewAccessFmtLog("appex")
+	exAccessFmtLog.Exclude("/index")
+	exAccessFmtLog.Exclude("/v1/machines/queryIP/:IP")
+	app.Use(exAccessFmtLog)
 
-	//设置路由
-	InitRoute(app.HttpServer)
-
-	//InitModule(app)
-
-	//app.UseRequestLog()
+	app.ExcludeUse(NewAccessFmtLog("appex1"), "/")
 	app.Use(
 		NewAccessFmtLog("app"),
 	)
-	app.ExcludeUse(NewAccessFmtLog("appex"), "/", "/")
+	//设置路由
+	InitRoute(app.HttpServer)
 
 	//启动 监控服务
 	app.SetPProfConfig(true, 8081)
@@ -50,13 +48,16 @@ func main() {
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
 	//fmt.Println(time.Now(), "Index Handler")
-	err := ctx.WriteString("index  => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
+	err := ctx.WriteString("index  => ", ctx.Request().Url())
 	fmt.Println(ctx.RouterNode().GroupMiddlewares())
 	return err
 }
 
 func InitRoute(server *dotweb.HttpServer) {
 	server.Router().GET("/", Index)
+	server.Router().GET("/index", Index)
+	server.Router().GET("/v1/machines/queryIP/:IP", Index)
+	server.Router().GET("/v1/machines/queryIP2", Index)
 	server.Router().GET("/use", Index).Use(NewAccessFmtLog("Router-use"))
 
 	g := server.Group("/group").Use(NewAccessFmtLog("group")).Use(NewSimpleAuth("admin"))

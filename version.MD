@@ -1,5 +1,13 @@
 ## dotweb版本记录：
 
+#### Version 1.4.3
+* 调整dotweb内部路由注册逻辑，New模式默认不开启，Classic模式默认开启，可通过app.UseDotwebRouter手动开启
+* 修复 issue #100, 解决特定场景下Exclude不生效问题
+* Use filepath.Ext to replace file.GetFileExt, update for issue #99
+* 移除 framework/file.GetFileExt 函数
+* 同步更新example代码
+* 2018-01-07 22:00
+
 #### Version 1.4.2
 * Context新增QueryInt\QueryInt64接口，用于简化获取Int类型的Get参数，如果参数未传入或不是合法整形，返回0
 * Context接口调整：除Write外，其他WriteXXX接口，返回值从(int, error)调整为error

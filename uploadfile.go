@@ -2,10 +2,10 @@ package dotweb
 
 import (
 	"errors"
-	files "github.com/devfeel/dotweb/framework/file"
 	"io"
 	"mime/multipart"
 	"os"
+	"path/filepath"
 )
 
 type UploadFile struct {
@@ -21,7 +21,7 @@ func NewUploadFile(file multipart.File, header *multipart.FileHeader) *UploadFil
 		File:     file,
 		Header:   header,
 		fileName: header.Filename,
-		fileExt:  files.GetFileExt(header.Filename),
+		fileExt:  filepath.Ext(header.Filename), //update for issue #99
 	}
 }
 
