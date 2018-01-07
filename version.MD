@@ -4,6 +4,7 @@
 * 调整dotweb内部路由注册逻辑，New模式默认不开启，Classic模式默认开启，可通过app.UseDotwebRouter手动开启
 * 修复 issue #100, 解决特定场景下Exclude不生效问题
 * Use filepath.Ext to replace file.GetFileExt, update for issue #99
+* 移除 framework/file.GetFileExt 函数
 * 同步更新example代码
 * 2018-01-07 22:00
 

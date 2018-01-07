@@ -1,6 +1,7 @@
 package file
 
 import (
+	"path/filepath"
 	"testing"
 )
 
@@ -13,7 +14,7 @@ func Test_GetCurrentDirectory_1(t *testing.T) {
 
 func Test_GetFileExt_1(t *testing.T) {
 	fn := "/download/vagrant_1.9.2.dmg"
-	fileExt := GetFileExt(fn)
+	fileExt := filepath.Ext(fn)
 	if len(fileExt) < 1 {
 		t.Error("fileExt null!")
 	} else {
@@ -23,7 +24,7 @@ func Test_GetFileExt_1(t *testing.T) {
 
 func Test_GetFileExt_2(t *testing.T) {
 	fn := "/download/vagrant_1"
-	fileExt := GetFileExt(fn)
+	fileExt := filepath.Ext(fn)
 	if len(fileExt) < 1 {
 		t.Error("fileExt null!")
 	} else {
