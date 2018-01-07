@@ -2,7 +2,6 @@ package dotweb
 
 import (
 	"errors"
-	files "github.com/devfeel/dotweb/framework/file"
 	"io"
 	"mime/multipart"
 	"os"
