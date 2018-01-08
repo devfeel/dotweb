@@ -1,5 +1,11 @@
 ## dotweb版本记录：
 
+#### Version 1.4.4
+* 调整Bind模块内部获取req.Body为HttpContext.PostBody,避免因为Bind后无法再次获取Post内容
+* 完善debug log 输出
+* 更新example/static, 该示例目前为实现一个纯静态文件服务器功能
+* * 2018-01-08 12:00
+
 #### Version 1.4.3
 * 调整dotweb内部路由注册逻辑，New模式默认不开启，Classic模式默认开启，可通过app.UseDotwebRouter手动开启
 * 修复 issue #100, 解决特定场景下Exclude不生效问题
