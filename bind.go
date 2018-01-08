@@ -34,9 +34,9 @@ func (b *binder) Bind(i interface{}, ctx Context) (err error) {
 	err = errors.New("request unsupported MediaType -> " + ctype)
 	switch {
 	case strings.HasPrefix(ctype, MIMEApplicationJSON):
-		err = json.NewDecoder(req.Body).Decode(i)
+		err = json.Unmarshal(ctx.Request().PostBody(), i)
 	case strings.HasPrefix(ctype, MIMEApplicationXML):
-		err = xml.NewDecoder(req.Body).Decode(i)
+		err = xml.Unmarshal(ctx.Request().PostBody(), i)
 	//case strings.HasPrefix(ctype, MIMEApplicationForm), strings.HasPrefix(ctype, MIMEMultipartForm),
 	//	strings.HasPrefix(ctype, MIMETextHTML):
 	//	err = reflects.ConvertMapToStruct(defaultTagName, i, ctx.FormValues())
@@ -54,12 +54,11 @@ func (b *binder) Bind(i interface{}, ctx Context) (err error) {
 
 //BindJsonBody default use json decode req.Body to struct
 func (b *binder) BindJsonBody(i interface{}, ctx Context) (err error) {
-	req := ctx.Request()
-	if req.Body == nil {
+	if ctx.Request().PostBody() == nil {
 		err = errors.New("request body can't be empty")
 		return err
 	}
-	err = json.NewDecoder(req.Body).Decode(i)
+	err = json.Unmarshal(ctx.Request().PostBody(), i)
 	return err
 }
 
