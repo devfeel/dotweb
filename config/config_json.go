@@ -4,17 +4,17 @@ import "encoding/json"
 
 // UnmarshalJson parses the JSON-encoded data and stores the result
 // in the value pointed to by v.
-func UnmarshalJson(content []byte, v interface{}) error {
+func UnmarshalJSON(content []byte, v interface{}) error {
 	return json.Unmarshal(content, v)
 }
 
 // MarshalJson returns the JSON encoding of v.
-func MarshalJson(v interface{}) (out []byte, err error) {
+func MarshalJSON(v interface{}) (out []byte, err error) {
 	return json.Marshal(v)
 }
 
 // MarshalJsonString returns the JSON encoding string format of v.
-func MarshalJsonString(v interface{}) (out string) {
+func MarshalJSONString(v interface{}) (out string) {
 	marshal, err := json.Marshal(v)
 	if err != nil {
 		return ""

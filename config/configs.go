@@ -160,11 +160,11 @@ func InitConfig(configFile string, confType ...interface{}) (config *Config, err
 	}
 
 	if cType == ConfigType_Xml {
-		config, err = initConfig(realFile, cType, UnmarshalXml)
+		config, err = initConfig(realFile, cType, UnmarshalXML)
 	} else if cType == ConfigType_Yaml {
 		config, err = initConfig(realFile, cType, UnmarshalYaml)
 	} else {
-		config, err = initConfig(realFile, cType, UnmarshalJson)
+		config, err = initConfig(realFile, cType, UnmarshalJSON)
 	}
 
 	if err != nil {
