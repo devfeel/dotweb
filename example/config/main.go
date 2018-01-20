@@ -17,14 +17,18 @@ func main() {
 	//注册HttpHandler
 	RegisterHandler(app.HttpServer)
 
+	//xml config
 	//appConfig, err := config.InitConfig("d:/gotmp/dotweb.conf")
 	//json config
-	appConfig, err := config.InitConfig("d:/gotmp/dotweb.json.conf", "json")
+	//appConfig, err := config.InitConfig("d:/gotmp/dotweb.json", "json")
+	//yaml config
+	appConfig, err := config.InitConfig("d:/gotmp/dotweb.yaml", "yaml")
 	if err != nil {
 		fmt.Println("dotweb.InitConfig error => " + fmt.Sprint(err))
 		return
 	}
 	fmt.Println(jsonutil.GetJsonString(appConfig))
+
 	RegisterMiddlewares(app)
 
 	err = app.SetConfig(appConfig)

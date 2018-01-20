@@ -6,12 +6,11 @@ import (
 	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/framework/file"
 	"io/ioutil"
-	//"time"
 )
 
 type (
 	Config struct {
-		XMLName      xml.Name          `xml:"config" json:"-"`
+		XMLName      xml.Name          `xml:"config" json:"-" yaml:"-"`
 		App          *AppNode          `xml:"app"`
 		AppSets      []*AppSetNode     `xml:"appset>set"`
 		Offline      *OfflineNode      `xml:"offline"`
@@ -20,7 +19,7 @@ type (
 		Routers      []*RouterNode     `xml:"routers>router"`
 		Groups       []*GroupNode      `xml:"groups>group"`
 		Middlewares  []*MiddlewareNode `xml:"middlewares>middleware"`
-		AppSetConfig *core.ItemContext
+		AppSetConfig *core.ItemContext `json:"-" yaml:"-"`
 	}
 	OfflineNode struct {
 		Offline     bool   `xml:"offline,attr"`     //是否维护，默认false
@@ -47,7 +46,7 @@ type (
 		EnabledAutoHEAD          bool   `xml:"enabledautohead,attr"`          //设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
 		EnabledAutoCORS          bool   `xml:"enabledautocors,attr"`          //设置是否自动跨域支持，若设置，默认“GET, POST, PUT, DELETE, OPTIONS”全部请求均支持跨域
 		EnabledIgnoreFavicon     bool   `xml:"enabledignorefavicon,attr"`     //设置是否忽略favicon.ico请求，若设置，网站将把所有favicon.ico请求直接空返回
-		EnabledBindUseJsonTag 	 bool   `xml:"enabledbindusejsontag,attr"`	  //设置bind是否启用json标签,默认不启用,若设置，bind自动识别json tag,忽略form tag
+		EnabledBindUseJsonTag    bool   `xml:"enabledbindusejsontag,attr"`    //设置bind是否启用json标签,默认不启用,若设置，bind自动识别json tag,忽略form tag
 		Port                     int    `xml:"port,attr"`                     //端口
 		EnabledTLS               bool   `xml:"enabledtls,attr"`               //是否启用TLS模式
 		TLSCertFile              string `xml:"tlscertfile,attr"`              //TLS模式下Certificate证书文件地址
@@ -89,6 +88,7 @@ type (
 const (
 	ConfigType_Xml  = "xml"
 	ConfigType_Json = "json"
+	ConfigType_Yaml = "yaml"
 )
 
 func NewConfig() *Config {
@@ -155,11 +155,16 @@ func InitConfig(configFile string, confType ...interface{}) (config *Config, err
 	if len(confType) > 0 && confType[0] == ConfigType_Json {
 		cType = ConfigType_Json
 	}
+	if len(confType) > 0 && confType[0] == ConfigType_Yaml {
+		cType = ConfigType_Yaml
+	}
 
 	if cType == ConfigType_Xml {
-		config, err = initConfig(realFile, cType, fromXml)
+		config, err = initConfig(realFile, cType, UnmarshalXML)
+	} else if cType == ConfigType_Yaml {
+		config, err = initConfig(realFile, cType, UnmarshalYaml)
 	} else {
-		config, err = initConfig(realFile, cType, fromJson)
+		config, err = initConfig(realFile, cType, UnmarshalJSON)
 	}
 
 	if err != nil {
@@ -198,14 +203,14 @@ func dealConfigDefaultSet(c *Config) {
 
 }
 
-func initConfig(configFile string, ctType string, f func([]byte, interface{}) error) (*Config, error) {
+func initConfig(configFile string, ctType string, parser func([]byte, interface{}) error) (*Config, error) {
 	content, err := ioutil.ReadFile(configFile)
 	if err != nil {
 		return nil, errors.New("DotWeb:Config:initConfig 当前cType:" + ctType + " 配置文件[" + configFile + "]无法解析 - " + err.Error())
 	}
 
 	var config *Config
-	err = f(content, &config)
+	err = parser(content, &config)
 	if err != nil {
 		return nil, errors.New("DotWeb:Config:initConfig 当前cType:" + ctType + " 配置文件[" + configFile + "]解析失败 - " + err.Error())
 	}

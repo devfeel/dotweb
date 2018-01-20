@@ -1,8 +1,8 @@
 package dotweb
 
 import (
+	"bytes"
 	"errors"
-	"io"
 	"mime/multipart"
 	"os"
 	"path/filepath"
@@ -14,6 +14,7 @@ type UploadFile struct {
 	fileExt  string //file extensions
 	fileName string
 	fileSize int64
+	content  []byte
 }
 
 func NewUploadFile(file multipart.File, header *multipart.FileHeader) *UploadFile {
@@ -22,6 +23,7 @@ func NewUploadFile(file multipart.File, header *multipart.FileHeader) *UploadFil
 		Header:   header,
 		fileName: header.Filename,
 		fileExt:  filepath.Ext(header.Filename), //update for issue #99
+		content:  parseFileToBytes(file),
 	}
 }
 
@@ -46,7 +48,7 @@ func (f *UploadFile) Size() int64 {
 }
 
 //save file in server-local with filename
-func (f *UploadFile) SaveFile(fileName string) (size int64, err error) {
+func (f *UploadFile) SaveFile(fileName string) (size int, err error) {
 	size = 0
 	if fileName == "" {
 		return size, errors.New("filename not allow empty")
@@ -57,11 +59,24 @@ func (f *UploadFile) SaveFile(fileName string) (size int64, err error) {
 		return size, err
 	}
 	defer fileWriter.Close()
-	size, err = io.Copy(fileWriter, f.File)
+	f.File.Read(f.content)
+	//size, err = io.Copy(fileWriter, f.File)
+	size, err = fileWriter.Write(f.content)
 	return size, err
 }
 
 //get upload file extensions
 func (f *UploadFile) GetFileExt() string {
 	return f.fileExt
+}
+
+// Bytes returns a slice of byte hoding the UploadFile.File
+func (f *UploadFile) Bytes() []byte {
+	return f.content
+}
+
+func parseFileToBytes(file multipart.File) []byte {
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(file)
+	return buf.Bytes()
 }

@@ -1,5 +1,15 @@
 ## dotweb版本记录：
 
+#### Version 1.4.5
+* 新增yaml格式配置文件支持，具体参考 example/config/dotweb.yaml
+* config新增UnmarshalYaml\MarshalYaml\MarshalYamlString，提供针对Yaml的常规处理
+* config新增UnmarshalXML\MarshalXML\MarshalXMLString，提供针对Xml的常规处理
+* config新增UnmarshalJSON\MarshalJSON\MarshalJSONString，提供针对Json的常规处理
+* UploadFile新增Bytes接口，用于返回上传文件本身
+* 完善 example/config
+* 移除 example/session，查看更多示例，请移步https://github.com/devfeel/dotweb-example
+* 2018-01-20 23:40
+
 #### Version 1.4.4
 * 调整Bind模块内部获取req.Body为HttpContext.PostBody,避免因为Bind后无法再次获取Post内容
 * 完善debug log 输出
