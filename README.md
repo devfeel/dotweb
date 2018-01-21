@@ -272,14 +272,18 @@ type NotFoundHandle  func(http.ResponseWriter, *http.Request)
 websocket - golang.org/x/net/websocket
 <br>
 redis - github.com/garyburd/redigo/redis
-
+<br>
+yaml - gopkg.in/yaml.v2
 
 ## 相关项目
-#### <a href="https://github.com/devfeel/tokenserver" target="_blank">TokenServer</a>
-项目简介：token服务，提供token一致性服务以及相关的全局ID生成服务等
-
 #### <a href="https://github.com/devfeel/longweb" target="_blank">LongWeb</a>
 项目简介：http长连接网关服务，提供Websocket及长轮询服务
+
+#### <a href="https://github.com/yulibaozi/yulibaozi.com" target="_blank">yulibaozi.com</a>
+项目简介：基于dotweb与mapper的一款go的博客程序
+
+#### <a href="https://github.com/devfeel/tokenserver" target="_blank">TokenServer</a>
+项目简介：token服务，提供token一致性服务以及相关的全局ID生成服务等
 
 ## 贡献名单
 目前已经有几位朋友在为框架一起做努力，我们将在合适的时间向大家展现，谢谢他们的支持！

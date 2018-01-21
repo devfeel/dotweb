@@ -1,5 +1,11 @@
 ## dotweb版本记录：
 
+#### Version 1.4.6
+* BUG Fixed: UploadFile废弃Bytes接口，新增ReadBytes接口，用于返回上传文件本身
+* 需要特别注意，由于io.read具有一次性特性，UploadFile.SaveFile与UploadFile.ReadBytes只能使用其中一个，另外一个将无法正常获取数据
+* 增加dotweb.Version，用于输出框架版本号
+* 2018-01-21 09:00
+
 #### Version 1.4.5
 * 新增yaml格式配置文件支持，具体参考 example/config/dotweb.yaml
 * config新增UnmarshalYaml\MarshalYaml\MarshalYamlString，提供针对Yaml的常规处理
