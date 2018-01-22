@@ -275,7 +275,7 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 	app.initBindMiddleware()
 
 	if app.StartMode == StartMode_Classic {
-		app.UseDotwebRouter()
+		app.IncludeDotwebGroup()
 	}
 
 	if app.HttpServer.ServerConfig().EnabledTLS {
@@ -402,21 +402,63 @@ func (app *DotWeb) initRegisterConfigGroup() {
 // init bind app's middleware to router node
 func (app *DotWeb) initBindMiddleware() {
 	router := app.HttpServer.Router().(*router)
-	for path, node := range router.allNodeMap {
+	//bind app middlewares
+	for fullExpress, _ := range router.allRouterExpress {
+		expresses := strings.Split(fullExpress, "_")
+		if len(expresses) < 2{
+			continue
+		}
+		node := router.getNode(expresses[0], expresses[1])
+		if node == nil{
+			continue
+		}
+
 		node.appMiddlewares = app.Middlewares
 		for _, m := range node.appMiddlewares {
 			if m.HasExclude() && m.ExistsExcludeRouter(node.fullPath) {
-				logger.Logger().Debug("DotWeb initBindMiddleware "+path+" "+reflect.TypeOf(m).String()+" exclude", LogTarget_HttpServer)
+				logger.Logger().Debug("DotWeb initBindMiddleware [app] "+fullExpress+" "+reflect.TypeOf(m).String()+" exclude", LogTarget_HttpServer)
 				node.hasExcludeMiddleware = true
 			} else {
-				logger.Logger().Debug("DotWeb initBindMiddleware "+path+" "+reflect.TypeOf(m).String()+" match", LogTarget_HttpServer)
+				logger.Logger().Debug("DotWeb initBindMiddleware [app] "+fullExpress+" "+reflect.TypeOf(m).String()+" match", LogTarget_HttpServer)
+			}
+		}
+		if len(node.middlewares) > 0{
+			firstMiddleware := &xMiddleware{}
+			firstMiddleware.SetNext(node.middlewares[0])
+			node.middlewares = append([]Middleware{firstMiddleware}, node.middlewares...)
+		}
+	}
+
+	//bind group middlewares
+	for _, g := range app.HttpServer.groups {
+		xg := g.(*xGroup)
+		if len(xg.middlewares) <= 0 {
+			continue
+		}
+		for fullExpress, _ := range xg.allRouterExpress {
+			expresses := strings.Split(fullExpress, "_")
+			if len(expresses) < 2 {
+				continue
+			}
+			node := router.getNode(expresses[0], expresses[1])
+			if node == nil {
+				continue
+			}
+			node.groupMiddlewares = xg.middlewares
+			for _, m := range node.groupMiddlewares {
+				if m.HasExclude() && m.ExistsExcludeRouter(node.fullPath) {
+					logger.Logger().Debug("DotWeb initBindMiddleware [group] "+fullExpress+" "+reflect.TypeOf(m).String()+" exclude", LogTarget_HttpServer)
+					node.hasExcludeMiddleware = true
+				} else {
+					logger.Logger().Debug("DotWeb initBindMiddleware [group] "+fullExpress+" "+reflect.TypeOf(m).String()+" match", LogTarget_HttpServer)
+				}
 			}
 		}
 	}
 }
 
-// init inner routers
-func (app *DotWeb) UseDotwebRouter() {
+// IncludeDotwebGroup init inner routers
+func (app *DotWeb) IncludeDotwebGroup() {
 	//默认支持pprof信息查看
 	gInner := app.HttpServer.Group("/dotweb")
 	gInner.GET("/debug/pprof/:key", initPProf)
@@ -548,7 +590,7 @@ func showIntervalData(ctx Context) error {
 
 //显示服务器状态信息
 func showServerState(ctx Context) error {
-	ctx.WriteString(core.GlobalState.ShowHtmlData())
+	ctx.WriteHtml(core.GlobalState.ShowHtmlData())
 	return nil
 }
 

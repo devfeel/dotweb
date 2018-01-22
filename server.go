@@ -26,6 +26,7 @@ type (
 	HttpServer struct {
 		stdServer      *http.Server
 		router         Router
+		groups	 	   []Group
 		Modules        []*HttpModule
 		DotApp         *DotWeb
 		sessionManager *session.SessionManager

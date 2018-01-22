@@ -8,6 +8,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"github.com/devfeel/dotweb/const"
 )
 
 var GlobalState *ServerStateInfo
@@ -116,6 +117,8 @@ type ServerStateInfo struct {
 //ShowHtmlData show server state data html-string format
 func (state *ServerStateInfo) ShowHtmlData() string {
 	data := "<html><body><div>"
+	data += "ServerVersion : " + _const.Version
+	data += "<br>"
 	data += "ServerStartTime : " + state.ServerStartTime.Format(dateTimeLayout)
 	data += "<br>"
 	data += "TotalRequestCount : " + strconv.FormatUint(state.TotalRequestCount, 10)

@@ -1,5 +1,11 @@
 ## dotweb版本记录：
 
+#### Version 1.4.7
+* BUG Fixed: 修复Middleware特定场景下无效问题
+* 新增dotweb.IncludeDotwebGroup，用于自动集成dotweb相关路由
+* /dotweb/state 增加 ServerVersion输出
+* 2018-01-22 22:00
+
 #### Version 1.4.6
 * BUG Fixed: UploadFile废弃Bytes接口，新增ReadBytes接口，用于返回上传文件本身
 * 需要特别注意，由于io.read具有一次性特性，UploadFile.SaveFile与UploadFile.ReadBytes只能使用其中一个，另外一个将无法正常获取数据
