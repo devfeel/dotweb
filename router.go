@@ -96,7 +96,7 @@ type (
 	// handler functions via configurable routes
 	router struct {
 		Nodes        map[string]*Node
-		allNodeMap   map[string]*Node
+		allRouterExpress   map[string]struct{}
 		server       *HttpServer
 		handlerMap   map[string]HttpHandle
 		handlerMutex *sync.RWMutex
@@ -159,7 +159,7 @@ func NewRouter(server *HttpServer) *router {
 		RedirectTrailingSlash: true,
 		RedirectFixedPath:     true,
 		HandleOPTIONS:         true,
-		allNodeMap:            make(map[string]*Node),
+		allRouterExpress:      make(map[string]struct{}),
 		server:                server,
 		handlerMap:            make(map[string]HttpHandle),
 		handlerMutex:          new(sync.RWMutex),
@@ -185,6 +185,14 @@ func (r *router) MatchPath(ctx Context, routePath string) bool {
 		return n == ctx.RouterNode().Node()
 	}
 	return false
+}
+
+func (r *router) getNode(httpMethod string, routePath string) *Node{
+	if root := r.Nodes[httpMethod]; root != nil {
+		n := root.getNode(routePath)
+		return n
+	}
+	return nil
 }
 
 // ServeHTTP makes the router implement the http.Handler interface.
@@ -492,7 +500,7 @@ func (r *router) add(method, path string, handle RouterHandle, m ...Middleware) 
 	//fmt.Println("Handle => ", method, " - ", *root, " - ", path)
 	outnode = root.addRoute(path, handle, m...)
 	outnode.fullPath = path
-	r.allNodeMap[method+"_"+path] = outnode
+	r.allRouterExpress[method+"_"+path] = struct{}{}
 	return
 }
 

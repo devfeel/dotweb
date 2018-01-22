@@ -1,10 +1,5 @@
 package dotweb
 
-//dotweb const
-const (
-	Version = "1.4.5.1"
-)
-
 //Log define
 const (
 	LogTarget_Default     = "dotweb_default"
