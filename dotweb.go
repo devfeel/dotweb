@@ -33,7 +33,7 @@ type (
 		ExceptionHandler        ExceptionHandle
 		NotFoundHandler         StandardHandle // NotFoundHandler 支持自定义404处理代码能力
 		MethodNotAllowedHandler StandardHandle // MethodNotAllowedHandler fixed for #64 增加MethodNotAllowed自定义处理
-		AppContext              *core.ItemContext
+		Items              		*core.ItemContext
 		middlewareMap           map[string]MiddlewareFunc
 		middlewareMutex         *sync.RWMutex
 		StartMode               string
@@ -52,6 +52,7 @@ type (
 
 const (
 	DefaultHTTPPort     = 8080 //DefaultHTTPPort default http port; fixed for #70 UPDATE default http port 80 to 8080
+	DefaultConfigSetGroupName = "default"
 	RunMode_Development = "development"
 	RunMode_Production  = "production"
 
@@ -65,7 +66,7 @@ func New() *DotWeb {
 		HttpServer:      NewHttpServer(),
 		OfflineServer:   servers.NewOfflineServer(),
 		Middlewares:     make([]Middleware, 0),
-		AppContext:      core.NewItemContext(),
+		Items:      	 core.NewItemContext(),
 		Config:          config.NewConfig(),
 		middlewareMap:   make(map[string]MiddlewareFunc),
 		middlewareMutex: new(sync.RWMutex),
@@ -121,6 +122,46 @@ func (app *DotWeb) Cache() cache.Cache {
 func (app *DotWeb) SetCache(ca cache.Cache) {
 	app.cache = ca
 }
+
+// IncludeConfigSetXML include ConfigSet xml file to Dotweb.Items
+// same key will cover oldest value
+func (app *DotWeb) IncludeConfigSetXML(configFile string) error{
+	item, err:=config.ParseConfigSetXML(configFile)
+	if err!= nil{
+		return err
+	}
+	for k,v:=range item.GetCurrentMap(){
+		app.Items.Set(k, v)
+	}
+	return nil
+}
+
+// IncludeConfigSetJSON include ConfigSet json file to Dotweb.Items
+// same key will cover oldest value
+func (app *DotWeb) IncludeConfigSetJSON(configFile string) error{
+	item, err:=config.ParseConfigSetXML(configFile)
+	if err!= nil{
+		return err
+	}
+	for k,v:=range item.GetCurrentMap(){
+		app.Items.Set(k, v)
+	}
+	return nil
+}
+
+// IncludeConfigSetYaml include ConfigSet ymal file to Dotweb.Items
+// same key will cover oldest value
+func (app *DotWeb) IncludeConfigSetYaml(configFile string) error{
+	item, err:=config.ParseConfigSetXML(configFile)
+	if err!= nil{
+		return err
+	}
+	for k,v:=range item.GetCurrentMap(){
+		app.Items.Set(k, v)
+	}
+	return nil
+}
+
 
 // RunMode current app run mode, if not set, default set RunMode_Development
 func (app *DotWeb) RunMode() string {

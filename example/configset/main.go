@@ -1,0 +1,49 @@
+package main
+
+import (
+	"fmt"
+	"github.com/devfeel/dotweb"
+	"github.com/devfeel/dotweb/framework/file"
+	"strconv"
+)
+
+func main() {
+	//初始化DotServer
+	app := dotweb.New()
+
+	//设置dotserver日志目录
+	app.SetLogPath(file.GetCurrentDirectory())
+
+	app.SetDevelopmentMode()
+
+	app.HttpServer.SetEnabledIgnoreFavicon(true)
+
+
+	//引入自定义ConfigSet
+	err := app.IncludeConfigSetXML("d:/gotmp/userconf.xml")
+	if err!=nil{
+		fmt.Println(err.Error())
+		return
+	}
+
+	//设置路由
+	InitRoute(app.HttpServer)
+
+	// 开始服务
+	port := 8080
+	fmt.Println("dotweb.StartServer => " + strconv.Itoa(port))
+	err = app.StartServer(port)
+	fmt.Println("dotweb.StartServer error => ", err)
+}
+
+func ConfigSet(ctx dotweb.Context) error {
+	vkey1 := ctx.AppItems().GetString("set1")
+	vkey2 := ctx.AppItems().GetString("set2")
+	ctx.WriteString(ctx.Request().Path(), "key1=", vkey1, "key2=", vkey2)
+	return ctx.WriteString("\r\n")
+}
+
+
+func InitRoute(server *dotweb.HttpServer) {
+	server.GET("/c", ConfigSet)
+}

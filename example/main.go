@@ -65,8 +65,8 @@ func main() {
 	app.SetPProfConfig(true, 8081)
 
 	//全局容器
-	app.AppContext.Set("gstring", "gvalue")
-	app.AppContext.Set("gint", 1)
+	app.Items.Set("gstring", "gvalue")
+	app.Items.Set("gint", 1)
 
 	// 开始服务
 	port := 8080

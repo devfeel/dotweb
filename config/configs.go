@@ -86,8 +86,8 @@ type (
 )
 
 const (
-	ConfigType_Xml  = "xml"
-	ConfigType_Json = "json"
+	ConfigType_XML  = "xml"
+	ConfigType_JSON = "json"
 	ConfigType_Yaml = "yaml"
 )
 
@@ -151,15 +151,15 @@ func InitConfig(configFile string, confType ...interface{}) (config *Config, err
 		}
 	}
 
-	cType := ConfigType_Xml
-	if len(confType) > 0 && confType[0] == ConfigType_Json {
-		cType = ConfigType_Json
+	cType := ConfigType_XML
+	if len(confType) > 0 && confType[0] == ConfigType_JSON {
+		cType = ConfigType_JSON
 	}
 	if len(confType) > 0 && confType[0] == ConfigType_Yaml {
 		cType = ConfigType_Yaml
 	}
 
-	if cType == ConfigType_Xml {
+	if cType == ConfigType_XML {
 		config, err = initConfig(realFile, cType, UnmarshalXML)
 	} else if cType == ConfigType_Yaml {
 		config, err = initConfig(realFile, cType, UnmarshalYaml)

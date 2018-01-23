@@ -1,5 +1,17 @@
 ## dotweb版本记录：
 
+#### Version 1.4.8
+* 调整：Dotweb.AppContext变更为Dotweb.Items
+* 调整：HttpContext.AppContext变更为HttpContext.AppItems
+* 新增config.ConfigSet\config.ParseConfigSetXML\ParseConfigSetJSON\ParseConfigSetYaml，用于解析常规Key\Value格式的配置文件
+* 新增Dotweb.IncludeConfigSetXML\IncludeConfigSetJSON\IncludeConfigSetYaml，解析配置后置入Dotweb.Items，可通过HttpContext.AppItems().Get()获取
+* Include\ParseConfigSetXML:支持xml格式文件解析
+* Include\ParseConfigSetJSON:支持json格式文件解析
+* Include\ParseConfigSetYaml:支持yaml格式文件解析
+* 具体配置文件格式可参考example/configset
+* 新增示例代码 example/configset
+* 2018-01-23 19:00
+
 #### Version 1.4.7
 * BUG Fixed: 修复Middleware特定场景下无效问题
 * 新增dotweb.IncludeDotwebGroup，用于自动集成dotweb相关路由

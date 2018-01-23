@@ -39,7 +39,7 @@ type (
 		RouterNode() RouterNode
 		RouterParams() Params
 		Handler() HttpHandle
-		AppContext() *core.ItemContext
+		AppItems() *core.ItemContext
 		Cache() cache.Cache
 		Items() *core.ItemContext
 		AppSetConfig() *core.ItemContext
@@ -225,9 +225,9 @@ func (ctx *HttpContext) Features() *xFeatureTools {
 
 // AppContext get application's global appcontext
 // issue #3
-func (ctx *HttpContext) AppContext() *core.ItemContext {
+func (ctx *HttpContext) AppItems() *core.ItemContext {
 	if ctx.HttpServer != nil {
-		return ctx.httpServer.DotApp.AppContext
+		return ctx.httpServer.DotApp.Items
 	} else {
 		return core.NewItemContext()
 	}
