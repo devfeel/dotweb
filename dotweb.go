@@ -33,7 +33,7 @@ type (
 		ExceptionHandler        ExceptionHandle
 		NotFoundHandler         StandardHandle // NotFoundHandler 支持自定义404处理代码能力
 		MethodNotAllowedHandler StandardHandle // MethodNotAllowedHandler fixed for #64 增加MethodNotAllowed自定义处理
-		Items              		*core.ItemContext
+		Items                   core.ConcurrenceMap
 		middlewareMap           map[string]MiddlewareFunc
 		middlewareMutex         *sync.RWMutex
 		StartMode               string
@@ -51,10 +51,10 @@ type (
 )
 
 const (
-	DefaultHTTPPort     = 8080 //DefaultHTTPPort default http port; fixed for #70 UPDATE default http port 80 to 8080
+	DefaultHTTPPort           = 8080 //DefaultHTTPPort default http port; fixed for #70 UPDATE default http port 80 to 8080
 	DefaultConfigSetGroupName = "default"
-	RunMode_Development = "development"
-	RunMode_Production  = "production"
+	RunMode_Development       = "development"
+	RunMode_Production        = "production"
 
 	StartMode_New     = "New"
 	StartMode_Classic = "Classic"
@@ -66,7 +66,7 @@ func New() *DotWeb {
 		HttpServer:      NewHttpServer(),
 		OfflineServer:   servers.NewOfflineServer(),
 		Middlewares:     make([]Middleware, 0),
-		Items:      	 core.NewItemContext(),
+		Items:           core.NewConcurrenceMap(),
 		Config:          config.NewConfig(),
 		middlewareMap:   make(map[string]MiddlewareFunc),
 		middlewareMutex: new(sync.RWMutex),
@@ -122,46 +122,6 @@ func (app *DotWeb) Cache() cache.Cache {
 func (app *DotWeb) SetCache(ca cache.Cache) {
 	app.cache = ca
 }
-
-// IncludeConfigSetXML include ConfigSet xml file to Dotweb.Items
-// same key will cover oldest value
-func (app *DotWeb) IncludeConfigSetXML(configFile string) error{
-	item, err:=config.ParseConfigSetXML(configFile)
-	if err!= nil{
-		return err
-	}
-	for k,v:=range item.GetCurrentMap(){
-		app.Items.Set(k, v)
-	}
-	return nil
-}
-
-// IncludeConfigSetJSON include ConfigSet json file to Dotweb.Items
-// same key will cover oldest value
-func (app *DotWeb) IncludeConfigSetJSON(configFile string) error{
-	item, err:=config.ParseConfigSetXML(configFile)
-	if err!= nil{
-		return err
-	}
-	for k,v:=range item.GetCurrentMap(){
-		app.Items.Set(k, v)
-	}
-	return nil
-}
-
-// IncludeConfigSetYaml include ConfigSet ymal file to Dotweb.Items
-// same key will cover oldest value
-func (app *DotWeb) IncludeConfigSetYaml(configFile string) error{
-	item, err:=config.ParseConfigSetXML(configFile)
-	if err!= nil{
-		return err
-	}
-	for k,v:=range item.GetCurrentMap(){
-		app.Items.Set(k, v)
-	}
-	return nil
-}
-
 
 // RunMode current app run mode, if not set, default set RunMode_Development
 func (app *DotWeb) RunMode() string {
@@ -446,11 +406,11 @@ func (app *DotWeb) initBindMiddleware() {
 	//bind app middlewares
 	for fullExpress, _ := range router.allRouterExpress {
 		expresses := strings.Split(fullExpress, "_")
-		if len(expresses) < 2{
+		if len(expresses) < 2 {
 			continue
 		}
 		node := router.getNode(expresses[0], expresses[1])
-		if node == nil{
+		if node == nil {
 			continue
 		}
 
@@ -463,7 +423,7 @@ func (app *DotWeb) initBindMiddleware() {
 				logger.Logger().Debug("DotWeb initBindMiddleware [app] "+fullExpress+" "+reflect.TypeOf(m).String()+" match", LogTarget_HttpServer)
 			}
 		}
-		if len(node.middlewares) > 0{
+		if len(node.middlewares) > 0 {
 			firstMiddleware := &xMiddleware{}
 			firstMiddleware.SetNext(node.middlewares[0])
 			node.middlewares = append([]Middleware{firstMiddleware}, node.middlewares...)
@@ -475,7 +435,7 @@ func (app *DotWeb) initBindMiddleware() {
 		xg := g.(*xGroup)
 		if len(xg.middlewares) <= 0 {
 			continue
-		}else{
+		} else {
 			firstMiddleware := &xMiddleware{}
 			firstMiddleware.SetNext(xg.middlewares[0])
 			xg.middlewares = append([]Middleware{firstMiddleware}, xg.middlewares...)

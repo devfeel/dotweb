@@ -13,8 +13,8 @@ import (
 	"github.com/devfeel/dotweb/session"
 	"os"
 	"path/filepath"
-	"time"
 	"strconv"
+	"time"
 )
 
 const (
@@ -39,11 +39,11 @@ type (
 		RouterNode() RouterNode
 		RouterParams() Params
 		Handler() HttpHandle
-		AppItems() *core.ItemContext
+		AppItems() core.ConcurrenceMap
 		Cache() cache.Cache
-		Items() *core.ItemContext
-		AppSetConfig() *core.ItemContext
-		ViewData() *core.ItemContext
+		Items() core.ConcurrenceMap
+		ConfigSet() core.ReadonlyMap
+		ViewData() core.ConcurrenceMap
 		SessionID() string
 		Session() (state *session.SessionState)
 		Hijack() (*HijackConn, error)
@@ -103,9 +103,9 @@ type (
 		isEnd          bool //表示当前处理流程是否需要终止
 		httpServer     *HttpServer
 		sessionID      string
-		innerItems     *core.ItemContext
-		items          *core.ItemContext
-		viewData       *core.ItemContext
+		innerItems     core.ConcurrenceMap
+		items          core.ConcurrenceMap
+		viewData       core.ConcurrenceMap
 		features       *xFeatureTools
 		handler        HttpHandle
 		startTime      time.Time
@@ -225,11 +225,11 @@ func (ctx *HttpContext) Features() *xFeatureTools {
 
 // AppContext get application's global appcontext
 // issue #3
-func (ctx *HttpContext) AppItems() *core.ItemContext {
+func (ctx *HttpContext) AppItems() core.ConcurrenceMap {
 	if ctx.HttpServer != nil {
 		return ctx.httpServer.DotApp.Items
 	} else {
-		return core.NewItemContext()
+		return core.NewConcurrenceMap()
 	}
 }
 
@@ -240,33 +240,33 @@ func (ctx *HttpContext) Cache() cache.Cache {
 
 // getInnerItems get request's inner item context
 // lazy init when first use
-func (ctx *HttpContext) getInnerItems() *core.ItemContext {
+func (ctx *HttpContext) getInnerItems() core.ConcurrenceMap {
 	if ctx.innerItems == nil {
-		ctx.innerItems = core.NewItemContext()
+		ctx.innerItems = core.NewConcurrenceMap()
 	}
 	return ctx.innerItems
 }
 
 // Items get request's item context
 // lazy init when first use
-func (ctx *HttpContext) Items() *core.ItemContext {
+func (ctx *HttpContext) Items() core.ConcurrenceMap {
 	if ctx.items == nil {
-		ctx.items = core.NewItemContext()
+		ctx.items = core.NewConcurrenceMap()
 	}
 	return ctx.items
 }
 
 // AppSetConfig get appset from config file
 // update for issue #16 配置文件
-func (ctx *HttpContext) AppSetConfig() *core.ItemContext {
-	return ctx.HttpServer().DotApp.Config.AppSetConfig
+func (ctx *HttpContext) ConfigSet() core.ReadonlyMap {
+	return ctx.HttpServer().DotApp.Config.ConfigSet
 }
 
 // ViewData get view data context
 // lazy init when first use
-func (ctx *HttpContext) ViewData() *core.ItemContext {
+func (ctx *HttpContext) ViewData() core.ConcurrenceMap {
 	if ctx.viewData == nil {
-		ctx.viewData = core.NewItemContext()
+		ctx.viewData = core.NewConcurrenceMap()
 	}
 	return ctx.viewData
 }
@@ -330,8 +330,8 @@ func (ctx *HttpContext) QueryInt(key string) int {
 	if param == "" {
 		return 0
 	}
-	val, err:=strconv.Atoi(param)
-	if err != nil{
+	val, err := strconv.Atoi(param)
+	if err != nil {
 		return 0
 	}
 	return val
@@ -344,13 +344,12 @@ func (ctx *HttpContext) QueryInt64(key string) int64 {
 	if param == "" {
 		return 0
 	}
-	val, err:=strconv.ParseInt(param, 10, 64)
-	if err != nil{
+	val, err := strconv.ParseInt(param, 10, 64)
+	if err != nil {
 		return 0
 	}
 	return val
 }
-
 
 /*
 * 根据指定key获取包括在post、put和get内的值
@@ -551,7 +550,7 @@ func (ctx *HttpContext) WriteBlobC(code int, contentType string, b []byte) error
 		_, err := ctx.hijackConn.WriteBlob(b)
 		return err
 	} else {
-		_, err :=  ctx.response.Write(code, b)
+		_, err := ctx.response.Write(code, b)
 		return err
 	}
 }
@@ -564,7 +563,7 @@ func (ctx *HttpContext) WriteJson(i interface{}) error {
 
 // WriteJsonC write (httpCode, json string) to response
 // auto convert interface{} to json string
-func (ctx *HttpContext) WriteJsonC(code int, i interface{}) error{
+func (ctx *HttpContext) WriteJsonC(code int, i interface{}) error {
 	b, err := json.Marshal(i)
 	if err != nil {
 		return err

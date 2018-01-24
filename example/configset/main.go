@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/devfeel/dotweb"
+	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/framework/file"
 	"strconv"
 )
@@ -18,10 +19,9 @@ func main() {
 
 	app.HttpServer.SetEnabledIgnoreFavicon(true)
 
-
 	//引入自定义ConfigSet
-	err := app.IncludeConfigSetXML("d:/gotmp/userconf.xml")
-	if err!=nil{
+	err := app.Config.IncludeConfigSet("d:/gotmp/userconf.xml", config.ConfigType_XML)
+	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
@@ -42,7 +42,6 @@ func ConfigSet(ctx dotweb.Context) error {
 	ctx.WriteString(ctx.Request().Path(), "key1=", vkey1, "key2=", vkey2)
 	return ctx.WriteString("\r\n")
 }
-
 
 func InitRoute(server *dotweb.HttpServer) {
 	server.GET("/c", ConfigSet)

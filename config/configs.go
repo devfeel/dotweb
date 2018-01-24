@@ -10,16 +10,16 @@ import (
 
 type (
 	Config struct {
-		XMLName      xml.Name          `xml:"config" json:"-" yaml:"-"`
-		App          *AppNode          `xml:"app"`
-		AppSets      []*AppSetNode     `xml:"appset>set"`
-		Offline      *OfflineNode      `xml:"offline"`
-		Server       *ServerNode       `xml:"server"`
-		Session      *SessionNode      `xml:"session"`
-		Routers      []*RouterNode     `xml:"routers>router"`
-		Groups       []*GroupNode      `xml:"groups>group"`
-		Middlewares  []*MiddlewareNode `xml:"middlewares>middleware"`
-		AppSetConfig *core.ItemContext `json:"-" yaml:"-"`
+		XMLName        xml.Name          `xml:"config" json:"-" yaml:"-"`
+		App            *AppNode          `xml:"app"`
+		ConfigSetNodes []*ConfigSetNode  `xml:"configset>set"`
+		Offline        *OfflineNode      `xml:"offline"`
+		Server         *ServerNode       `xml:"server"`
+		Session        *SessionNode      `xml:"session"`
+		Routers        []*RouterNode     `xml:"routers>router"`
+		Groups         []*GroupNode      `xml:"groups>group"`
+		Middlewares    []*MiddlewareNode `xml:"middlewares>middleware"`
+		ConfigSet      core.ReadonlyMap  `json:"-" yaml:"-"`
 	}
 	OfflineNode struct {
 		Offline     bool   `xml:"offline,attr"`     //是否维护，默认false
@@ -32,11 +32,6 @@ type (
 		RunMode      string `xml:"runmode,attr"`      //运行模式，目前支持development、production
 		PProfPort    int    `xml:"pprofport,attr"`    //pprof-server 端口，不能与主Server端口相同
 		EnabledPProf bool   `xml:"enabledpprof,attr"` //是否启用pprof server，默认不启用
-	}
-	//update for issue #16 配置文件
-	AppSetNode struct {
-		Key   string `xml:"key,attr"`
-		Value string `xml:"value,attr"`
 	}
 
 	ServerNode struct {
@@ -93,12 +88,40 @@ const (
 
 func NewConfig() *Config {
 	return &Config{
-		App:          NewAppNode(),
-		Offline:      NewOfflineNode(),
-		Server:       NewServerNode(),
-		Session:      NewSessionNode(),
-		AppSetConfig: core.NewItemContext(),
+		App:       NewAppNode(),
+		Offline:   NewOfflineNode(),
+		Server:    NewServerNode(),
+		Session:   NewSessionNode(),
+		ConfigSet: core.NewReadonlyMap(),
 	}
+}
+
+// IncludeConfigSetXML include ConfigSet file to Dotweb.Items
+// same key will cover oldest value
+// support xml\json\yaml
+func (conf *Config) IncludeConfigSet(configFile string, confType string) error {
+	var parseItem core.ConcurrenceMap
+	var err error
+	if confType == ConfigType_XML {
+		parseItem, err = ParseConfigSetXML(configFile)
+	}
+	if confType == ConfigType_JSON {
+		parseItem, err = ParseConfigSetJSON(configFile)
+	}
+	if confType == ConfigType_Yaml {
+		parseItem, err = ParseConfigSetYaml(configFile)
+	}
+	if err != nil {
+		return err
+	}
+	items := conf.ConfigSet.(*core.ItemMap)
+	if items == nil {
+		return errors.New("init config items error")
+	}
+	for k, v := range parseItem.GetCurrentMap() {
+		items.Set(k, v)
+	}
+	return nil
 }
 
 func NewAppNode() *AppNode {
@@ -187,11 +210,11 @@ func InitConfig(configFile string, confType ...interface{}) (config *Config, err
 		config.Offline = NewOfflineNode()
 	}
 
-	tmpAppSetMap := core.NewItemContext()
-	for _, v := range config.AppSets {
-		tmpAppSetMap.Set(v.Key, v.Value)
+	tmpConfigSetMap := core.NewConcurrenceMap()
+	for _, v := range config.ConfigSetNodes {
+		tmpConfigSetMap.Set(v.Key, v.Value)
 	}
-	config.AppSetConfig = tmpAppSetMap
+	config.ConfigSet = tmpConfigSetMap
 
 	//deal config default value
 	dealConfigDefaultSet(config)

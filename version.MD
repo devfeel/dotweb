@@ -1,16 +1,19 @@
 ## dotweb版本记录：
 
 #### Version 1.4.8
+* 调整：ItemContext更名为ItemMap，新增ConcurrenceMap、ReadonlyMap接口
 * 调整：Dotweb.AppContext变更为Dotweb.Items
 * 调整：HttpContext.AppContext变更为HttpContext.AppItems
-* 新增config.ConfigSet\config.ParseConfigSetXML\ParseConfigSetJSON\ParseConfigSetYaml，用于解析常规Key\Value格式的配置文件
-* 新增Dotweb.IncludeConfigSetXML\IncludeConfigSetJSON\IncludeConfigSetYaml，解析配置后置入Dotweb.Items，可通过HttpContext.AppItems().Get()获取
-* Include\ParseConfigSetXML:支持xml格式文件解析
-* Include\ParseConfigSetJSON:支持json格式文件解析
-* Include\ParseConfigSetYaml:支持yaml格式文件解析
+* 调整：HttpContext.AppSetConfig变更为HttpContext.ConfigSet
+* 调整：config.AppSet变更为config.ConfigSet
+* 新增: config.ParseConfigSetXML\ParseConfigSetJSON\ParseConfigSetYaml，用于解析常规Key\Value格式的配置文件
+* 新增：config.Config.IncludeConfigSet，用于向config.ConfigSet中导入Key\Value格式的配置文件，通过HttpContext.ConfigSet获取相关设置信息
+* ParseConfigSetXML:支持xml格式文件解析，返回core.ConcurrenceMap
+* ParseConfigSetJSON:支持json格式文件解析，返回core.ConcurrenceMap
+* ParseConfigSetYaml:支持yaml格式文件解析，返回core.ConcurrenceMap
 * 具体配置文件格式可参考example/configset
 * 新增示例代码 example/configset
-* 2018-01-23 19:00
+* 2018-01-24 22:00
 
 #### Version 1.4.7
 * BUG Fixed: 修复Middleware特定场景下无效问题
