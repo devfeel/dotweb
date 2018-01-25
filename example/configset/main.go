@@ -37,8 +37,8 @@ func main() {
 }
 
 func ConfigSet(ctx dotweb.Context) error {
-	vkey1 := ctx.AppItems().GetString("set1")
-	vkey2 := ctx.AppItems().GetString("set2")
+	vkey1 := ctx.ConfigSet().GetString("set1")
+	vkey2 := ctx.ConfigSet().GetString("set2")
 	ctx.WriteString(ctx.Request().Path(), "key1=", vkey1, "key2=", vkey2)
 	return ctx.WriteString("\r\n")
 }
