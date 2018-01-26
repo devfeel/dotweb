@@ -9,6 +9,8 @@ import (
 )
 
 type (
+
+	// Config dotweb app config define
 	Config struct {
 		XMLName        xml.Name          `xml:"config" json:"-" yaml:"-"`
 		App            *AppNode          `xml:"app"`
@@ -21,11 +23,15 @@ type (
 		Middlewares    []*MiddlewareNode `xml:"middlewares>middleware"`
 		ConfigSet      core.ReadonlyMap  `json:"-" yaml:"-"`
 	}
+
+	// OfflineNode dotweb app offline config
 	OfflineNode struct {
 		Offline     bool   `xml:"offline,attr"`     //是否维护，默认false
 		OfflineText string `xml:"offlinetext,attr"` //当设置为维护，默认显示内容，如果设置url，优先url
 		OfflineUrl  string `xml:"offlineurl,attr"`  //当设置为维护，默认维护页地址，如果设置url，优先url
 	}
+
+	// AppNode dotweb app global config
 	AppNode struct {
 		LogPath      string `xml:"logpath,attr"`      //文件方式日志目录，如果为空，默认当前目录
 		EnabledLog   bool   `xml:"enabledlog,attr"`   //是否启用日志记录
@@ -34,6 +40,7 @@ type (
 		EnabledPProf bool   `xml:"enabledpprof,attr"` //是否启用pprof server，默认不启用
 	}
 
+	// ServerNode dotweb app's httpserver config
 	ServerNode struct {
 		EnabledListDir           bool   `xml:"enabledlistdir,attr"`           //设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
 		EnabledRequestID         bool   `xml:"enabledrequestid,attr"`         //设置是否启用唯一请求ID，默认不开启，开启后使用32位UUID
@@ -50,6 +57,7 @@ type (
 		EnabledDetailRequestData bool   `xml:"enableddetailrequestdata,attr"` //设置状态数据是否启用详细页面统计，默认不启用，请特别对待，如果站点url过多，会导致数据量过大
 	}
 
+	// SessionNode dotweb app's session config
 	SessionNode struct {
 		EnabledSession bool   `xml:"enabled,attr"`  //启用Session
 		SessionMode    string `xml:"mode,attr"`     //session模式，目前支持runtime、redis
@@ -59,6 +67,7 @@ type (
 		Password       string `xml:"password,attr"` //远程session password
 	}
 
+	// RouterNode dotweb app's router config
 	RouterNode struct {
 		Method      string            `xml:"method,attr"`
 		Path        string            `xml:"path,attr"`
@@ -67,6 +76,7 @@ type (
 		IsUse       bool              `xml:"isuse,attr"` //是否启用，默认false
 	}
 
+	// GroupNode dotweb app's group router config
 	GroupNode struct {
 		Path        string            `xml:"path,attr"`
 		Routers     []*RouterNode     `xml:"router"`
@@ -74,6 +84,7 @@ type (
 		IsUse       bool              `xml:"isuse,attr"` //是否启用，默认false
 	}
 
+	// MiddlewareNode dotweb app's middleware config
 	MiddlewareNode struct {
 		Name  string `xml:"name,attr"`
 		IsUse bool   `xml:"isuse,attr"` //是否启用，默认false
@@ -81,11 +92,15 @@ type (
 )
 
 const (
+	// ConfigType_XML xml config file
 	ConfigType_XML  = "xml"
+	// ConfigType_JSON json config file
 	ConfigType_JSON = "json"
+	// ConfigType_Yaml yaml config file
 	ConfigType_Yaml = "yaml"
 )
 
+// NewConfig create new config
 func NewConfig() *Config {
 	return &Config{
 		App:       NewAppNode(),
@@ -96,7 +111,7 @@ func NewConfig() *Config {
 	}
 }
 
-// IncludeConfigSetXML include ConfigSet file to Dotweb.Items
+// IncludeConfigSet include ConfigSet file to Dotweb.Config.ConfigSet, can use ctx.ConfigSet to use your data
 // same key will cover oldest value
 // support xml\json\yaml
 func (conf *Config) IncludeConfigSet(configFile string, confType string) error {

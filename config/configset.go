@@ -8,14 +8,14 @@ import (
 )
 
 type (
-	//单元配置组，包含一系列单元配置节点
+	// ConfigSet 单元配置组，包含一系列单元配置节点
 	ConfigSet struct {
 		XMLName        xml.Name         `xml:"config" json:"-" yaml:"-"`
 		Name           string           `xml:"name,attr"`
 		ConfigSetNodes []*ConfigSetNode `xml:"set"`
 	}
 
-	//update for issue #16 配置文件
+	// ConfigSetNode update for issue #16 配置文件
 	ConfigSetNode struct {
 		Key   string `xml:"key,attr"`
 		Value string `xml:"value,attr"`

@@ -36,6 +36,7 @@ func main() {
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
+// ConfigSet
 func ConfigSet(ctx dotweb.Context) error {
 	vkey1 := ctx.ConfigSet().GetString("set1")
 	vkey2 := ctx.ConfigSet().GetString("set2")
@@ -43,6 +44,7 @@ func ConfigSet(ctx dotweb.Context) error {
 	return ctx.WriteString("\r\n")
 }
 
+// InitRoute
 func InitRoute(server *dotweb.HttpServer) {
 	server.GET("/c", ConfigSet)
 }

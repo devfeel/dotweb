@@ -51,12 +51,17 @@ type (
 )
 
 const (
-	DefaultHTTPPort           = 8080 //DefaultHTTPPort default http port; fixed for #70 UPDATE default http port 80 to 8080
-	DefaultConfigSetGroupName = "default"
+	// DefaultHTTPPort default http port; fixed for #70 UPDATE default http port 80 to 8080
+	DefaultHTTPPort           = 8080
+
+	// RunMode_Development app runmode in development mode
 	RunMode_Development       = "development"
+	// RunMode_Production app runmode in production mode
 	RunMode_Production        = "production"
 
+	//StartMode_New app startmode in New mode
 	StartMode_New     = "New"
+	//StartMode_Classic app startmode in Classic mode
 	StartMode_Classic = "Classic"
 )
 

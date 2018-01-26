@@ -6,6 +6,7 @@ import (
 )
 
 type (
+	// ReadonlyMap only support readonly method for map
 	ReadonlyMap interface {
 		Get(key string) (value interface{}, exists bool)
 		GetString(key string) string
@@ -14,6 +15,8 @@ type (
 		Exists(key string) bool
 		Len() int
 	}
+
+	// ReadonlyMap support concurrence for map
 	ConcurrenceMap interface {
 		Get(key string) (value interface{}, exists bool)
 		GetString(key string) string
@@ -28,12 +31,13 @@ type (
 	}
 )
 
-//自带锁，并发安全的Map
+// ItemMap concurrence map
 type ItemMap struct {
 	innerMap map[string]interface{}
 	*sync.RWMutex
 }
 
+// NewItemMap create new ItemMap
 func NewItemMap() *ItemMap {
 	return &ItemMap{
 		innerMap: make(map[string]interface{}),
@@ -41,6 +45,7 @@ func NewItemMap() *ItemMap {
 	}
 }
 
+// NewConcurrenceMap create new ConcurrenceMap
 func NewConcurrenceMap() ConcurrenceMap {
 	return &ItemMap{
 		innerMap: make(map[string]interface{}),
@@ -48,6 +53,7 @@ func NewConcurrenceMap() ConcurrenceMap {
 	}
 }
 
+// NewReadonlyMap create new ReadonlyMap
 func NewReadonlyMap() ReadonlyMap {
 	return &ItemMap{
 		innerMap: make(map[string]interface{}),
@@ -55,9 +61,7 @@ func NewReadonlyMap() ReadonlyMap {
 	}
 }
 
-/*
-* 以key、value置入AppContext
- */
+// Set 以key、value置入ItemMap
 func (ctx *ItemMap) Set(key string, value interface{}) error {
 	ctx.Lock()
 	ctx.innerMap[key] = value
@@ -65,9 +69,7 @@ func (ctx *ItemMap) Set(key string, value interface{}) error {
 	return nil
 }
 
-/*
-* 读取指定key在AppContext中的内容
- */
+// Get 读取指定key在ItemMap中的内容
 func (ctx *ItemMap) Get(key string) (value interface{}, exists bool) {
 	ctx.RLock()
 	value, exists = ctx.innerMap[key]
@@ -75,16 +77,16 @@ func (ctx *ItemMap) Get(key string) (value interface{}, exists bool) {
 	return value, exists
 }
 
-//remove item by gived key
-//if not exists key, do nothing...
+// Remove remove item by gived key
+// if not exists key, do nothing...
 func (ctx *ItemMap) Remove(key string) {
 	ctx.Lock()
 	delete(ctx.innerMap, key)
 	ctx.Unlock()
 }
 
-//get item by gived key, and remove it
-//only can be read once, it will be locked
+// Once get item by gived key, and remove it
+// only can be read once, it will be locked
 func (ctx *ItemMap) Once(key string) (value interface{}, exists bool) {
 	ctx.Lock()
 	defer ctx.Unlock()
@@ -95,9 +97,8 @@ func (ctx *ItemMap) Once(key string) (value interface{}, exists bool) {
 	return value, exists
 }
 
-/*
-* 读取指定key在AppContext中的内容，以string格式输出
- */
+
+// GetString 读取指定key在AppContext中的内容，以string格式输出
 func (ctx *ItemMap) GetString(key string) string {
 	value, exists := ctx.Get(key)
 	if !exists {
@@ -106,9 +107,8 @@ func (ctx *ItemMap) GetString(key string) string {
 	return fmt.Sprint(value)
 }
 
-/*
-* 读取指定key在AppContext中的内容，以int格式输出
- */
+
+// GetInt 读取指定key在AppContext中的内容，以int格式输出
 func (ctx *ItemMap) GetInt(key string) int {
 	value, exists := ctx.Get(key)
 	if !exists {
@@ -117,9 +117,7 @@ func (ctx *ItemMap) GetInt(key string) int {
 	return value.(int)
 }
 
-/*
-* 读取指定key在AppContext中的内容，以int格式输出
- */
+// GetUInt64 读取指定key在AppContext中的内容，以int格式输出
 func (ctx *ItemMap) GetUInt64(key string) uint64 {
 	value, exists := ctx.Get(key)
 	if !exists {
@@ -128,18 +126,18 @@ func (ctx *ItemMap) GetUInt64(key string) uint64 {
 	return value.(uint64)
 }
 
-//check exists key
+// Exists check exists key
 func (ctx *ItemMap) Exists(key string) bool {
 	_, exists := ctx.innerMap[key]
 	return exists
 }
 
-//get current map, returns map[string]interface{}
+// GetCurrentMap get current map, returns map[string]interface{}
 func (ctx *ItemMap) GetCurrentMap() map[string]interface{} {
 	return ctx.innerMap
 }
 
-//get context length
+// Len get context length
 func (ctx *ItemMap) Len() int {
 	return len(ctx.innerMap)
 }
