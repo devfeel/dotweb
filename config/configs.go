@@ -9,23 +9,29 @@ import (
 )
 
 type (
+
+	// Config dotweb app config define
 	Config struct {
-		XMLName      xml.Name          `xml:"config" json:"-" yaml:"-"`
-		App          *AppNode          `xml:"app"`
-		AppSets      []*AppSetNode     `xml:"appset>set"`
-		Offline      *OfflineNode      `xml:"offline"`
-		Server       *ServerNode       `xml:"server"`
-		Session      *SessionNode      `xml:"session"`
-		Routers      []*RouterNode     `xml:"routers>router"`
-		Groups       []*GroupNode      `xml:"groups>group"`
-		Middlewares  []*MiddlewareNode `xml:"middlewares>middleware"`
-		AppSetConfig *core.ItemContext `json:"-" yaml:"-"`
+		XMLName        xml.Name          `xml:"config" json:"-" yaml:"-"`
+		App            *AppNode          `xml:"app"`
+		ConfigSetNodes []*ConfigSetNode  `xml:"configset>set"`
+		Offline        *OfflineNode      `xml:"offline"`
+		Server         *ServerNode       `xml:"server"`
+		Session        *SessionNode      `xml:"session"`
+		Routers        []*RouterNode     `xml:"routers>router"`
+		Groups         []*GroupNode      `xml:"groups>group"`
+		Middlewares    []*MiddlewareNode `xml:"middlewares>middleware"`
+		ConfigSet      core.ReadonlyMap  `json:"-" yaml:"-"`
 	}
+
+	// OfflineNode dotweb app offline config
 	OfflineNode struct {
 		Offline     bool   `xml:"offline,attr"`     //是否维护，默认false
 		OfflineText string `xml:"offlinetext,attr"` //当设置为维护，默认显示内容，如果设置url，优先url
 		OfflineUrl  string `xml:"offlineurl,attr"`  //当设置为维护，默认维护页地址，如果设置url，优先url
 	}
+
+	// AppNode dotweb app global config
 	AppNode struct {
 		LogPath      string `xml:"logpath,attr"`      //文件方式日志目录，如果为空，默认当前目录
 		EnabledLog   bool   `xml:"enabledlog,attr"`   //是否启用日志记录
@@ -33,12 +39,8 @@ type (
 		PProfPort    int    `xml:"pprofport,attr"`    //pprof-server 端口，不能与主Server端口相同
 		EnabledPProf bool   `xml:"enabledpprof,attr"` //是否启用pprof server，默认不启用
 	}
-	//update for issue #16 配置文件
-	AppSetNode struct {
-		Key   string `xml:"key,attr"`
-		Value string `xml:"value,attr"`
-	}
 
+	// ServerNode dotweb app's httpserver config
 	ServerNode struct {
 		EnabledListDir           bool   `xml:"enabledlistdir,attr"`           //设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
 		EnabledRequestID         bool   `xml:"enabledrequestid,attr"`         //设置是否启用唯一请求ID，默认不开启，开启后使用32位UUID
@@ -55,6 +57,7 @@ type (
 		EnabledDetailRequestData bool   `xml:"enableddetailrequestdata,attr"` //设置状态数据是否启用详细页面统计，默认不启用，请特别对待，如果站点url过多，会导致数据量过大
 	}
 
+	// SessionNode dotweb app's session config
 	SessionNode struct {
 		EnabledSession bool   `xml:"enabled,attr"`  //启用Session
 		SessionMode    string `xml:"mode,attr"`     //session模式，目前支持runtime、redis
@@ -64,6 +67,7 @@ type (
 		Password       string `xml:"password,attr"` //远程session password
 	}
 
+	// RouterNode dotweb app's router config
 	RouterNode struct {
 		Method      string            `xml:"method,attr"`
 		Path        string            `xml:"path,attr"`
@@ -72,6 +76,7 @@ type (
 		IsUse       bool              `xml:"isuse,attr"` //是否启用，默认false
 	}
 
+	// GroupNode dotweb app's group router config
 	GroupNode struct {
 		Path        string            `xml:"path,attr"`
 		Routers     []*RouterNode     `xml:"router"`
@@ -79,6 +84,7 @@ type (
 		IsUse       bool              `xml:"isuse,attr"` //是否启用，默认false
 	}
 
+	// MiddlewareNode dotweb app's middleware config
 	MiddlewareNode struct {
 		Name  string `xml:"name,attr"`
 		IsUse bool   `xml:"isuse,attr"` //是否启用，默认false
@@ -86,19 +92,51 @@ type (
 )
 
 const (
-	ConfigType_Xml  = "xml"
-	ConfigType_Json = "json"
+	// ConfigType_XML xml config file
+	ConfigType_XML  = "xml"
+	// ConfigType_JSON json config file
+	ConfigType_JSON = "json"
+	// ConfigType_Yaml yaml config file
 	ConfigType_Yaml = "yaml"
 )
 
+// NewConfig create new config
 func NewConfig() *Config {
 	return &Config{
-		App:          NewAppNode(),
-		Offline:      NewOfflineNode(),
-		Server:       NewServerNode(),
-		Session:      NewSessionNode(),
-		AppSetConfig: core.NewItemContext(),
+		App:       NewAppNode(),
+		Offline:   NewOfflineNode(),
+		Server:    NewServerNode(),
+		Session:   NewSessionNode(),
+		ConfigSet: core.NewReadonlyMap(),
 	}
+}
+
+// IncludeConfigSet include ConfigSet file to Dotweb.Config.ConfigSet, can use ctx.ConfigSet to use your data
+// same key will cover oldest value
+// support xml\json\yaml
+func (conf *Config) IncludeConfigSet(configFile string, confType string) error {
+	var parseItem core.ConcurrenceMap
+	var err error
+	if confType == ConfigType_XML {
+		parseItem, err = ParseConfigSetXML(configFile)
+	}
+	if confType == ConfigType_JSON {
+		parseItem, err = ParseConfigSetJSON(configFile)
+	}
+	if confType == ConfigType_Yaml {
+		parseItem, err = ParseConfigSetYaml(configFile)
+	}
+	if err != nil {
+		return err
+	}
+	items := conf.ConfigSet.(*core.ItemMap)
+	if items == nil {
+		return errors.New("init config items error")
+	}
+	for k, v := range parseItem.GetCurrentMap() {
+		items.Set(k, v)
+	}
+	return nil
 }
 
 func NewAppNode() *AppNode {
@@ -151,15 +189,15 @@ func InitConfig(configFile string, confType ...interface{}) (config *Config, err
 		}
 	}
 
-	cType := ConfigType_Xml
-	if len(confType) > 0 && confType[0] == ConfigType_Json {
-		cType = ConfigType_Json
+	cType := ConfigType_XML
+	if len(confType) > 0 && confType[0] == ConfigType_JSON {
+		cType = ConfigType_JSON
 	}
 	if len(confType) > 0 && confType[0] == ConfigType_Yaml {
 		cType = ConfigType_Yaml
 	}
 
-	if cType == ConfigType_Xml {
+	if cType == ConfigType_XML {
 		config, err = initConfig(realFile, cType, UnmarshalXML)
 	} else if cType == ConfigType_Yaml {
 		config, err = initConfig(realFile, cType, UnmarshalYaml)
@@ -187,11 +225,11 @@ func InitConfig(configFile string, confType ...interface{}) (config *Config, err
 		config.Offline = NewOfflineNode()
 	}
 
-	tmpAppSetMap := core.NewItemContext()
-	for _, v := range config.AppSets {
-		tmpAppSetMap.Set(v.Key, v.Value)
+	tmpConfigSetMap := core.NewConcurrenceMap()
+	for _, v := range config.ConfigSetNodes {
+		tmpConfigSetMap.Set(v.Key, v.Value)
 	}
-	config.AppSetConfig = tmpAppSetMap
+	config.ConfigSet = tmpConfigSetMap
 
 	//deal config default value
 	dealConfigDefaultSet(config)

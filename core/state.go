@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/devfeel/dotweb/const"
 	"github.com/devfeel/dotweb/framework/json"
 	"net/http"
 	"strconv"
@@ -8,7 +9,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-	"github.com/devfeel/dotweb/const"
 )
 
 var GlobalState *ServerStateInfo
@@ -25,12 +25,12 @@ func init() {
 		ServerStartTime:      time.Now(),
 		TotalRequestCount:    0,
 		TotalErrorCount:      0,
-		IntervalRequestData:  NewItemContext(),
-		DetailRequestURLData: NewItemContext(),
-		IntervalErrorData:    NewItemContext(),
-		DetailErrorPageData:  NewItemContext(),
-		DetailErrorData:      NewItemContext(),
-		DetailHTTPCodeData:   NewItemContext(),
+		IntervalRequestData:  NewItemMap(),
+		DetailRequestURLData: NewItemMap(),
+		IntervalErrorData:    NewItemMap(),
+		DetailErrorPageData:  NewItemMap(),
+		DetailErrorData:      NewItemMap(),
+		DetailHTTPCodeData:   NewItemMap(),
 		dataChan_Request:     make(chan *RequestInfo, 1000),
 		dataChan_Error:       make(chan *ErrorInfo, 1000),
 		dataChan_HttpCode:    make(chan *HttpCodeInfo, 1000),
@@ -93,19 +93,19 @@ type ServerStateInfo struct {
 	//该运行期间总访问次数
 	TotalRequestCount uint64
 	//单位时间内请求数据 - 按分钟为单位
-	IntervalRequestData *ItemContext
+	IntervalRequestData *ItemMap
 	//明细请求页面数据 - 以不带参数的访问url为key
-	DetailRequestURLData *ItemContext
+	DetailRequestURLData *ItemMap
 	//该运行期间异常次数
 	TotalErrorCount uint64
 	//单位时间内异常次数 - 按分钟为单位
-	IntervalErrorData *ItemContext
+	IntervalErrorData *ItemMap
 	//明细异常页面数据 - 以不带参数的访问url为key
-	DetailErrorPageData *ItemContext
+	DetailErrorPageData *ItemMap
 	//明细异常数据 - 以不带参数的访问url为key
-	DetailErrorData *ItemContext
+	DetailErrorData *ItemMap
 	//明细Http状态码数据 - 以HttpCode为key，例如200、500等
-	DetailHTTPCodeData *ItemContext
+	DetailHTTPCodeData *ItemMap
 
 	dataChan_Request  chan *RequestInfo
 	dataChan_Error    chan *ErrorInfo

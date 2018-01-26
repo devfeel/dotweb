@@ -34,10 +34,6 @@ func main() {
 	//启动 监控服务
 	app.SetPProfConfig(true, 8081)
 
-	//全局容器
-	app.AppContext.Set("gstring", "gvalue")
-	app.AppContext.Set("gint", 1)
-
 	// 开始服务
 	port := 8080
 	fmt.Println("dotweb.StartServer => " + strconv.Itoa(port))

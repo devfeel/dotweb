@@ -1,5 +1,20 @@
 ## dotweb版本记录：
 
+#### Version 1.4.8
+* 调整：ItemContext更名为ItemMap，新增ConcurrenceMap、ReadonlyMap接口
+* 调整：Dotweb.AppContext变更为Dotweb.Items
+* 调整：HttpContext.AppContext变更为HttpContext.AppItems
+* 调整：HttpContext.AppSetConfig变更为HttpContext.ConfigSet
+* 调整：config.AppSet变更为config.ConfigSet
+* 新增: config.ParseConfigSetXML\ParseConfigSetJSON\ParseConfigSetYaml，用于解析常规Key\Value格式的配置文件
+* 新增：config.Config.IncludeConfigSet，用于向config.ConfigSet中导入Key\Value格式的配置文件，通过HttpContext.ConfigSet获取相关设置信息
+* ParseConfigSetXML:支持xml格式文件解析，返回core.ConcurrenceMap
+* ParseConfigSetJSON:支持json格式文件解析，返回core.ConcurrenceMap
+* ParseConfigSetYaml:支持yaml格式文件解析，返回core.ConcurrenceMap
+* 具体配置文件格式可参考example/configset
+* 新增示例代码 example/configset
+* 2018-01-24 22:00
+
 #### Version 1.4.7
 * BUG Fixed: 修复Middleware特定场景下无效问题
 * 新增dotweb.IncludeDotwebGroup，用于自动集成dotweb相关路由

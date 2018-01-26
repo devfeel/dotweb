@@ -33,7 +33,7 @@ type (
 		ExceptionHandler        ExceptionHandle
 		NotFoundHandler         StandardHandle // NotFoundHandler 支持自定义404处理代码能力
 		MethodNotAllowedHandler StandardHandle // MethodNotAllowedHandler fixed for #64 增加MethodNotAllowed自定义处理
-		AppContext              *core.ItemContext
+		Items                   core.ConcurrenceMap
 		middlewareMap           map[string]MiddlewareFunc
 		middlewareMutex         *sync.RWMutex
 		StartMode               string
@@ -51,11 +51,17 @@ type (
 )
 
 const (
-	DefaultHTTPPort     = 8080 //DefaultHTTPPort default http port; fixed for #70 UPDATE default http port 80 to 8080
-	RunMode_Development = "development"
-	RunMode_Production  = "production"
+	// DefaultHTTPPort default http port; fixed for #70 UPDATE default http port 80 to 8080
+	DefaultHTTPPort           = 8080
 
+	// RunMode_Development app runmode in development mode
+	RunMode_Development       = "development"
+	// RunMode_Production app runmode in production mode
+	RunMode_Production        = "production"
+
+	//StartMode_New app startmode in New mode
 	StartMode_New     = "New"
+	//StartMode_Classic app startmode in Classic mode
 	StartMode_Classic = "Classic"
 )
 
@@ -65,7 +71,7 @@ func New() *DotWeb {
 		HttpServer:      NewHttpServer(),
 		OfflineServer:   servers.NewOfflineServer(),
 		Middlewares:     make([]Middleware, 0),
-		AppContext:      core.NewItemContext(),
+		Items:           core.NewConcurrenceMap(),
 		Config:          config.NewConfig(),
 		middlewareMap:   make(map[string]MiddlewareFunc),
 		middlewareMutex: new(sync.RWMutex),
@@ -405,11 +411,11 @@ func (app *DotWeb) initBindMiddleware() {
 	//bind app middlewares
 	for fullExpress, _ := range router.allRouterExpress {
 		expresses := strings.Split(fullExpress, "_")
-		if len(expresses) < 2{
+		if len(expresses) < 2 {
 			continue
 		}
 		node := router.getNode(expresses[0], expresses[1])
-		if node == nil{
+		if node == nil {
 			continue
 		}
 
@@ -422,7 +428,7 @@ func (app *DotWeb) initBindMiddleware() {
 				logger.Logger().Debug("DotWeb initBindMiddleware [app] "+fullExpress+" "+reflect.TypeOf(m).String()+" match", LogTarget_HttpServer)
 			}
 		}
-		if len(node.middlewares) > 0{
+		if len(node.middlewares) > 0 {
 			firstMiddleware := &xMiddleware{}
 			firstMiddleware.SetNext(node.middlewares[0])
 			node.middlewares = append([]Middleware{firstMiddleware}, node.middlewares...)
@@ -434,7 +440,7 @@ func (app *DotWeb) initBindMiddleware() {
 		xg := g.(*xGroup)
 		if len(xg.middlewares) <= 0 {
 			continue
-		}else{
+		} else {
 			firstMiddleware := &xMiddleware{}
 			firstMiddleware.SetNext(xg.middlewares[0])
 			xg.middlewares = append([]Middleware{firstMiddleware}, xg.middlewares...)

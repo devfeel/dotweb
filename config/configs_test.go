@@ -15,8 +15,8 @@ func TestInitConfig(t *testing.T) {
 	test.NotNil(t,conf)
 	test.NotNil(t,conf.App)
 	test.NotNil(t,conf.App.LogPath)
-	test.NotNil(t,conf.AppSets)
-	test.Equal(t,4,	len(conf.AppSets))
+	test.NotNil(t,conf.ConfigSet)
+	test.Equal(t,4,	conf.ConfigSet.Len())
 }
 
 //该测试方法报错...
@@ -28,6 +28,6 @@ func TestInitConfigWithXml(t *testing.T) {
 	test.NotNil(t,conf)
 	test.NotNil(t,conf.App)
 	test.NotNil(t,conf.App.LogPath)
-	test.NotNil(t,conf.AppSets)
-	test.Equal(t,4,	len(conf.AppSets))
+	test.NotNil(t,conf.ConfigSet)
+	test.Equal(t,4,	conf.ConfigSet.Len())
 }

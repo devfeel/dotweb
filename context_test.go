@@ -74,7 +74,7 @@ func TestWriteString(t *testing.T) {
 
 	//call function
 	//这里是一个interface数组,用例需要小心.
-	_,contextErr:=context.WriteString(string(animalJson))
+	contextErr:=context.WriteString(string(animalJson))
 	test.Nil(t,contextErr)
 
 	//header
@@ -111,7 +111,7 @@ func TestWriteJson(t *testing.T) {
 	test.Nil(t,err)
 
 	//call function
-	_,contextErr:=context.WriteJson(exceptedObject)
+	contextErr:=context.WriteJson(exceptedObject)
 	test.Nil(t,contextErr)
 
 	//header
@@ -146,7 +146,7 @@ func TestWriteJsonp(t *testing.T) {
 	callback:="jsonCallBack"
 
 	//call function
-	_,err:=context.WriteJsonp(callback,exceptedObject)
+	err:=context.WriteJsonp(callback,exceptedObject)
 	test.Nil(t,err)
 
 	//check result
