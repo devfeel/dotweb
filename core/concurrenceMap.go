@@ -100,7 +100,6 @@ func (ctx *ItemMap) Once(key string) (value interface{}, exists bool) {
 	return value, exists
 }
 
-
 // GetString 读取指定key在ConcurrenceMap中的内容，以string格式输出
 // 如果不存在key，返回空字符串
 func (ctx *ItemMap) GetString(key string) string {
@@ -110,7 +109,6 @@ func (ctx *ItemMap) GetString(key string) string {
 	}
 	return fmt.Sprint(value)
 }
-
 
 // GetInt 读取指定key在ConcurrenceMap中的内容，以int格式输出
 // 如果不存在key，或者转换失败，返回0
@@ -138,9 +136,8 @@ func (ctx *ItemMap) GetTimeDuration(key string) time.Duration {
 	timeDuration, err := time.ParseDuration(ctx.GetString(key))
 	if err != nil {
 		return 0
-	} else {
-		return timeDuration
 	}
+	return timeDuration
 }
 
 // Exists check exists key
