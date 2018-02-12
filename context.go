@@ -20,6 +20,8 @@ import (
 const (
 	defaultMemory   = 32 << 20 // 32 MB
 	defaultHttpCode = http.StatusOK
+	ItemKey_HandleStartTime = "dotweb.HttpContext.StartTime"
+	ItemKey_HandleDuration = "dotweb.HttpContext.HandleDuration"
 )
 
 const (
@@ -108,7 +110,6 @@ type (
 		viewData       core.ConcurrenceMap
 		features       *xFeatureTools
 		handler        HttpHandle
-		startTime      time.Time
 	}
 )
 
@@ -126,7 +127,7 @@ func (ctx *HttpContext) reset(res *Response, r *Request, server *HttpServer, nod
 	ctx.isEnd = false
 	ctx.features = FeatureTools
 	ctx.handler = handler
-	ctx.startTime = time.Now()
+	ctx.Items().Set(ItemKey_HandleStartTime, time.Now())
 }
 
 //release all field
@@ -148,7 +149,8 @@ func (ctx *HttpContext) release() {
 	ctx.viewData = nil
 	ctx.sessionID = ""
 	ctx.handler = nil
-	ctx.startTime = time.Time{}
+	ctx.Items().Remove(ItemKey_HandleStartTime)
+	ctx.Items().Remove(ItemKey_HandleDuration)
 }
 
 // Context return context.Context

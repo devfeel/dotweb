@@ -1,5 +1,16 @@
 ## dotweb版本记录：
 
+#### Version 1.4.9
+* 新增: ConcurrenceMap增加GetTimeDuration接口，用于直接返回time.Duration类型数据
+* 新增: ReadonlyMap增加GetTimeDuration接口，用于直接返回time.Duration类型数据
+* 新增: dotweb增加UseTimeoutHook接口，用于设置请求处理超过设置时间钩子函数
+* 调整：dotweb内建集成三类中间件，无需单独引用Middleware库
+* RequestLogMiddleware
+* TimeoutHookMiddleware
+* dotweb.SetExceptionHandle
+* 新增 example/basemiddleware
+* 2018-02-12 12:00
+
 #### Version 1.4.8
 * 调整：ItemContext更名为ItemMap，新增ConcurrenceMap、ReadonlyMap接口
 * 调整：Dotweb.AppContext变更为Dotweb.Items

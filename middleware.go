@@ -126,15 +126,34 @@ type RequestLogMiddleware struct {
 }
 
 func (m *RequestLogMiddleware) Handle(ctx Context) error {
+	var timeDuration time.Duration
+	var timeTaken uint64
+	var err error
 	m.Next(ctx)
-	timetaken := int64(time.Now().Sub(ctx.(*HttpContext).startTime) / time.Millisecond)
-	log := ctx.Request().Url() + " " + logContext(ctx, timetaken)
+	if ctx.Items().Exists(ItemKey_HandleDuration){
+		timeDuration, err = time.ParseDuration(ctx.Items().GetString(ItemKey_HandleDuration))
+		if err != nil{
+			timeTaken = 0
+		}else{
+			timeTaken = uint64(timeDuration/time.Millisecond)
+		}
+	}else{
+		var begin time.Time
+		beginVal, exists := ctx.Items().Get(ItemKey_HandleStartTime)
+		if !exists{
+			begin  = time.Now()
+		}else{
+			begin = beginVal.(time.Time)
+		}
+		timeTaken = uint64(time.Now().Sub(begin) / time.Millisecond)
+	}
+	log := ctx.Request().Url() + " " + logContext(ctx, timeTaken)
 	logger.Logger().Debug(log, LogTarget_HttpRequest)
 	return nil
 }
 
 //get default log string
-func logContext(ctx Context, timetaken int64) string {
+func logContext(ctx Context, timetaken uint64) string {
 	var reqbytelen, resbytelen, method, proto, status, userip string
 	if ctx != nil {
 		reqbytelen = convert.Int642String(ctx.Request().ContentLength)
@@ -151,7 +170,36 @@ func logContext(ctx Context, timetaken int64) string {
 	log += status + " "
 	log += reqbytelen + " "
 	log += resbytelen + " "
-	log += convert.Int642String(timetaken)
+	log += convert.UInt642String(timetaken)
 
 	return log
+}
+
+// TimeoutHookMiddleware 超时钩子中间件
+type TimeoutHookMiddleware struct {
+	BaseMiddlware
+	HookHandle StandardHandle
+	TimeoutDuration time.Duration
+}
+
+func (m *TimeoutHookMiddleware) Handle(ctx Context) error {
+	var begin time.Time
+	if m.HookHandle != nil{
+		beginVal, exists := ctx.Items().Get(ItemKey_HandleStartTime)
+		if !exists{
+			begin  = time.Now()
+		}else{
+			begin = beginVal.(time.Time)
+		}
+	}
+	//Do next
+	m.Next(ctx)
+	if m.HookHandle != nil{
+		realDuration := time.Now().Sub(begin)
+		ctx.Items().Set(ItemKey_HandleDuration, realDuration)
+		if realDuration > m.TimeoutDuration{
+			m.HookHandle(ctx)
+		}
+	}
+	return nil
 }

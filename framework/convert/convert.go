@@ -30,6 +30,14 @@ func Int642String(val int64) string {
 	return strconv.FormatInt(val, 10)
 }
 
+func String2UInt64(val string) (uint64, error) {
+	return strconv.ParseUint(val, 10, 64)
+}
+
+func UInt642String(val uint64) string{
+	return strconv.FormatUint(val, 10)
+}
+
 func NSToTime(ns int64) (time.Time, error) {
 	if ns <= 0 {
 		return time.Time{}, errors.New("ns is err")
