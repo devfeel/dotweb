@@ -9,6 +9,7 @@
 * TimeoutHookMiddleware
 * dotweb.SetExceptionHandle
 * 新增 example/basemiddleware
+* 集成vendor: gopkg.in/yaml.v2
 * 2018-02-12 12:00
 
 #### Version 1.4.8
