@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"sync"
+	"time"
 )
 
 type (
@@ -10,6 +11,7 @@ type (
 	ReadonlyMap interface {
 		Get(key string) (value interface{}, exists bool)
 		GetString(key string) string
+		GetTimeDuration(key string) time.Duration
 		GetInt(key string) int
 		GetUInt64(key string) uint64
 		Exists(key string) bool
@@ -20,6 +22,7 @@ type (
 	ConcurrenceMap interface {
 		Get(key string) (value interface{}, exists bool)
 		GetString(key string) string
+		GetTimeDuration(key string) time.Duration
 		GetInt(key string) int
 		GetUInt64(key string) uint64
 		Exists(key string) bool
@@ -97,8 +100,8 @@ func (ctx *ItemMap) Once(key string) (value interface{}, exists bool) {
 	return value, exists
 }
 
-
-// GetString 读取指定key在AppContext中的内容，以string格式输出
+// GetString 读取指定key在ConcurrenceMap中的内容，以string格式输出
+// 如果不存在key，返回空字符串
 func (ctx *ItemMap) GetString(key string) string {
 	value, exists := ctx.Get(key)
 	if !exists {
@@ -107,8 +110,8 @@ func (ctx *ItemMap) GetString(key string) string {
 	return fmt.Sprint(value)
 }
 
-
-// GetInt 读取指定key在AppContext中的内容，以int格式输出
+// GetInt 读取指定key在ConcurrenceMap中的内容，以int格式输出
+// 如果不存在key，或者转换失败，返回0
 func (ctx *ItemMap) GetInt(key string) int {
 	value, exists := ctx.Get(key)
 	if !exists {
@@ -117,13 +120,24 @@ func (ctx *ItemMap) GetInt(key string) int {
 	return value.(int)
 }
 
-// GetUInt64 读取指定key在AppContext中的内容，以int格式输出
+// GetUInt64 读取指定key在ConcurrenceMap中的内容，以uint64格式输出
+// 如果不存在key，或者转换失败，返回0
 func (ctx *ItemMap) GetUInt64(key string) uint64 {
 	value, exists := ctx.Get(key)
 	if !exists {
 		return 0
 	}
 	return value.(uint64)
+}
+
+// GetTimeDuration 读取指定key在ConcurrenceMap中的内容，以time.Duration格式输出
+// 如果不存在key，或者转换失败，返回0
+func (ctx *ItemMap) GetTimeDuration(key string) time.Duration {
+	timeDuration, err := time.ParseDuration(ctx.GetString(key))
+	if err != nil {
+		return 0
+	}
+	return timeDuration
 }
 
 // Exists check exists key

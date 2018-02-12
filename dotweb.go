@@ -21,6 +21,7 @@ import (
 	"github.com/devfeel/dotweb/session"
 	"reflect"
 	"sync"
+	"time"
 )
 
 type (
@@ -183,9 +184,17 @@ func (app *DotWeb) Use(m ...Middleware) {
 	}
 }
 
-// UseRequestLog register RequestLog middleware
+// UseRequestLog register RequestLogMiddleware
 func (app *DotWeb) UseRequestLog() {
 	app.Use(&RequestLogMiddleware{})
+}
+
+// UseTimeoutHook register TimeoutHookMiddleware
+func (app *DotWeb) UseTimeoutHook(handler StandardHandle, timeout time.Duration){
+	app.Use(&TimeoutHookMiddleware{
+		HookHandle: handler,
+		TimeoutDuration:timeout,
+	})
 }
 
 // SetExceptionHandle set custom error handler
