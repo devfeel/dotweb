@@ -20,10 +20,10 @@ import (
 const (
 	defaultMemory   = 32 << 20 // 32 MB
 	defaultHttpCode = http.StatusOK
-	// ItemKey_HandleStartTime itemkey name for request handler start time
-	ItemKey_HandleStartTime = "dotweb.HttpContext.StartTime"
-	// ItemKey_HandleDuration itemkey name for request handler time duration
-	ItemKey_HandleDuration = "dotweb.HttpContext.HandleDuration"
+	// ItemKeyHandleStartTime itemkey name for request handler start time
+	ItemKeyHandleStartTime = "dotweb.HttpContext.StartTime"
+	// ItemKeyHandleDuration itemkey name for request handler time duration
+	ItemKeyHandleDuration = "dotweb.HttpContext.HandleDuration"
 )
 
 const (
@@ -129,7 +129,7 @@ func (ctx *HttpContext) reset(res *Response, r *Request, server *HttpServer, nod
 	ctx.isEnd = false
 	ctx.features = FeatureTools
 	ctx.handler = handler
-	ctx.Items().Set(ItemKey_HandleStartTime, time.Now())
+	ctx.Items().Set(ItemKeyHandleStartTime, time.Now())
 }
 
 //release all field
@@ -151,8 +151,8 @@ func (ctx *HttpContext) release() {
 	ctx.viewData = nil
 	ctx.sessionID = ""
 	ctx.handler = nil
-	ctx.Items().Remove(ItemKey_HandleStartTime)
-	ctx.Items().Remove(ItemKey_HandleDuration)
+	ctx.Items().Remove(ItemKeyHandleStartTime)
+	ctx.Items().Remove(ItemKeyHandleDuration)
 }
 
 // Context return context.Context

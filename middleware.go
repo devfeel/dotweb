@@ -130,8 +130,8 @@ func (m *RequestLogMiddleware) Handle(ctx Context) error {
 	var timeTaken uint64
 	var err error
 	m.Next(ctx)
-	if ctx.Items().Exists(ItemKey_HandleDuration){
-		timeDuration, err = time.ParseDuration(ctx.Items().GetString(ItemKey_HandleDuration))
+	if ctx.Items().Exists(ItemKeyHandleDuration){
+		timeDuration, err = time.ParseDuration(ctx.Items().GetString(ItemKeyHandleDuration))
 		if err != nil{
 			timeTaken = 0
 		}else{
@@ -139,7 +139,7 @@ func (m *RequestLogMiddleware) Handle(ctx Context) error {
 		}
 	}else{
 		var begin time.Time
-		beginVal, exists := ctx.Items().Get(ItemKey_HandleStartTime)
+		beginVal, exists := ctx.Items().Get(ItemKeyHandleStartTime)
 		if !exists{
 			begin  = time.Now()
 		}else{
@@ -185,7 +185,7 @@ type TimeoutHookMiddleware struct {
 func (m *TimeoutHookMiddleware) Handle(ctx Context) error {
 	var begin time.Time
 	if m.HookHandle != nil{
-		beginVal, exists := ctx.Items().Get(ItemKey_HandleStartTime)
+		beginVal, exists := ctx.Items().Get(ItemKeyHandleStartTime)
 		if !exists{
 			begin  = time.Now()
 		}else{
@@ -196,7 +196,7 @@ func (m *TimeoutHookMiddleware) Handle(ctx Context) error {
 	m.Next(ctx)
 	if m.HookHandle != nil{
 		realDuration := time.Now().Sub(begin)
-		ctx.Items().Set(ItemKey_HandleDuration, realDuration)
+		ctx.Items().Set(ItemKeyHandleDuration, realDuration)
 		if realDuration > m.TimeoutDuration{
 			m.HookHandle(ctx)
 		}
