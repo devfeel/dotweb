@@ -20,7 +20,9 @@ import (
 const (
 	defaultMemory   = 32 << 20 // 32 MB
 	defaultHttpCode = http.StatusOK
+	// ItemKey_HandleStartTime itemkey name for request handler start time
 	ItemKey_HandleStartTime = "dotweb.HttpContext.StartTime"
+	// ItemKey_HandleDuration itemkey name for request handler time duration
 	ItemKey_HandleDuration = "dotweb.HttpContext.HandleDuration"
 )
 

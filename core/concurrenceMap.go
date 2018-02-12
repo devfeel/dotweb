@@ -138,7 +138,7 @@ func (ctx *ItemMap) GetTimeDuration(key string) time.Duration {
 	timeDuration, err := time.ParseDuration(ctx.GetString(key))
 	if err != nil {
 		return 0
-	}else{
+	} else {
 		return timeDuration
 	}
 }
