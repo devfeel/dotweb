@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+#### Version 1.4.9.1
+* 内置Vendor目录仅保留 golang.org/x/net包,移除redis与yaml包
+* 完善RedisClient接口能力
+* 2018-03-13 12:00
+
 #### Version 1.4.9
 * 新增: ConcurrenceMap增加GetTimeDuration接口，用于直接返回time.Duration类型数据
 * 新增: ReadonlyMap增加GetTimeDuration接口，用于直接返回time.Duration类型数据
