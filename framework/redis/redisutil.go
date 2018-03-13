@@ -173,7 +173,10 @@ func (rc *RedisClient) SetNX(key, value string) (interface{}, error){
 }
 
 
-// HGet 获取指定hashset的内容
+
+//****************** hash 集合 ***********************
+
+// HGet 获取指定hash的内容
 func (rc *RedisClient) HGet(hashID string, field string) (string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
@@ -185,7 +188,7 @@ func (rc *RedisClient) HGet(hashID string, field string) (string, error) {
 	return val, err
 }
 
-// HGetAll 获取指定hashset的所有内容
+// HGetAll 获取指定hash的所有内容
 func (rc *RedisClient) HGetAll(hashID string) (map[string]string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
@@ -193,7 +196,7 @@ func (rc *RedisClient) HGetAll(hashID string) (map[string]string, error) {
 	return reply, err
 }
 
-// HSet 设置指定hashset的内容
+// HSet 设置指定hash的内容
 func (rc *RedisClient) HSet(hashID string, field string, val string) error {
 	conn := rc.pool.Get()
 	defer conn.Close()
@@ -201,21 +204,37 @@ func (rc *RedisClient) HSet(hashID string, field string, val string) error {
 	return err
 }
 
-// HSetNX 设置指定hashset的内容, 如果field不存在, 该操作无效
-func (rc *RedisClient) HSetNX(key, field, value string) (interface{}, error) {
+// HSetNX 设置指定hash的内容, 如果field不存在, 该操作无效
+func (rc *RedisClient) HSetNX(hashID, field, value string) (interface{}, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 
-	val, err := conn.Do("HSETNX", key, field, value)
+	val, err := conn.Do("HSETNX", hashID, field, value)
+	return val, err
+}
+
+// HExist 返回hash里面field是否存在
+func (rc *RedisClient) HExist(hashID string, field string) (int, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.Int(conn.Do("HEXISTS", hashID, field))
+	return val, err
+}
+
+// HIncrBy 增加 key 指定的哈希集中指定字段的数值
+func (rc *RedisClient) HIncrBy(hashID string, field string, increment int)(int, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.Int(conn.Do("HINCRBY", hashID, field, increment))
 	return val, err
 }
 
 // HLen 返回哈希表 key 中域的数量, 当 key 不存在时，返回0
-func (rc *RedisClient) HLen(key string) (int64, error) {
+func (rc *RedisClient) HLen(hashID string) (int64, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 
-	val, err := redis.Int64(conn.Do("HLEN", key))
+	val, err := redis.Int64(conn.Do("HLEN", hashID))
 	return val, err
 }
 
@@ -229,32 +248,21 @@ func (rc *RedisClient) HDel(args ...interface{}) (int64, error) {
 }
 
 // HVals 返回哈希表 key 中所有域的值, 当 key 不存在时，返回空
-func (rc *RedisClient) HVals(key string) (interface{}, error) {
+func (rc *RedisClient) HVals(hashID string) (interface{}, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 
-	val, err := redis.Strings(conn.Do("HVALS", key))
+	val, err := redis.Strings(conn.Do("HVALS", hashID))
 	return val, err
 }
 
+//****************** list ***********************
 
-// BRPop 删除，并获得该列表中的最后一个元素，或阻塞，直到有一个可用
-func (rc *RedisClient) BRPop(key string) (string, error) {
+//将所有指定的值插入到存于 key 的列表的头部
+func (rc *RedisClient) LPush(key string, value ...interface{}) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
-	val, err := redis.StringMap(conn.Do("BRPOP", key, defaultTimeout))
-	if err != nil {
-		return "", err
-	} else {
-		return val[key], nil
-	}
-}
-
-//LPush 将所有指定的值插入到存于 key 的列表的头部
-func (rc *RedisClient) LPush(key string, val string) (int64, error) {
-	conn := rc.pool.Get()
-	defer conn.Close()
-	ret, err := redis.Int64(conn.Do("LPUSH", key, val))
+	ret, err := redis.Int(conn.Do("LPUSH", key, value))
 	if err != nil {
 		return -1, err
 	} else {
@@ -262,13 +270,138 @@ func (rc *RedisClient) LPush(key string, val string) (int64, error) {
 	}
 }
 
-// SAdd 将一个或多个 member 元素加入到集合 key 当中，已经存在于集合的 member 元素将被忽略。
-// 假如 key 不存在，则创建一个只包含 member 元素作成员的集合。
-func (rc *RedisClient) SAdd(args ...interface{}) (int64, error){
+func (rc *RedisClient) LPushX(key string, value string) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
+	resp, err := redis.Int(conn.Do("LPUSHX", key, value))
+	return resp, err
+}
 
-	val, err := redis.Int64(conn.Do("SADD", args...))
+func (rc *RedisClient) LRange(key string, start int, stop int) ([]string, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	resp, err := redis.Strings(conn.Do("LRANGE", key, start, stop))
+	return resp, err
+}
+
+func (rc *RedisClient) LRem(key string, count int, value string) (int, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	resp, err := redis.Int(conn.Do("LREM", key, count, value))
+	return resp, err
+}
+
+func (rc *RedisClient) LSet(key string, index int, value string)(string, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	resp, err := redis.String(conn.Do("LSET", key, index, value))
+	return resp, err
+}
+
+func (rc *RedisClient) LTrim(key string, start int, stop int) (string, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+	resp, err := redis.String(conn.Do("LTRIM", key, start, stop))
+	return resp, err
+}
+
+func (rc *RedisClient) RPop(key string) (string, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+	resp, err := redis.String(conn.Do("RPOP", key))
+	return resp, err
+}
+
+func (rc *RedisClient) RPush(key string, value ...interface{}) (int, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	args := append([]interface{}{key}, value...)
+	resp, err := redis.Int(conn.Do("RPUSH", args...))
+	return resp, err
+}
+
+func (rc *RedisClient) RPushX(key string, value ...interface{}) (int, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+	args := append([]interface{}{key}, value...)
+	resp, err := redis.Int(conn.Do("RPUSHX", args...))
+	return resp, err
+}
+
+func (rc *RedisClient) RPopLPush(source string, destination string)(string, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+	resp, err := redis.String(conn.Do("RPOPLPUSH", source, destination))
+	return resp, err
+}
+
+
+func (rc *RedisClient) BLPop(key ...interface{})(map[string]string, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.StringMap(conn.Do("BLPOP", key, defaultTimeout))
+	return val, err
+}
+
+//删除，并获得该列表中的最后一个元素，或阻塞，直到有一个可用
+func (rc *RedisClient) BRPop(key ...interface{}) (map[string]string, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.StringMap(conn.Do("BRPOP", key, defaultTimeout))
+	return val, err
+}
+
+func (rc *RedisClient) BRPopLPush(source string, destination string)(string, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.String(conn.Do("BRPOPLPUSH", source, destination))
+	return val, err
+}
+
+func (rc *RedisClient) LIndex(key string, index int)(string, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.String(conn.Do("LINDEX", key, index))
+	return val, err
+}
+
+func (rc *RedisClient) LInsertBefore(key string, pivot string, value string)(int, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.Int(conn.Do("LINSERT", key, "BEFORE", pivot, value))
+	return val, err
+}
+
+func (rc *RedisClient) LInsertAfter(key string, pivot string, value string)(int, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.Int(conn.Do("LINSERT", key, "AFTER", pivot, value))
+	return val, err
+}
+
+func (rc *RedisClient) LLen(key string)(int, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.Int(conn.Do("LLEN", key))
+	return val, err
+}
+
+func (rc *RedisClient) LPop(key string)(string, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.String(conn.Do("LPOP", key))
+	return val, err
+}
+
+//****************** set 集合 ***********************
+
+// SAdd 将一个或多个 member 元素加入到集合 key 当中，已经存在于集合的 member 元素将被忽略。
+// 假如 key 不存在，则创建一个只包含 member 元素作成员的集合。
+func (rc *RedisClient) SAdd(key string, member ...interface{}) (int, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	args := append([]interface{}{key}, member...)
+	val, err := redis.Int(conn.Do("SADD", args...))
 	return val, err
 }
 
@@ -276,44 +409,112 @@ func (rc *RedisClient) SAdd(args ...interface{}) (int64, error){
 // 返回值：
 // 集合的基数。
 // 当 key 不存在时，返回 0
-func (rc *RedisClient) SCard(key string) (int64, error) {
+func (rc *RedisClient) SCard(key string) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
-
-	val, err := redis.Int64(conn.Do("SCARD", key))
+	val, err := redis.Int(conn.Do("SCARD", key))
 	return val, err
 }
 
 // SPop 移除并返回集合中的一个随机元素。
 // 如果只想获取一个随机元素，但不想该元素从集合中被移除的话，可以使用 SRANDMEMBER 命令。
+// count 为 返回的随机元素的数量
 func (rc *RedisClient) SPop(key string) (string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
-
 	val, err := redis.String(conn.Do("SPOP", key))
 	return val, err
 }
 
 // SRandMember 如果命令执行时，只提供了 key 参数，那么返回集合中的一个随机元素。
 // 该操作和 SPOP 相似，但 SPOP 将随机元素从集合中移除并返回，而 SRANDMEMBER 则仅仅返回随机元素，而不对集合进行任何改动。
-func (rc *RedisClient) SRandMember(args ...interface{}) (string, error) {
+// count 为 返回的随机元素的数量
+func (rc *RedisClient) SRandMember(key string, count int) ([]string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
-
-	val, err := redis.String(conn.Do("SRANDMEMBER", args...))
+	val, err := redis.Strings(conn.Do("SRANDMEMBER", key, count))
 	return val, err
 }
 
 // SRem 移除集合 key 中的一个或多个 member 元素，不存在的 member 元素会被忽略。
 // 当 key 不是集合类型，返回一个错误。
 // 在 Redis 2.4 版本以前， SREM 只接受单个 member 值。
-func (rc *RedisClient) SRem(args ...interface{}) (string, error) {
+func (rc *RedisClient) SRem(key string, member ...interface{}) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
-
-	val, err := redis.String(conn.Do("SREM", args...))
+	args := append([]interface{}{key}, member...)
+	val, err := redis.Int(conn.Do("SREM", args...))
 	return val, err
 }
+
+func (rc *RedisClient) SDiff(key ...interface{}) ([]string, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.Strings(conn.Do("SDIFF", key...))
+	return val, err
+}
+
+func (rc *RedisClient) SDiffStore(destination string, key ...interface{}) (int, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	args := append([]interface{}{destination}, key...)
+	val, err := redis.Int(conn.Do("SDIFFSTORE", args...))
+	return val, err
+}
+
+func (rc *RedisClient) SInter(key ...interface{}) ([]string, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.Strings(conn.Do("SINTER", key...))
+	return val, err
+}
+
+func (rc *RedisClient) SInterStore(destination string, key ...interface{})(int, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	args := append([]interface{}{destination}, key...)
+	val, err := redis.Int(conn.Do("SINTERSTORE", args...))
+	return val, err
+}
+
+func (rc *RedisClient) SIsMember(key string, member string) (bool, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.Bool(conn.Do("SISMEMBER", key, member))
+	return val, err
+}
+
+func (rc *RedisClient) SMembers(key string) ([]string, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.Strings(conn.Do("SMEMBERS", key))
+	return val, err
+}
+
+// smove is a atomic operate
+func (rc *RedisClient) SMove(source string, destination string, member string) (bool, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.Bool(conn.Do("SMOVE", source, destination, member))
+	return val, err
+}
+
+func (rc *RedisClient) SUnion(key ...interface{}) ([]string, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err := redis.Strings(conn.Do("SUNION", key...))
+	return val, err
+}
+
+func (rc *RedisClient) SUnionStore(destination string, key ...interface{})(int, error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	args := append([]interface{}{destination}, key...)
+	val, err := redis.Int(conn.Do("SUNIONSTORE", args))
+	return val, err
+}
+
+//****************** 全局操作 ***********************
 
 // DBSize 返回当前数据库的 key 的数量
 func (rc *RedisClient) DBSize()(int64, error){
