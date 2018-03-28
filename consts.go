@@ -14,7 +14,7 @@ const (
 
 //Http define
 const (
-	CharsetUTF8       = "text/plain; charset=utf-8"
+	CharsetUTF8       = "charset=utf-8"
 	DefaultServerName = "dotweb"
 )
 

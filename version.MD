@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+#### Version 1.4.9.2
+* 修复BUG for #112
+* 调整CharsetUTF8值为"charset=utf-8"
+* 2018-03-28 09:00
+
 #### Version 1.4.9.1
 * 内置Vendor目录仅保留 golang.org/x/net包,移除redis与yaml包
 * 完善RedisClient接口能力

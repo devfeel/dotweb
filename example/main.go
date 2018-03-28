@@ -58,6 +58,11 @@ func main() {
 		ctx.Response().Write(http.StatusNotFound, []byte("is't app's not found!"))
 	})
 
+	app.SetExceptionHandle(func(ctx dotweb.Context, err error) {
+		ctx.Response().SetContentType(dotweb.MIMEApplicationJSONCharsetUTF8)
+		ctx.WriteJsonC(http.StatusInternalServerError, err.Error())
+	})
+
 	//设置HttpModule
 	//InitModule(app)
 
