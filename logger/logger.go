@@ -69,7 +69,7 @@ func SetEnabledConsole(enabled bool) {
 
 func InitLog() {
 	if DefaultLogPath == "" {
-		DefaultLogPath = file.GetCurrentDirectory()
+		DefaultLogPath = file.GetCurrentDirectory() +"/logs"
 	}
 	if appLog == nil {
 		appLog = NewXLog()

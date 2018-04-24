@@ -55,6 +55,8 @@ const (
 	// DefaultHTTPPort default http port; fixed for #70 UPDATE default http port 80 to 8080
 	DefaultHTTPPort           = 8080
 
+	DefaultLogPath = ""
+
 	// RunMode_Development app runmode in development mode
 	RunMode_Development       = "development"
 	// RunMode_Production app runmode in production mode
@@ -88,19 +90,31 @@ func New() *DotWeb {
 	return app
 }
 
-// Classic create and return DotApp instance
+// Classic create and return DotApp instance\
+// if set logPath = "", it  will use bin-root/logs for log-root
 // 1.SetEnabledLog(true)
 // 2.use RequestLog Middleware
 // 3.print logo
-func Classic() *DotWeb {
+func Classic(logPath string) *DotWeb {
 	app := New()
 	app.StartMode = StartMode_Classic
 
+	if logPath != ""{
+		app.SetLogPath(logPath)
+	}
 	app.SetEnabledLog(true)
 	app.UseRequestLog()
 	//print logo
 	printDotLogo()
 	logger.Logger().Debug("DotWeb Start New AppServer", LogTarget_HttpServer)
+	return app
+}
+
+// ClassicWithConf create and return DotApp instance
+// must set config info
+func ClassicWithConf(config *config.Config) *DotWeb{
+	app := Classic(config.App.LogPath)
+	app.SetConfig(config)
 	return app
 }
 

@@ -26,11 +26,6 @@ func NewUploadFile(file multipart.File, header *multipart.FileHeader) *UploadFil
 	}
 }
 
-// 获取文件大小的接口
-type sizer interface {
-	Size() int64
-}
-
 //get upload file client-local name
 func (f *UploadFile) FileName() string {
 	return f.fileName
@@ -38,12 +33,7 @@ func (f *UploadFile) FileName() string {
 
 //get upload file size
 func (f *UploadFile) Size() int64 {
-	if f.fileSize <= 0 {
-		if sizer, ok := f.File.(sizer); ok {
-			f.fileSize = sizer.Size()
-		}
-	}
-	return f.fileSize
+	return f.Header.Size
 }
 
 // SaveFile save file in server-local with filename
