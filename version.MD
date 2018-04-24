@@ -1,5 +1,12 @@
 ## dotweb版本记录：
 
+#### Version 1.4.9.3
+* 调整UploadFile.Size实现方法，直接返回Header.Size数据
+* 调整dotweb.Classic签名为Classic(logPath string),若传入logPath为空，则默认以"bin-root/logs"为日志目录
+* 新增dotweb.ClassicWithConf(config *config.Config),支持初始化传入config设置
+* 调整默认Log目录由"bin-root"为"bin-root/logs"
+* 2018-04-24 08:30
+
 #### Version 1.4.9.2
 * 修复BUG for #112
 * 调整CharsetUTF8值为"charset=utf-8"
