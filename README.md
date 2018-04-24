@@ -1,7 +1,9 @@
 # DotWeb
-Simple and easy go web micro framework 
+Simple and easy go web micro framework
 
-document: https://www.kancloud.cn/devfeel/dotweb/346608
+Important: Now need go1.9+ version support.
+
+Document: https://www.kancloud.cn/devfeel/dotweb/346608
 
 CookBook: https://www.kancloud.cn/devfeel/dotweb/439314
 
