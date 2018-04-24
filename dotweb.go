@@ -55,6 +55,8 @@ const (
 	// DefaultHTTPPort default http port; fixed for #70 UPDATE default http port 80 to 8080
 	DefaultHTTPPort           = 8080
 
+	DefaultLogPath = ""
+
 	// RunMode_Development app runmode in development mode
 	RunMode_Development       = "development"
 	// RunMode_Production app runmode in production mode

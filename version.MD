@@ -1,6 +1,7 @@
 ## dotweb版本记录：
 
 #### Version 1.4.9.3
+* 重要：go版本适配升级为1.9+
 * 调整UploadFile.Size实现方法，直接返回Header.Size数据
 * 调整dotweb.Classic签名为Classic(logPath string),若传入logPath为空，则默认以"bin-root/logs"为日志目录
 * 新增dotweb.ClassicWithConf(config *config.Config),支持初始化传入config设置
