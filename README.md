@@ -55,7 +55,7 @@ func StartServer() error {
 
 #### Config Example
 * [dotweb.conf](https://github.com/devfeel/dotweb/blob/master/example/config/dotweb.conf)
-* [dotweb.json](https://github.com/devfeel/dotweb/blob/master/example/config/dotweb.json.conf)
+* [dotweb.json](https://github.com/devfeel/dotweb/blob/master/example/config/dotweb.json)
  
 ## 4. Performance
 
