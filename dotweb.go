@@ -103,7 +103,6 @@ func Classic(logPath string) *DotWeb {
 		app.SetLogPath(logPath)
 	}
 	app.SetEnabledLog(true)
-	app.UseRequestLog()
 	//print logo
 	printDotLogo()
 	logger.Logger().Debug("DotWeb Start New AppServer", LogTarget_HttpServer)

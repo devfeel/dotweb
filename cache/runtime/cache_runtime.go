@@ -35,12 +35,13 @@ func (mi *RuntimeItem) isExpire() bool {
 type RuntimeCache struct {
 	sync.RWMutex
 	gcInterval time.Duration
-	items      map[string]*RuntimeItem
+	items 		*sync.Map
+	//items      map[string]*RuntimeItem
 }
 
 // NewRuntimeCache returns a new *RuntimeCache.
 func NewRuntimeCache() *RuntimeCache {
-	cache := RuntimeCache{items: make(map[string]*RuntimeItem), gcInterval: DefaultGCInterval}
+	cache := RuntimeCache{items:new(sync.Map),gcInterval: DefaultGCInterval}
 	go cache.gc()
 	return &cache
 }
@@ -50,7 +51,8 @@ func NewRuntimeCache() *RuntimeCache {
 func (ca *RuntimeCache) Get(key string) (interface{}, error) {
 	ca.RLock()
 	defer ca.RUnlock()
-	if item, ok := ca.items[key]; ok {
+	if itemObj, ok := ca.items.Load(key); ok {
+		item := itemObj.(*RuntimeItem)
 		if item.isExpire() {
 			return nil, nil
 		}
@@ -112,25 +114,26 @@ func (ca *RuntimeCache) Set(key string, value interface{}, ttl int64) error {
 }
 
 func (ca *RuntimeCache) initValue(key string, value interface{}, ttl int64) error {
-	ca.items[key] = &RuntimeItem{
+	ca.items.Store(key, &RuntimeItem{
 		value:      value,
 		createTime: time.Now(),
 		ttl:        time.Duration(ttl) * time.Second,
-	}
+	})
 	return nil
 }
 
 // Incr increase int64 counter in runtime cache.
 func (ca *RuntimeCache) Incr(key string) (int64, error) {
 	ca.Lock()
-	item, ok := ca.items[key]
+	itemObj, ok := ca.items.Load(key)
 	if !ok {
 		//if not exists, auto set new with 0
 		ca.initValue(key, ZeroInt64, 0)
 		//reload
-		item, _ = ca.items[key]
+		itemObj, _ = ca.items.Load(key)
 	}
 
+	item := itemObj.(*RuntimeItem)
 	switch item.value.(type) {
 	case int:
 		item.value = item.value.(int) + 1
@@ -157,13 +160,15 @@ func (ca *RuntimeCache) Incr(key string) (int64, error) {
 // Decr decrease counter in runtime cache.
 func (ca *RuntimeCache) Decr(key string) (int64, error) {
 	ca.Lock()
-	item, ok := ca.items[key]
+	itemObj, ok := ca.items.Load(key)
 	if !ok {
 		//if not exists, auto set new with 0
 		ca.initValue(key, ZeroInt64, 0)
 		//reload
-		item, _ = ca.items[key]
+		itemObj, _ = ca.items.Load(key)
 	}
+
+	item := itemObj.(*RuntimeItem)
 	switch item.value.(type) {
 	case int:
 		item.value = item.value.(int) - 1
@@ -202,8 +207,9 @@ func (ca *RuntimeCache) Decr(key string) (int64, error) {
 func (ca *RuntimeCache) Exists(key string) (bool, error) {
 	ca.RLock()
 	defer ca.RUnlock()
-	if v, ok := ca.items[key]; ok {
-		return !v.isExpire(), nil
+	if itemObj, ok := ca.items.Load(key); ok {
+		item := itemObj.(*RuntimeItem)
+		return !item.isExpire(), nil
 	}
 	return false, nil
 }
@@ -213,12 +219,12 @@ func (ca *RuntimeCache) Exists(key string) (bool, error) {
 func (ca *RuntimeCache) Delete(key string) error {
 	ca.Lock()
 	defer ca.Unlock()
-	if _, ok := ca.items[key]; !ok {
+	if _, ok := ca.items.Load(key); !ok {
 		//if not exists, we think it's success
 		return nil
 	}
-	delete(ca.items, key)
-	if _, ok := ca.items[key]; ok {
+	ca.items.Delete(key)
+	if _, ok := ca.items.Load(key); ok {
 		return errors.New("delete key error")
 	}
 	return nil
@@ -228,7 +234,7 @@ func (ca *RuntimeCache) Delete(key string) error {
 func (ca *RuntimeCache) ClearAll() error {
 	ca.Lock()
 	defer ca.Unlock()
-	ca.items = make(map[string]*RuntimeItem)
+	ca.items = nil
 	return nil
 }
 
@@ -238,9 +244,10 @@ func (ca *RuntimeCache) gc() {
 		if ca.items == nil {
 			return
 		}
-		for name := range ca.items {
-			ca.itemExpired(name)
-		}
+		ca.items.Range(func(key interface{}, v interface{}) bool{
+			ca.itemExpired(fmt.Sprint(key))
+			return true
+		})
 	}
 }
 
@@ -249,12 +256,13 @@ func (ca *RuntimeCache) itemExpired(name string) bool {
 	ca.Lock()
 	defer ca.Unlock()
 
-	itm, ok := ca.items[name]
+	itemObj, ok := ca.items.Load(name)
 	if !ok {
 		return true
 	}
-	if itm.isExpire() {
-		delete(ca.items, name)
+	item := itemObj.(*RuntimeItem)
+	if item.isExpire() {
+		ca.items.Delete(name)
 		return true
 	}
 	return false

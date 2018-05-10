@@ -129,6 +129,7 @@ func (r *Response) reset(w http.ResponseWriter) {
 	r.header = w.Header()
 	r.Status = http.StatusOK
 	r.Size = 0
+	r.body = nil
 	r.committed = false
 }
 
@@ -138,6 +139,7 @@ func (r *Response) release() {
 	r.header = nil
 	r.Status = http.StatusOK
 	r.Size = 0
+	r.body = nil
 	r.committed = false
 }
 

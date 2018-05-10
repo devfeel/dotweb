@@ -20,7 +20,7 @@ const (
 )
 
 func TestRuntimeCache_Get(t *testing.T) {
-	cache:=NewTestRuntimeCache()
+	cache:=NewRuntimeCache()
 	cache.Set(TEST_CACHE_KEY,TEST_CACHE_VALUE,5)
 	//check value
 	go func(cache *RuntimeCache,t *testing.T) {
@@ -64,7 +64,7 @@ func TestRuntimeCache_GetString(t *testing.T) {
 }
 
 func testRuntimeCache(t *testing.T,insertValue interface{},f func(cache *RuntimeCache,key string)(interface{}, error)) {
-	cache:=NewTestRuntimeCache()
+	cache:=NewRuntimeCache()
 	cache.Set(TEST_CACHE_KEY,insertValue,5)
 	//check value
 	go func(cache *RuntimeCache,t *testing.T) {
@@ -79,7 +79,7 @@ func testRuntimeCache(t *testing.T,insertValue interface{},f func(cache *Runtime
 }
 
 func TestRuntimeCache_Delete(t *testing.T) {
-	cache:=NewTestRuntimeCache()
+	cache:=NewRuntimeCache()
 	cache.Set(TEST_CACHE_KEY,TEST_CACHE_VALUE,5)
 
 	value,e:=cache.Get(TEST_CACHE_KEY)
@@ -95,20 +95,29 @@ func TestRuntimeCache_Delete(t *testing.T) {
 }
 
 func TestRuntimeCache_ClearAll(t *testing.T) {
-	cache:=NewTestRuntimeCache()
+	cache:=NewRuntimeCache()
 	cache.Set(TEST_CACHE_KEY,TEST_CACHE_VALUE,5)
 	cache.Set("2",TEST_CACHE_VALUE,5)
 	cache.Set("3",TEST_CACHE_VALUE,5)
 
-	test.Equal(t,3,len(cache.items))
+	val2, err := cache.GetString("2")
+	if err != nil{
+		t.Error(err)
+	}
+	test.Equal(t,TEST_CACHE_VALUE, val2)
 
 	cache.ClearAll()
-
-	test.Equal(t,0,len(cache.items))
+	exists2, err := cache.Exists("2")
+	if err != nil{
+		t.Error(err)
+	}
+	if exists2{
+		t.Error("exists 2 but need not exists")
+	}
 }
 
 func TestRuntimeCache_Incr(t *testing.T) {
-	cache:=NewTestRuntimeCache()
+	cache:=NewRuntimeCache()
 	var wg sync.WaitGroup
 	wg.Add(2)
 
@@ -136,7 +145,7 @@ func TestRuntimeCache_Incr(t *testing.T) {
 }
 
 func TestRuntimeCache_Decr(t *testing.T) {
-	cache:=NewTestRuntimeCache()
+	cache:=NewRuntimeCache()
 	var wg sync.WaitGroup
 	wg.Add(2)
 
@@ -161,10 +170,4 @@ func TestRuntimeCache_Decr(t *testing.T) {
 	test.Nil(t,e)
 
 	test.Equal(t,-100,value)
-}
-
-func NewTestRuntimeCache() *RuntimeCache {
-	cache := RuntimeCache{items: make(map[string]*RuntimeItem), gcInterval: DefaultTestGCInterval}
-	go cache.gc()
-	return &cache
 }
