@@ -100,18 +100,18 @@ func TestRuntimeCache_ClearAll(t *testing.T) {
 	cache.Set("2",TEST_CACHE_VALUE,5)
 	cache.Set("3",TEST_CACHE_VALUE,5)
 
-	val_2, err := cache.GetString("2")
+	val2, err := cache.GetString("2")
 	if err != nil{
 		t.Error(err)
 	}
-	test.Equal(t,TEST_CACHE_VALUE, val_2)
+	test.Equal(t,TEST_CACHE_VALUE, val2)
 
 	cache.ClearAll()
-	exists_2, err := cache.Exists("2")
+	exists2, err := cache.Exists("2")
 	if err != nil{
 		t.Error(err)
 	}
-	if exists_2{
+	if exists2{
 		t.Error("exists 2 but need not exists")
 	}
 }
