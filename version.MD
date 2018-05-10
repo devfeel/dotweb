@@ -3,7 +3,7 @@
 
 #### Version 1.4.9.4
 * 调整: dotweb.Classic移除自动UseRequestLog逻辑
-* 调整：Session Redis模式时，当解析map失败时仅标准输出提示，不暴露该异常
+* 调整：Session Redis模式时，新增sessionReExpire用于重置有效期，避免调用SessionUpdate导致不必要的redis数据交换
 * 状态页：访问/dotweb/state时增加CurrentTime字段输出
 * BUG： 修正Reponse自动释放时未重置body字段，导致内存溢出BUG
 * 2018-05-10 13:30

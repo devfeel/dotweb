@@ -49,7 +49,7 @@ func (store *RedisStore) SessionRead(sessionId string) (*SessionState, error) {
 		}
 	}
 	state := NewSessionState(store, sessionId, kv)
-	go store.SessionUpdate(state)
+	go store.sessionReExpire(state)
 	return state, nil
 }
 
@@ -62,6 +62,14 @@ func (store *RedisStore) SessionExist(sessionId string) bool {
 		return false
 	}
 	return exists
+}
+
+// sessionReExpire reset expire session key
+func (store *RedisStore) sessionReExpire(state *SessionState) error {
+	redisClient := redisutil.GetRedisClient(store.serverIp)
+	key := getRedisKey(state.SessionID())
+	_, err := redisClient.Expire(key, store.maxlifetime)
+	return err
 }
 
 //SessionUpdate update session state in store
