@@ -65,6 +65,12 @@ func (store *RedisStore) SessionExist(sessionId string) bool {
 
 //SessionUpdate update session state in store
 func (store *RedisStore) SessionUpdate(state *SessionState) error {
+	defer func(){
+		//ignore error
+		if err := recover(); err != nil {
+			//TODO deal panic err
+		}
+	}()
 	redisClient := redisutil.GetRedisClient(store.serverIp)
 	bytes, err := gob.EncodeMap(state.values)
 	if err != nil {
