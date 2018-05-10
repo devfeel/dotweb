@@ -1,5 +1,12 @@
 ## dotweb版本记录：
 
+
+#### Version 1.4.9.4
+* 调整: dotweb.Classic移除自动UseRequestLog逻辑
+* 调整：Session Redis模式时，当解析map失败时仅标准输出提示，不暴露该异常
+* 状态页：访问/dotweb/state时增加CurrentTime字段输出
+* 2018-05-10 13:30
+
 #### Version 1.4.9.3
 * 重要：go版本适配升级为1.9+
 * 调整UploadFile.Size实现方法，直接返回Header.Size数据
