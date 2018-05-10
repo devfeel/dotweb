@@ -18,9 +18,6 @@ func init() {
 
 // EncodeMap encode the map to gob
 func EncodeMap(obj map[interface{}]interface{}) ([]byte, error) {
-	for _, v := range obj {
-		gob.Register(v)
-	}
 	buf := bytes.NewBuffer(nil)
 	enc := gob.NewEncoder(buf)
 	err := enc.Encode(obj)
