@@ -4,6 +4,7 @@ import (
 	"github.com/devfeel/dotweb/framework/encodes/gob"
 	"github.com/devfeel/dotweb/framework/redis"
 	"sync"
+	"fmt"
 )
 
 const (
@@ -68,6 +69,7 @@ func (store *RedisStore) SessionUpdate(state *SessionState) error {
 	defer func(){
 		//ignore error
 		if err := recover(); err != nil {
+			fmt.Println("SessionUpdate-Redis error", err)
 			//TODO deal panic err
 		}
 	}()
