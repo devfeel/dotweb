@@ -20,9 +20,7 @@ func main() {
 	//设置路由
 	InitRoute(app.HttpServer)
 
-	//set default template path, support multi path
-	//模板查找顺序从最后一个插入的元素开始往前找
-	//默认添加base、base/templates、base/views
+	//set default template path
 	app.HttpServer.Renderer().SetTemplatePath("d:/gotmp/")
 
 	//启动 监控服务
@@ -61,7 +59,7 @@ func TestView(ctx dotweb.Context) error {
 	m[4] = &BookInfo{Name: "book4", Size: 10000}
 	ctx.ViewData().Set("Books", m)
 
-	err := ctx.View("d:/gotmp/testview.html")
+	err := ctx.View("testview.html")
 	return err
 }
 
