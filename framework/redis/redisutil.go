@@ -516,6 +516,14 @@ func (rc *RedisClient) SUnionStore(destination string, key ...interface{})(int, 
 
 //****************** 全局操作 ***********************
 
+// Ping
+func (rc *RedisClient) Ping()(string,error){
+	conn := rc.pool.Get()
+	defer conn.Close()
+	val, err:=redis.String(conn.Do("PING"))
+	return val, err
+}
+
 // DBSize 返回当前数据库的 key 的数量
 func (rc *RedisClient) DBSize()(int64, error){
 	conn := rc.pool.Get()

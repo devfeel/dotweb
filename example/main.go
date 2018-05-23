@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/devfeel/dotweb"
 	"github.com/devfeel/dotweb/framework/exception"
-	"github.com/devfeel/dotweb/session"
 	"net/http"
 	"strconv"
 	"time"
+	"github.com/devfeel/dotweb/session"
 )
 
 func main() {
@@ -46,7 +46,7 @@ func main() {
 	//runtime mode
 	app.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
 	//redis mode
-	//app.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("192.168.8.175:6379", ""))
+	//app.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("redis://192.168.8.175:6379/0"))
 
 	app.HttpServer.SetEnabledDetailRequestData(true)
 

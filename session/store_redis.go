@@ -23,12 +23,15 @@ func getRedisKey(key string) string {
 }
 
 //create new redis store
-func NewRedisStore(config *StoreConfig) *RedisStore {
-	return &RedisStore{
+func NewRedisStore(config *StoreConfig) (*RedisStore, error){
+	store := &RedisStore{
 		lock:        new(sync.RWMutex),
 		serverIp:    config.ServerIP,
 		maxlifetime: config.Maxlifetime,
 	}
+	redisClient := redisutil.GetRedisClient(store.serverIp)
+	_, err:=redisClient.Ping()
+	return store, err
 }
 
 // SessionRead get session state by sessionId

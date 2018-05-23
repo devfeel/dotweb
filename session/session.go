@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strconv"
 	"time"
+	"fmt"
 )
 
 const (
@@ -51,12 +52,16 @@ func GetSessionStore(config *StoreConfig) SessionStore {
 	case SessionMode_Runtime:
 		return NewRuntimeStore(config)
 	case SessionMode_Redis:
-		return NewRedisStore(config)
+		store, err := NewRedisStore(config)
+		if err != nil{
+			panic(fmt.Sprintf("redis session [%v] ping error -> %v", config.StoreName, err.Error()))
+		}else{
+			return store
+		}
 	default:
 		panic("not support session store -> " + config.StoreName)
 	}
 	return nil
-
 }
 
 //create new store with default config and use runtime store
