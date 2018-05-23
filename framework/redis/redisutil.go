@@ -516,7 +516,7 @@ func (rc *RedisClient) SUnionStore(destination string, key ...interface{})(int, 
 
 //****************** 全局操作 ***********************
 
-// Ping
+// Ping 测试一个连接是否可用
 func (rc *RedisClient) Ping()(string,error){
 	conn := rc.pool.Get()
 	defer conn.Close()
