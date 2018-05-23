@@ -1,5 +1,9 @@
 ## dotweb版本记录：
 
+#### Version 1.4.9.5
+* framewrok.RedisClient增加Ping接口，用于检查服务是否可用
+* GetSessionStore增加Redis ServerUrl的ping检查，若不可用直接panic异常信息
+* 2018-05-23 13:30
 
 #### Version 1.4.9.4
 * 调整: dotweb.Classic移除自动UseRequestLog逻辑
