@@ -100,7 +100,12 @@ func (ca *RedisCache) GetInt64(key string) (int64, error) {
 // ttl is second, if ttl is 0, it will be forever.
 func (ca *RedisCache) Set(key string, value interface{}, ttl int64) error {
 	redisClient := redisutil.GetRedisClient(ca.serverURL)
-	_, err := redisClient.SetWithExpire(key, value, ttl)
+	var err error
+	if ttl <= 0{
+		_, err = redisClient.Set(key, value)
+	}else{
+		_, err = redisClient.SetWithExpire(key, value, ttl)
+	}
 	return err
 }
 
