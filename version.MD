@@ -2,6 +2,7 @@
 
 #### Version 1.4.9.6
 * 调整DevelopmentMode设置:默认开启Log,默认启用RequestLogMiddleware,默认Console Print日志内容
+* fixed for #122 - dotweb没有打出 access log
 * 合并const目录内容至consts文件,统一const定义文件
 * 移除example/static
 * 新增example/developmode,便于对developmode的理解
