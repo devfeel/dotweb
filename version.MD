@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+
+#### Version 1.4.9.7
+* fixed bug for #114 dotweb: fix error found by vet
+* 2018-06-04 09:00
+
 #### Version 1.4.9.6
 * 调整DevelopmentMode设置:默认开启Log,默认启用RequestLogMiddleware,默认Console Print日志内容
 * fixed for #122 - dotweb没有打出 access log
