@@ -1,7 +1,6 @@
 package core
 
 import (
-	"github.com/devfeel/dotweb/const"
 	"github.com/devfeel/dotweb/framework/json"
 	"net/http"
 	"strconv"
@@ -115,11 +114,11 @@ type ServerStateInfo struct {
 }
 
 //ShowHtmlData show server state data html-string format
-func (state *ServerStateInfo) ShowHtmlData() string {
+func (state *ServerStateInfo) ShowHtmlData(version string) string {
 	data := "<html><body><div>"
 	data += "CurrentTime : " + time.Now().Format("2006-01-02 15:04:05")
 	data += "<br>"
-	data += "ServerVersion : " + _const.Version
+	data += "ServerVersion : " + version
 	data += "<br>"
 	data += "ServerStartTime : " + state.ServerStartTime.Format(dateTimeLayout)
 	data += "<br>"
