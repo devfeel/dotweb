@@ -161,6 +161,7 @@ func (app *DotWeb) IsDevelopmentMode() bool {
 func (app *DotWeb) SetDevelopmentMode() {
 	app.Config.App.RunMode = RunMode_Development
 	app.SetEnabledLog(true)
+	app.Use(new(RequestLogMiddleware))
 	logger.SetEnabledConsole(true)
 }
 
@@ -622,7 +623,7 @@ func showIntervalData(ctx Context) error {
 
 //显示服务器状态信息
 func showServerState(ctx Context) error {
-	ctx.WriteHtml(core.GlobalState.ShowHtmlData())
+	ctx.WriteHtml(core.GlobalState.ShowHtmlData(Version))
 	return nil
 }
 

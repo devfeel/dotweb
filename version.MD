@@ -1,5 +1,12 @@
 ## dotweb版本记录：
 
+#### Version 1.4.9.6
+* 调整DevelopmentMode设置:默认开启Log,默认启用RequestLogMiddleware,默认Console Print日志内容
+* 合并const目录内容至consts文件,统一const定义文件
+* 移除example/static
+* 新增example/developmode,便于对developmode的理解
+* 2018-06-04 09:00
+
 #### Version 1.4.9.5
 * framewrok.RedisClient增加Ping接口，用于检查服务是否可用
 * GetSessionStore增加Redis ServerUrl的ping检查，若不可用直接panic异常信息
