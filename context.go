@@ -8,13 +8,14 @@ import (
 
 	"context"
 	"fmt"
-	"github.com/devfeel/dotweb/cache"
-	"github.com/devfeel/dotweb/core"
-	"github.com/devfeel/dotweb/session"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/devfeel/dotweb/cache"
+	"github.com/devfeel/dotweb/core"
+	"github.com/devfeel/dotweb/session"
 )
 
 const (
@@ -230,7 +231,7 @@ func (ctx *HttpContext) Features() *xFeatureTools {
 // AppContext get application's global appcontext
 // issue #3
 func (ctx *HttpContext) AppItems() core.ConcurrenceMap {
-	if ctx.HttpServer != nil {
+	if ctx.httpServer != nil {
 		return ctx.httpServer.DotApp.Items
 	} else {
 		return core.NewConcurrenceMap()
