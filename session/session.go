@@ -35,7 +35,7 @@ type (
 	StoreConfig struct {
 		StoreName   string
 		Maxlifetime int64
-		ServerIP    string
+		ServerIP    string //if use redis, connection string, like "redis://:password@10.0.1.11:6379/0"
 	}
 
 	SessionManager struct {
