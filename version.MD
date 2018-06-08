@@ -1,5 +1,11 @@
 ## dotweb版本记录：
 
+#### Version 1.5
+* New feature：UploadFile.RandomFileName used to get random file name from uuid
+* New feature: encodes.base64x used to quickly use base64 EncodeString and DecodeString
+* New feature: session.NewRedisConfig use to create redis session config include serverUrl and storeKeyPre
+* if you set custom storeKeyPre, it will be store key start with custom set, default is "dotweb:session:"
+* 2018-06-08 17:00
 
 #### Version 1.4.9.7
 * fixed bug for #114 dotweb: fix error found by vet

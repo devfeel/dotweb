@@ -36,6 +36,7 @@ type (
 		StoreName   string
 		Maxlifetime int64
 		ServerIP    string //if use redis, connection string, like "redis://:password@10.0.1.11:6379/0"
+		StoreKeyPre	string //if use redis, set custom redis key-pre; default is dotweb:session:
 	}
 
 	SessionManager struct {
@@ -66,20 +67,28 @@ func GetSessionStore(config *StoreConfig) SessionStore {
 
 //create new store with default config and use runtime store
 func NewDefaultRuntimeConfig() *StoreConfig {
-	return NewStoreConfig(SessionMode_Runtime, DefaultSessionMaxLifeTime, "")
+	return NewStoreConfig(SessionMode_Runtime, DefaultSessionMaxLifeTime, "", "")
 }
 
 //create new store with default config and use redis store
 func NewDefaultRedisConfig(serverIp string) *StoreConfig {
-	return NewStoreConfig(SessionMode_Redis, DefaultSessionMaxLifeTime, serverIp)
+	return NewStoreConfig(SessionMode_Redis, DefaultSessionMaxLifeTime, serverIp, "")
 }
 
+//create new store with config and use redis store
+//must set serverIp and storeKeyPre
+func NewRedisConfig(serverIp string, storeKeyPre string) *StoreConfig {
+	return NewStoreConfig(SessionMode_Redis, DefaultSessionMaxLifeTime, serverIp, storeKeyPre)
+}
+
+
 //create new store config
-func NewStoreConfig(storeName string, maxlifetime int64, serverIp string) *StoreConfig {
+func NewStoreConfig(storeName string, maxlifetime int64, serverIp string, storeKeyPre string) *StoreConfig {
 	return &StoreConfig{
 		StoreName:   storeName,
 		Maxlifetime: maxlifetime,
 		ServerIP:    serverIp,
+		StoreKeyPre:storeKeyPre,
 	}
 }
 
