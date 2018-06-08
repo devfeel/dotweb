@@ -16,10 +16,7 @@ type RedisStore struct {
 	lock        *sync.RWMutex // locker
 	maxlifetime int64
 	serverIp    string //connection string, like "redis://:password@10.0.1.11:6379/0"
-}
-
-func getRedisKey(key string) string {
-	return defaultRedisKeyPre + key
+	storeKeyPre string //set custom redis key-pre; default is dotweb:session:
 }
 
 //create new redis store
@@ -29,15 +26,25 @@ func NewRedisStore(config *StoreConfig) (*RedisStore, error){
 		serverIp:    config.ServerIP,
 		maxlifetime: config.Maxlifetime,
 	}
+	//init redis key-pre
+	if config.StoreKeyPre == ""{
+		store.storeKeyPre = defaultRedisKeyPre
+	}else{
+		store.storeKeyPre = config.StoreKeyPre
+	}
 	redisClient := redisutil.GetRedisClient(store.serverIp)
 	_, err:=redisClient.Ping()
 	return store, err
 }
 
+func (store *RedisStore)getRedisKey(key string) string {
+	return store.storeKeyPre + key
+}
+
 // SessionRead get session state by sessionId
 func (store *RedisStore) SessionRead(sessionId string) (*SessionState, error) {
 	redisClient := redisutil.GetRedisClient(store.serverIp)
-	key := getRedisKey(sessionId)
+	key := store.getRedisKey(sessionId)
 	kvs, err := redisClient.Get(key)
 	if err != nil {
 		return nil, err
@@ -59,7 +66,7 @@ func (store *RedisStore) SessionRead(sessionId string) (*SessionState, error) {
 // SessionExist check session state exist by sessionId
 func (store *RedisStore) SessionExist(sessionId string) bool {
 	redisClient := redisutil.GetRedisClient(store.serverIp)
-	key := getRedisKey(sessionId)
+	key := store.getRedisKey(sessionId)
 	exists, err := redisClient.Exists(key)
 	if err != nil {
 		return false
@@ -70,7 +77,7 @@ func (store *RedisStore) SessionExist(sessionId string) bool {
 // sessionReExpire reset expire session key
 func (store *RedisStore) sessionReExpire(state *SessionState) error {
 	redisClient := redisutil.GetRedisClient(store.serverIp)
-	key := getRedisKey(state.SessionID())
+	key := store.getRedisKey(state.SessionID())
 	_, err := redisClient.Expire(key, store.maxlifetime)
 	return err
 }
@@ -89,7 +96,7 @@ func (store *RedisStore) SessionUpdate(state *SessionState) error {
 	if err != nil {
 		return err
 	}
-	key := getRedisKey(state.SessionID())
+	key := store.getRedisKey(state.SessionID())
 	_, err = redisClient.SetWithExpire(key, string(bytes), store.maxlifetime)
 	return err
 }
@@ -97,7 +104,7 @@ func (store *RedisStore) SessionUpdate(state *SessionState) error {
 // SessionRemove delete session state in store
 func (store *RedisStore) SessionRemove(sessionId string) error {
 	redisClient := redisutil.GetRedisClient(store.serverIp)
-	key := getRedisKey(sessionId)
+	key := store.getRedisKey(sessionId)
 	_, err := redisClient.Del(key)
 	return err
 }

@@ -45,8 +45,10 @@ func main() {
 	//设置Session配置
 	//runtime mode
 	app.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
-	//redis mode
+	//redis no auth mode
 	//app.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("redis://192.168.8.175:6379/0"))
+	//redis auth mode
+	//app.HttpServer.SetSessionConfig(session.NewDefaultRedisConfig("redis://:password@192.168.8.175:6379/0"))
 
 	app.HttpServer.SetEnabledDetailRequestData(true)
 
