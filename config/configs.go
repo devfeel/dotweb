@@ -63,8 +63,7 @@ type (
 		SessionMode    string `xml:"mode,attr"`     //session模式，目前支持runtime、redis
 		Timeout        int64  `xml:"timeout,attr"`  //session超时时间，分为单位
 		ServerIP       string `xml:"serverip,attr"` //远程session serverip
-		UserName       string `xml:"username,attr"` //远程session username
-		Password       string `xml:"password,attr"` //远程session password
+		StoreKeyPre 	string `xml:"storekeypre,attr"` //远程session StoreKeyPre
 	}
 
 	// RouterNode dotweb app's router config

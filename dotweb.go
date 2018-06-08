@@ -348,7 +348,7 @@ func (app *DotWeb) initAppConfig() {
 	//设置session
 	if config.Session.EnabledSession {
 		app.HttpServer.SetEnabledSession(config.Session.EnabledSession)
-		app.HttpServer.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP))
+		app.HttpServer.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP, config.Session.StoreKeyPre))
 	}
 
 	//设置启用详细请求数据统计

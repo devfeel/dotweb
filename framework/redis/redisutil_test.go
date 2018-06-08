@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-const redisServerURL = "redis://192.168.8.175:6379/0"
+const redisServerURL = "redis://:123456@192.168.8.175:7001/0"
 
 func TestRedisClient_Ping(t *testing.T) {
 	redisClient := GetRedisClient(redisServerURL)
