@@ -1,5 +1,9 @@
 ## dotweb版本记录：
 
+#### Version 1.5.1
+* Fixed Bug: double sprintf on logger.xlog
+* 2018-06-15 14:00
+
 #### Version 1.5
 * New feature：UploadFile.RandomFileName used to get random file name from uuid
 * New feature: encodes.base64x used to quickly use base64 EncodeString and DecodeString
