@@ -6,7 +6,6 @@ import (
 	"io"
 	"path"
 	"sync"
-	"fmt"
 )
 
 // Renderer is the interface that wraps the render method.
@@ -59,7 +58,6 @@ func (r *innerRenderer) parseFiles(fileNames ...string) (*template.Template, err
 		//check from chach
 		t, exists = r.parseFilesFromCache(filesCacheKey)
 	}
-	fmt.Println("parseFiles", r.enabledCache, filesCacheKey, t, exists)
 	if !exists{
 		t, err = template.ParseFiles(realFileNames...)
 		if err != nil {
