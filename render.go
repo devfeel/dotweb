@@ -86,7 +86,7 @@ func registeTemplateFunc(t *template.Template) *template.Template {
 }
 
 // NewInnerRenderer create a inner renderer instance
-func NewInnerRenderer() *innerRenderer {
+func NewInnerRenderer() Renderer {
 	r := new(innerRenderer)
 	r.enabledCache = true
 	r.templateCache = make(map[string]*template.Template)
@@ -94,7 +94,7 @@ func NewInnerRenderer() *innerRenderer {
 }
 
 // NewInnerRendererNoCache create a inner renderer instance with no cache mode
-func NewInnerRendererNoCache() *innerRenderer {
+func NewInnerRendererNoCache() Renderer {
 	r := new(innerRenderer)
 	r.enabledCache = false
 	r.templateCache = make(map[string]*template.Template)
