@@ -69,6 +69,7 @@ const (
 )
 
 //New create and return DotApp instance
+//default run mode is RunMode_Production
 func New() *DotWeb {
 	app := &DotWeb{
 		HttpServer:      NewHttpServer(),
@@ -80,6 +81,8 @@ func New() *DotWeb {
 		middlewareMutex: new(sync.RWMutex),
 		StartMode:       StartMode_New,
 	}
+	//set default run mode = RunMode_Production
+	app.Config.App.RunMode = RunMode_Production
 	app.HttpServer.setDotApp(app)
 	//add default httphandler with middlewares
 	//fixed for issue #100
@@ -531,8 +534,13 @@ func (app *DotWeb) initServerEnvironment() {
 	}
 
 	//if renderer not set, create inner renderer
+	//if is develop mode, it will use nocache mode
 	if app.HttpServer.Renderer() == nil {
-		app.HttpServer.SetRenderer(NewInnerRenderer())
+		if app.RunMode() == RunMode_Development{
+			app.HttpServer.SetRenderer(NewInnerRendererNoCache())
+		}else{
+			app.HttpServer.SetRenderer(NewInnerRenderer())
+		}
 	}
 
 	//start pprof server

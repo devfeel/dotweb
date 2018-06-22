@@ -319,7 +319,11 @@ func (server *HttpServer) Binder() Binder {
 // if no set, init InnerRenderer
 func (server *HttpServer) Renderer() Renderer {
 	if server.render == nil {
-		server.render = NewInnerRenderer()
+		if server.DotApp.RunMode() == RunMode_Development{
+			server.SetRenderer(NewInnerRendererNoCache())
+		}else{
+			server.SetRenderer(NewInnerRenderer())
+		}
 	}
 	return server.render
 }

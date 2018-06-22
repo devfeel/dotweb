@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"io"
 	"path"
+	"sync"
 )
 
 // Renderer is the interface that wraps the render method.
@@ -15,6 +16,10 @@ type Renderer interface {
 
 type innerRenderer struct {
 	templatePath string
+	// Template cache (for FromCache())
+	enabledCache 	   bool
+	templateCache      map[string]*template.Template
+	templateCacheMutex sync.RWMutex
 }
 
 // Render render view use http/template
@@ -37,18 +42,41 @@ func unescaped(x string) interface{} { return template.HTML(x) }
 // return http/template by gived file name
 func (r *innerRenderer) parseFiles(fileNames ...string) (*template.Template, error) {
 	var realFileNames []string
+	var filesCacheKey string
+	var err error
 	for _, v := range fileNames {
 		if !file.Exist(v) {
 			v = path.Join(r.templatePath, v)
 		}
 		realFileNames = append(realFileNames, v)
+		filesCacheKey = filesCacheKey + v
 	}
-	t, err := template.ParseFiles(realFileNames...)
-	if err != nil {
-		return nil, err
+
+	var t *template.Template
+	var exists bool
+	if r.enabledCache {
+		//check from chach
+		t, exists = r.parseFilesFromCache(filesCacheKey)
 	}
+	if !exists{
+		t, err = template.ParseFiles(realFileNames...)
+		if err != nil {
+			return nil, err
+		}
+		r.templateCacheMutex.Lock()
+		defer r.templateCacheMutex.Unlock()
+		r.templateCache[filesCacheKey] = t
+	}
+
 	t = registeTemplateFunc(t)
 	return t, nil
+}
+
+func (r *innerRenderer) parseFilesFromCache(filesCacheKey string) (*template.Template, bool){
+	r.templateCacheMutex.RLock()
+	defer r.templateCacheMutex.RUnlock()
+	t, exists:= r.templateCache[filesCacheKey]
+	return t, exists
 }
 
 // registeTemplateFunc registe default support funcs
@@ -58,7 +86,18 @@ func registeTemplateFunc(t *template.Template) *template.Template {
 }
 
 // NewInnerRenderer create a inner renderer instance
-func NewInnerRenderer() *innerRenderer {
+func NewInnerRenderer() Renderer {
 	r := new(innerRenderer)
+	r.enabledCache = true
+	r.templateCache = make(map[string]*template.Template)
 	return r
 }
+
+// NewInnerRendererNoCache create a inner renderer instance with no cache mode
+func NewInnerRendererNoCache() Renderer {
+	r := new(innerRenderer)
+	r.enabledCache = false
+	r.templateCache = make(map[string]*template.Template)
+	return r
+}
+
