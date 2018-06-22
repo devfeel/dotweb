@@ -531,8 +531,14 @@ func (app *DotWeb) initServerEnvironment() {
 	}
 
 	//if renderer not set, create inner renderer
+	//if is develop mode, it will use nocache mode
 	if app.HttpServer.Renderer() == nil {
-		app.HttpServer.SetRenderer(NewInnerRenderer())
+		if app.RunMode() == RunMode_Development{
+			app.HttpServer.SetRenderer(NewInnerRendererNoCache())
+		}else{
+			app.HttpServer.SetRenderer(NewInnerRenderer())
+		}
+
 	}
 
 	//start pprof server

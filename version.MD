@@ -1,5 +1,11 @@
 ## dotweb版本记录：
 
+#### Version 1.5.2
+* New feature: dotweb.innerRenderer add cache mode, default is enabled
+* New feature: dotweb.innerRenderer add NewInnerRendererNoCache() used to disabled cache
+* Update for app run_mode: if it's develop run mode, the default renderer will use no cache mode
+* 2018-06-22 14:00
+
 #### Version 1.5.1
 * Fixed Bug: double sprintf on logger.xlog
 * 2018-06-15 14:00
