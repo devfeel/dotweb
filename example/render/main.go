@@ -14,6 +14,8 @@ func main() {
 	//设置dotserver日志目录
 	app.SetLogPath(file.GetCurrentDirectory())
 
+	//app.SetDevelopmentMode()
+
 	//设置gzip开关
 	//app.HttpServer.SetEnabledGzip(true)
 

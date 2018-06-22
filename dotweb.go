@@ -69,6 +69,7 @@ const (
 )
 
 //New create and return DotApp instance
+//default run mode is RunMode_Production
 func New() *DotWeb {
 	app := &DotWeb{
 		HttpServer:      NewHttpServer(),
@@ -80,6 +81,8 @@ func New() *DotWeb {
 		middlewareMutex: new(sync.RWMutex),
 		StartMode:       StartMode_New,
 	}
+	//set default run mode = RunMode_Production
+	app.Config.App.RunMode = RunMode_Production
 	app.HttpServer.setDotApp(app)
 	//add default httphandler with middlewares
 	//fixed for issue #100
@@ -538,7 +541,6 @@ func (app *DotWeb) initServerEnvironment() {
 		}else{
 			app.HttpServer.SetRenderer(NewInnerRenderer())
 		}
-
 	}
 
 	//start pprof server
