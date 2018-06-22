@@ -93,7 +93,7 @@ func NewInnerRenderer() *innerRenderer {
 	return r
 }
 
-// NewInnerRenderer create a inner renderer instance
+// NewInnerRendererNoCache create a inner renderer instance with no cache mode
 func NewInnerRendererNoCache() *innerRenderer {
 	r := new(innerRenderer)
 	r.enabledCache = false
