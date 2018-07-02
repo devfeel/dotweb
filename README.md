@@ -1,3 +1,6 @@
+<div align=center>
+    <img src="https://github.com/devfeel/dotweb/blob/matser/logo.png" width="200"/>
+</div>
 # DotWeb
 Simple and easy go web micro framework
 
