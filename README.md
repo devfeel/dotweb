@@ -291,6 +291,12 @@ yaml - gopkg.in/yaml.v2  - go get自动下载
 #### <a href="https://github.com/devfeel/tokenserver" target="_blank">TokenServer</a>
 项目简介：token服务，提供token一致性服务以及相关的全局ID生成服务等
 
+#### <a href="https://github.com/gnuos/wechat-token" target="_blank">Wechat-token</a>
+项目简介：微信Access Token中控服务器，用来统一管理各个公众号的access_token，提供统一的接口进行获取和自动刷新Access Token。
+
+#### <a href="https://github.com/devfeel/dotweb-start" target="_blank">dotweb-start</a>
+项目简介：基于dotweb、dotlog、mapper、dottask、cache、database的综合项目模板。
+
 ## 贡献名单
 目前已经有几位朋友在为框架一起做努力，我们将在合适的时间向大家展现，谢谢他们的支持！
 
