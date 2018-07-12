@@ -436,7 +436,7 @@ func (app *DotWeb) initBindMiddleware() {
 	router := app.HttpServer.Router().(*router)
 	//bind app middlewares
 	for fullExpress, _ := range router.allRouterExpress {
-		expresses := strings.Split(fullExpress, "_")
+		expresses := strings.Split(fullExpress, routerExpressSplit)
 		if len(expresses) < 2 {
 			continue
 		}

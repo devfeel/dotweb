@@ -29,6 +29,7 @@ type (
 		groups	 	   []Group
 		Modules        []*HttpModule
 		DotApp         *DotWeb
+		Validator      Validator
 		sessionManager *session.SessionManager
 		lock_session   *sync.RWMutex
 		pool           *pool

@@ -31,6 +31,10 @@ const (
 	RouteMethod_WebSocket = "WEBSOCKET"
 )
 
+const(
+	routerExpressSplit = "^$^"
+)
+
 var (
 	HttpMethodMap map[string]string
 	valueNodePool sync.Pool
@@ -500,7 +504,7 @@ func (r *router) add(method, path string, handle RouterHandle, m ...Middleware) 
 	//fmt.Println("Handle => ", method, " - ", *root, " - ", path)
 	outnode = root.addRoute(path, handle, m...)
 	outnode.fullPath = path
-	r.allRouterExpress[method+"_"+path] = struct{}{}
+	r.allRouterExpress[method + routerExpressSplit + path] = struct{}{}
 	return
 }
 
