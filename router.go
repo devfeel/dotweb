@@ -32,7 +32,7 @@ const (
 )
 
 const(
-	routerExpress_Split = "^$^"
+	routerExpressSplit = "^$^"
 )
 
 var (
@@ -504,7 +504,7 @@ func (r *router) add(method, path string, handle RouterHandle, m ...Middleware) 
 	//fmt.Println("Handle => ", method, " - ", *root, " - ", path)
 	outnode = root.addRoute(path, handle, m...)
 	outnode.fullPath = path
-	r.allRouterExpress[method+routerExpress_Split+path] = struct{}{}
+	r.allRouterExpress[method + routerExpressSplit + path] = struct{}{}
 	return
 }
 
