@@ -1,5 +1,11 @@
 ## dotweb版本记录：
 
+#### Version 1.5.3
+* New feature: HttpServer add Validator which be called by Context.Validate()
+* New feature: Context add Validate(interface{}) used to validate data with HttpServer::Validator
+* Update: use routerExpress_Split replace "_" when padding data to Router::RouterExpress
+* 2018-07-12 12:00
+
 #### Version 1.5.2
 * New feature: dotweb.innerRenderer add cache mode, default is enabled
 * New feature: dotweb.innerRenderer add NewInnerRendererNoCache() used to disabled cache

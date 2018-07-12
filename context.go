@@ -66,6 +66,8 @@ type (
 		Inline(file string, name string) error
 		Bind(i interface{}) error
 		BindJsonBody(i interface{}) error
+		// Validate validates provided `i`. It is usually called after `Context#Bind()`.
+		Validate(i interface{}) error
 		GetRouterName(key string) string
 		RemoteIP() string
 		SetCookieValue(name, value string, maxAge int)
@@ -425,6 +427,14 @@ func (ctx *HttpContext) Bind(i interface{}) error {
 // BindJsonBody default use json decode req.Body to struct
 func (ctx *HttpContext) BindJsonBody(i interface{}) error {
 	return ctx.httpServer.Binder().BindJsonBody(i, ctx)
+}
+// Validate validates data with HttpServer::Validator
+// We will implementing inner validator on next version
+func (ctx *HttpContext) Validate(i interface{}) error {
+	if ctx.httpServer.Validator == nil {
+		return ErrValidatorNotRegistered
+	}
+	return ctx.httpServer.Validator.Validate(i)
 }
 
 // GetRouterName get router name
