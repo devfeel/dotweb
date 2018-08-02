@@ -120,7 +120,7 @@ func (l *xLog) writeLog(chanLog chanLog, level string) {
 	}
 	log := chanLog.Content
 	if !chanLog.isRaw {
-		log = fmt.Sprintf("[%s] %s [%s:%v] %s", chanLog.LogLevel, time.Now().Format(defaultFullTimeLayout), chanLog.logCtx.fileName, chanLog.logCtx.line, chanLog.Content)
+		log = fmt.Sprintf("%s [%s] [%s:%v] %s", time.Now().Format(defaultFullTimeLayout), chanLog.LogLevel, chanLog.logCtx.fileName, chanLog.logCtx.line, chanLog.Content)
 	}
 	if l.enabledConsole {
 		fmt.Println(log)

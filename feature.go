@@ -34,7 +34,7 @@ func (f *xFeatureTools) SetSession(httpCtx *HttpContext) {
 	} else {
 		httpCtx.sessionID = httpCtx.HttpServer().GetSessionManager().NewSessionID()
 		cookie := &http.Cookie{
-			Name:  httpCtx.HttpServer().sessionManager.CookieName,
+			Name:  httpCtx.HttpServer().sessionManager.StoreConfig().CookieName,
 			Value: url.QueryEscape(httpCtx.SessionID()),
 			Path:  "/",
 		}

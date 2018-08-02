@@ -348,12 +348,6 @@ func (app *DotWeb) initAppConfig() {
 		app.OfflineServer.SetOffline(config.Offline.Offline, config.Offline.OfflineText, config.Offline.OfflineUrl)
 	}
 
-	//设置session
-	if config.Session.EnabledSession {
-		app.HttpServer.SetEnabledSession(config.Session.EnabledSession)
-		app.HttpServer.SetSessionConfig(session.NewStoreConfig(config.Session.SessionMode, config.Session.Timeout, config.Session.ServerIP, config.Session.StoreKeyPre))
-	}
-
 	//设置启用详细请求数据统计
 	if config.Server.EnabledDetailRequestData {
 		core.GlobalState.EnabledDetailRequestData = config.Server.EnabledDetailRequestData

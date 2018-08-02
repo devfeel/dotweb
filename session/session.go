@@ -35,13 +35,13 @@ type (
 	StoreConfig struct {
 		StoreName   string
 		Maxlifetime int64
+		CookieName  string //custom cookie name which sessionid store
 		ServerIP    string //if use redis, connection string, like "redis://:password@10.0.1.11:6379/0"
 		StoreKeyPre	string //if use redis, set custom redis key-pre; default is dotweb:session:
 	}
 
 	SessionManager struct {
 		store       SessionStore
-		CookieName  string `json:"cookieName"`
 		GCLifetime  int64  `json:"gclifetime"`
 		storeConfig *StoreConfig
 	}
@@ -94,22 +94,21 @@ func NewStoreConfig(storeName string, maxlifetime int64, serverIp string, storeK
 
 //create new session manager with default config info
 func NewDefaultSessionManager(config *StoreConfig) (*SessionManager, error) {
-	return NewSessionManager(DefaultSessionCookieName, DefaultSessionGCLifeTime, config)
+	return NewSessionManager(DefaultSessionGCLifeTime, config)
 }
 
 //create new seesion manager
-func NewSessionManager(cookieName string, gcLifetime int64, config *StoreConfig) (*SessionManager, error) {
+func NewSessionManager(gcLifetime int64, config *StoreConfig) (*SessionManager, error) {
 	if gcLifetime <= 0 {
 		gcLifetime = DefaultSessionGCLifeTime
 	}
-	if cookieName == "" {
-		cookieName = DefaultSessionCookieName
+	if config.CookieName == "" {
+		config.CookieName = DefaultSessionCookieName
 	}
 	manager := &SessionManager{
 		store:       GetSessionStore(config),
 		GCLifetime:  gcLifetime,
 		storeConfig: config,
-		CookieName:  cookieName,
 	}
 	//开启GC
 	go func() {
@@ -118,16 +117,21 @@ func NewSessionManager(cookieName string, gcLifetime int64, config *StoreConfig)
 	return manager, nil
 }
 
-//create new session id with DefaultSessionLength
+// NewSessionID create new session id with DefaultSessionLength
 func (manager *SessionManager) NewSessionID() string {
 	val := cryptos.GetRandString(DefaultSessionLength)
 	return val
 }
 
+// StoreConfig return store config
+func (manager *SessionManager) StoreConfig() *StoreConfig{
+	return manager.storeConfig
+}
+
 //get session id from client
 //default mode is from cookie
 func (manager *SessionManager) GetClientSessionID(req *http.Request) (string, error) {
-	cookie, err := req.Cookie(manager.CookieName)
+	cookie, err := req.Cookie(manager.storeConfig.CookieName)
 	if err != nil {
 		return "", err
 	}

@@ -1,5 +1,12 @@
 ## dotweb版本记录：
 
+#### Version 1.5.4
+* New feature: Session.StoreConfig support CookieName, used to set custom cookie name which sessionid store, default is dotweb_sessionId
+* Update: Config.SessionNode add CookieName, used to set custom cookie name which sessionid store
+* Update: default log format update to "Time [LogLevel] [FileName:Line] Content"
+* BugFixed: remove init session which exec on dotweb.initAppConfig
+* 2018-08-02 15:00
+
 #### Version 1.5.3
 * New feature: HttpServer add Validator which be called by Context.Validate()
 * New feature: Context add Validate(interface{}) used to validate data with HttpServer::Validator
