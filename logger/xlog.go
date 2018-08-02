@@ -41,27 +41,27 @@ const (
 
 // Debug debug log with default format
 func (l *xLog) Debug(log string, logTarget string) {
-	l.log(log, logTarget, LogLevel_Debug, false)
+	l.log(log, logTarget, LogLevelDebug, false)
 }
 
 // Print debug log with no format
 func (l *xLog) Print(log string, logTarget string) {
-	l.log(log, logTarget, LogLevel_Debug, true)
+	l.log(log, logTarget, LogLevelDebug, true)
 }
 
 // Info info log with default format
 func (l *xLog) Info(log string, logTarget string) {
-	l.log(log, logTarget, LogLevel_Info, false)
+	l.log(log, logTarget, LogLevelInfo, false)
 }
 
 // Warn warn log with default format
 func (l *xLog) Warn(log string, logTarget string) {
-	l.log(log, logTarget, LogLevel_Warn, false)
+	l.log(log, logTarget, LogLevelWarn, false)
 }
 
 // Error error log with default format
 func (l *xLog) Error(log string, logTarget string) {
-	l.log(log, logTarget, LogLevel_Error, false)
+	l.log(log, logTarget, LogLevelError, false)
 }
 
 // log push log into chan
@@ -120,7 +120,7 @@ func (l *xLog) writeLog(chanLog chanLog, level string) {
 	}
 	log := chanLog.Content
 	if !chanLog.isRaw {
-		log = fmt.Sprintf("[%s] %s [%s:%v] %s", chanLog.LogLevel, time.Now().Format(defaultFullTimeLayout), chanLog.logCtx.fileName, chanLog.logCtx.line, chanLog.Content)
+		log = fmt.Sprintf("%s [%s] [%s:%v] %s", time.Now().Format(defaultFullTimeLayout), chanLog.LogLevel, chanLog.logCtx.fileName, chanLog.logCtx.line, chanLog.Content)
 	}
 	if l.enabledConsole {
 		fmt.Println(log)

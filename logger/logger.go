@@ -9,10 +9,14 @@ import (
 )
 
 const (
-	LogLevel_Debug = "debug"
-	LogLevel_Info  = "info"
-	LogLevel_Warn  = "warn"
-	LogLevel_Error = "error"
+	// LogLevelDebug debug log level
+	LogLevelDebug = "DEBUG"
+	// LogLevelInfo info log level
+	LogLevelInfo  = "INFO"
+	// LogLevelWarn warn log level
+	LogLevelWarn  = "WARN"
+	// LogLevelError error log level
+	LogLevelError = "ERROR"
 )
 
 type AppLog interface {

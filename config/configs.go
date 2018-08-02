@@ -60,10 +60,11 @@ type (
 	// SessionNode dotweb app's session config
 	SessionNode struct {
 		EnabledSession bool   `xml:"enabled,attr"`  //启用Session
-		SessionMode    string `xml:"mode,attr"`     //session模式，目前支持runtime、redis
-		Timeout        int64  `xml:"timeout,attr"`  //session超时时间，分为单位
-		ServerIP       string `xml:"serverip,attr"` //远程session serverip
-		StoreKeyPre 	string `xml:"storekeypre,attr"` //远程session StoreKeyPre
+		SessionMode    string `xml:"mode,attr"`     //session mode，now support runtime、redis
+		CookieName	   string `xml:"cookiename,attr"` //custom cookie name which sessionid store, default is dotweb_sessionId
+		Timeout        int64  `xml:"timeout,attr"`  //session time-out period, with minute
+		ServerIP       string `xml:"serverip,attr"` //remote session server url
+		StoreKeyPre 	string `xml:"storekeypre,attr"` //remote session StoreKeyPre
 	}
 
 	// RouterNode dotweb app's router config
