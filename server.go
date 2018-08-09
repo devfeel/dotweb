@@ -126,6 +126,9 @@ func (server *HttpServer) ListenAndServeTLS(addr string, certFile, keyFile strin
 
 // ServeHTTP make sure request can be handled correctly
 func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	core.GlobalState.AddCurrentRequest(1)
+	defer core.GlobalState.SubCurrentRequest(1)
+
 	//针对websocket与调试信息特殊处理
 	if checkIsWebSocketRequest(req) {
 		http.DefaultServeMux.ServeHTTP(w, req)
