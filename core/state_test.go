@@ -24,19 +24,25 @@ func Test_AddRequestCount_1(t *testing.T) {
 
 func addRequestCount(wg *sync.WaitGroup, count int) {
 	for i := 0; i < count; i++ {
-		GlobalState.AddRequestCount("test", 1)
+		GlobalState.AddRequestCount("test", 200, 1)
 	}
 	wg.Add(-1)
 }
 
+func Test_CurrentRequestCount(t *testing.T) {
+	//var num uint64 = 1
+	GlobalState.AddCurrentRequest(1000465)
+	t.Log(GlobalState.CurrentRequestCount)
+	GlobalState.SubCurrentRequest(2561)
+	t.Log(GlobalState.CurrentRequestCount)
+}
+
 func Test_AddRequestCount_2(t *testing.T) {
 	var num uint64 = 1
-	var count uint64
 	for i := 0; i < 100; i++ {
-		count = GlobalState.AddRequestCount("test", num)
+		GlobalState.AddRequestCount("test", 200, num)
 		num++
 	}
-	t.Log("TotalRequestCount:", count)
 }
 
 func Test_AddErrorCount_1(t *testing.T) {
@@ -92,16 +98,26 @@ func Benchmark_AddErrorCount_Parallel(b *testing.B) {
 func Benchmark_AddRequestCount_1(b *testing.B) {
 	var num uint64 = 1
 	for i := 0; i < b.N; i++ {
-		GlobalState.AddRequestCount("test", num)
+		GlobalState.AddRequestCount("test", 200, num)
 	}
 }
+
+
+//基准测试
+func Benchmark_AddCurrentRequestCount_1(b *testing.B) {
+	var num uint64 = 1
+	for i := 0; i < b.N; i++ {
+		GlobalState.AddCurrentRequest(num)
+	}
+}
+
 
 // 测试并发效率
 func Benchmark_AddRequestCount_Parallel(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		var num uint64 = 1
 		for pb.Next() {
-			GlobalState.AddRequestCount("test", num)
+			GlobalState.AddRequestCount("test", 200, num)
 		}
 	})
 }

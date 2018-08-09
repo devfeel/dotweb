@@ -24,15 +24,15 @@ func init() {
 		ServerStartTime:      time.Now(),
 		TotalRequestCount:    0,
 		TotalErrorCount:      0,
+		CurrentRequestCount:  0,
 		IntervalRequestData:  NewItemMap(),
 		DetailRequestURLData: NewItemMap(),
 		IntervalErrorData:    NewItemMap(),
 		DetailErrorPageData:  NewItemMap(),
 		DetailErrorData:      NewItemMap(),
 		DetailHTTPCodeData:   NewItemMap(),
-		dataChan_Request:     make(chan *RequestInfo, 1000),
+		dataChan_Request:     make(chan *RequestInfo, 2000),
 		dataChan_Error:       make(chan *ErrorInfo, 1000),
-		dataChan_HttpCode:    make(chan *HttpCodeInfo, 1000),
 		infoPool: &pool{
 			requestInfo: sync.Pool{
 				New: func() interface{} {
@@ -42,11 +42,6 @@ func init() {
 			errorInfo: sync.Pool{
 				New: func() interface{} {
 					return &ErrorInfo{}
-				},
-			},
-			httpCodeInfo: sync.Pool{
-				New: func() interface{} {
-					return &HttpCodeInfo{}
 				},
 			},
 		},
@@ -76,12 +71,6 @@ type ErrorInfo struct {
 	Num    uint64
 }
 
-//httpcode count info
-type HttpCodeInfo struct {
-	URL  string
-	Code int
-	Num  uint64
-}
 
 //服务器状态信息
 type ServerStateInfo struct {
@@ -91,6 +80,8 @@ type ServerStateInfo struct {
 	EnabledDetailRequestData bool
 	//该运行期间总访问次数
 	TotalRequestCount uint64
+	//当前活跃的请求数
+	CurrentRequestCount uint64
 	//单位时间内请求数据 - 按分钟为单位
 	IntervalRequestData *ItemMap
 	//明细请求页面数据 - 以不带参数的访问url为key
@@ -108,7 +99,6 @@ type ServerStateInfo struct {
 
 	dataChan_Request  chan *RequestInfo
 	dataChan_Error    chan *ErrorInfo
-	dataChan_HttpCode chan *HttpCodeInfo
 	//对象池
 	infoPool *pool
 }
@@ -123,6 +113,8 @@ func (state *ServerStateInfo) ShowHtmlData(version string) string {
 	data += "ServerStartTime : " + state.ServerStartTime.Format(dateTimeLayout)
 	data += "<br>"
 	data += "TotalRequestCount : " + strconv.FormatUint(state.TotalRequestCount, 10)
+	data += "<br>"
+	data += "CurrentRequestCount : " + strconv.FormatUint(state.CurrentRequestCount, 10)
 	data += "<br>"
 	data += "TotalErrorCount : " + strconv.FormatUint(state.TotalErrorCount, 10)
 	data += "<br>"
@@ -164,13 +156,20 @@ func (state *ServerStateInfo) QueryIntervalErrorData(queryKey string) uint64 {
 }
 
 //AddRequestCount 增加请求数
-func (state *ServerStateInfo) AddRequestCount(page string, code int, num uint64) uint64 {
-	if strings.Index(page, "/dotweb/") != 0 {
-		atomic.AddUint64(&state.TotalRequestCount, num)
-		state.addRequestData(page, code, num)
-		state.addHTTPCodeData(page, code, num)
-	}
-	return state.TotalRequestCount
+func (state *ServerStateInfo) AddRequestCount(page string, code int, num uint64) {
+	state.addRequestData(page, code, num)
+}
+
+//AddCurrentRequest 增加请求数
+func (state *ServerStateInfo) AddCurrentRequest(num uint64) uint64 {
+	atomic.AddUint64(&state.CurrentRequestCount, num)
+	return state.CurrentRequestCount
+}
+
+//SubCurrentRequest 消除请求数
+func (state *ServerStateInfo) SubCurrentRequest(num uint64) uint64 {
+	atomic.AddUint64(&state.CurrentRequestCount, ^uint64(num-1))
+	return state.CurrentRequestCount
 }
 
 //AddErrorCount 增加错误数
@@ -198,14 +197,6 @@ func (state *ServerStateInfo) addErrorData(page string, err error, num uint64) {
 	state.dataChan_Error <- info
 }
 
-func (state *ServerStateInfo) addHTTPCodeData(page string, code int, num uint64) {
-	//get from pool
-	info := state.infoPool.httpCodeInfo.Get().(*HttpCodeInfo)
-	info.URL = page
-	info.Code = code
-	info.Num = num
-	state.dataChan_HttpCode <- info
-}
 
 //处理日志内部函数
 func (state *ServerStateInfo) handleInfo() {
@@ -213,6 +204,9 @@ func (state *ServerStateInfo) handleInfo() {
 		select {
 		case info := <-state.dataChan_Request:
 			{
+				if strings.Index(info.URL, "/dotweb/") != 0 {
+					atomic.AddUint64(&state.TotalRequestCount, info.Num)
+				}
 				//fixed #63 状态数据，当url较多时，导致内存占用过大
 				if state.EnabledDetailRequestData {
 					//ignore 404 request
@@ -227,6 +221,11 @@ func (state *ServerStateInfo) handleInfo() {
 				key := time.Now().Format(minuteTimeLayout)
 				val := state.IntervalRequestData.GetUInt64(key)
 				state.IntervalRequestData.Set(key, val+info.Num)
+
+				//set code data
+				key = strconv.Itoa(info.Code)
+				val = state.DetailHTTPCodeData.GetUInt64(key)
+				state.DetailHTTPCodeData.Set(key, val+info.Num)
 
 				//put info obj
 				state.infoPool.requestInfo.Put(info)
@@ -250,16 +249,6 @@ func (state *ServerStateInfo) handleInfo() {
 
 				//put info obj
 				state.infoPool.errorInfo.Put(info)
-			}
-		case info := <-state.dataChan_HttpCode:
-			{
-				//set detail error page data
-				key := strconv.Itoa(info.Code)
-				val := state.DetailHTTPCodeData.GetUInt64(key)
-				state.DetailHTTPCodeData.Set(key, val+info.Num)
-
-				//put info obj
-				state.infoPool.httpCodeInfo.Put(info)
 			}
 		}
 	}

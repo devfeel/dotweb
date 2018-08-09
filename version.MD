@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+#### Version 1.5.5
+* New feature: /dotweb/state add CurrentRequestCount data
+* Update: improve 30% performance on app's metric
+* 2018-08-09 15:00
+
 #### Version 1.5.4
 * New feature: Session.StoreConfig support CookieName, used to set custom cookie name which sessionid store, default is dotweb_sessionId
 * Update: Config.SessionNode add CookieName, used to set custom cookie name which sessionid store
