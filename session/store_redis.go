@@ -203,7 +203,6 @@ func (store *RedisStore) checkRedisAlive() bool{
 	redisClient = store.getDefaultRedis()
 	for i := 0;i<=5;i++ {
 		reply, err := redisClient.Ping()
-		//fmt.Println(time.Now(), "checkAliveDefaultRedis Ping", reply, err)
 		if err != nil {
 			isAlive = false
 			break
