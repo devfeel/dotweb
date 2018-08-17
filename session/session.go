@@ -33,11 +33,12 @@ type (
 
 	//session config info
 	StoreConfig struct {
-		StoreName   string
-		Maxlifetime int64
-		CookieName  string //custom cookie name which sessionid store
-		ServerIP    string //if use redis, connection string, like "redis://:password@10.0.1.11:6379/0"
-		StoreKeyPre	string //if use redis, set custom redis key-pre; default is dotweb:session:
+		StoreName   	string
+		Maxlifetime 	int64
+		CookieName  	string //custom cookie name which sessionid store
+		ServerIP    	string //if use redis, connection string, like "redis://:password@10.0.1.11:6379/0"
+		BackupServerUrl string //if use redis, if ServerIP is down, use this server, like "redis://:password@10.0.1.11:6379/0"
+		StoreKeyPre		string //if use redis, set custom redis key-pre; default is dotweb:session:
 	}
 
 	SessionManager struct {

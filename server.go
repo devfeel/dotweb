@@ -208,6 +208,7 @@ func (server *HttpServer) SetSessionConfig(storeConfig *session.StoreConfig) {
 	server.SessionConfig().Timeout = storeConfig.Maxlifetime
 	server.SessionConfig().SessionMode = storeConfig.StoreName
 	server.SessionConfig().ServerIP = storeConfig.ServerIP
+	server.SessionConfig().BackupServerUrl = storeConfig.BackupServerUrl
 	server.SessionConfig().StoreKeyPre = storeConfig.StoreKeyPre
 	server.SessionConfig().CookieName = storeConfig.CookieName
 	logger.Logger().Debug("DotWeb:HttpServer SetSessionConfig ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
@@ -219,6 +220,7 @@ func (server *HttpServer) InitSessionManager() {
 	storeConfig.Maxlifetime = server.SessionConfig().Timeout
 	storeConfig.StoreName = server.SessionConfig().SessionMode
 	storeConfig.ServerIP = server.SessionConfig().ServerIP
+	storeConfig.BackupServerUrl = server.SessionConfig().BackupServerUrl
 	storeConfig.StoreKeyPre = server.SessionConfig().StoreKeyPre
 	storeConfig.CookieName = server.SessionConfig().CookieName
 
