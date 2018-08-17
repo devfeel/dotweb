@@ -3,7 +3,6 @@ package hystrix
 import (
 	"time"
 	"sync"
-	"fmt"
 )
 
 const(
@@ -147,10 +146,10 @@ func (h *StandHystrix) doCheck(){
 func (h *StandHystrix) defaultCheckHystrix() bool{
 	count := h.GetCounter().Count()
 	if count > h.maxFailedNumber{
-		fmt.Println(time.Now(), "hystrix triggered!!",count)
+		//fmt.Println(time.Now(), "hystrix triggered!!",count)
 		return true
 	}else{
-		fmt.Println(time.Now(), "hystrix untriggered", count)
+		//fmt.Println(time.Now(), "hystrix untriggered", count)
 		return false
 	}
 }
