@@ -5,6 +5,11 @@
 * New feature: Session.StoreConfig support BackupServerUrl, used to store session when default ServerIP redis is not available
 * Detail:
   - hystrix default MaxFailedNumber is 20 per 2 minutes
+- Example:
+  ```
+  sessionConf := session.NewDefaultRedisConfig("redis://10.10.0.1:6322/1")
+  sessionConf.BackupServerUrl = "redis://10.10.0.1:6379/1"
+  ```
 * 2018-08-09 15:00
 
 #### Version 1.5.5
