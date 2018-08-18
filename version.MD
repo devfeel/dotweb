@@ -1,5 +1,9 @@
 ## dotweb版本记录：
 
+#### Version 1.5.6.1
+* BugFixed: hystrix add doCleanHistoryCounter, used to clean history counter
+* 2018-08-18 10:00
+
 #### Version 1.5.6
 * New feature: add hystrix module, now is used to auto switch to backup redis session store
 * New feature: Session.StoreConfig support BackupServerUrl, used to store session when default ServerIP redis is not available
@@ -10,7 +14,7 @@
   sessionConf := session.NewDefaultRedisConfig("redis://10.10.0.1:6322/1")
   sessionConf.BackupServerUrl = "redis://10.10.0.1:6379/1"
   ```
-* 2018-08-09 15:00
+* 2018-08-17 15:00
 
 #### Version 1.5.5
 * New feature: /dotweb/state add CurrentRequestCount data

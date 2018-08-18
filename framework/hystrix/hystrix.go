@@ -10,7 +10,10 @@ const(
 	status_Alive = 2
 	DefaultCheckHystrixInterval = 10 //unit is Second
 	DefaultCheckAliveInterval = 60 //unit is Second
+	DefaultCleanHistoryInterval = 60 * 5 //unit is Second
 	DefaultMaxFailedNumber = 100
+	DefaultReserveMinutes = 30
+
 )
 
 type Hystrix interface{
@@ -69,6 +72,7 @@ func NewHystrix(checkAlive CheckFunc, checkHysrix CheckFunc) Hystrix{
 
 func (h *StandHystrix) Do(){
 	go h.doCheck()
+	go h.doCleanHistoryCounter()
 }
 
 func (h *StandHystrix) SetCheckInterval(hystrixInterval, aliveInterval int){
@@ -139,9 +143,30 @@ func (h *StandHystrix) doCheck(){
 		}else{
 			time.AfterFunc(time.Duration(h.checkHystrixInterval)*time.Second, h.doCheck)
 		}
-
 	}
 }
+
+func (h *StandHystrix) doCleanHistoryCounter(){
+	var needRemoveKey []string
+	now, _ := time.Parse(minuteTimeLayout, time.Now().Format(minuteTimeLayout))
+	h.counters.Range(func(k, v interface{}) bool{
+		key := k.(string)
+		if t, err := time.Parse(minuteTimeLayout, key); err != nil {
+			needRemoveKey = append(needRemoveKey, key)
+		} else {
+			if now.Sub(t) > (DefaultReserveMinutes * time.Minute) {
+				needRemoveKey = append(needRemoveKey, key)
+			}
+		}
+		return true
+	})
+	for _, k := range needRemoveKey {
+		//fmt.Println(time.Now(), "hystrix doCleanHistoryCounter remove key",k)
+		h.counters.Delete(k)
+	}
+	time.AfterFunc(time.Duration(DefaultCleanHistoryInterval)*time.Second, h.doCleanHistoryCounter)
+}
+
 
 func (h *StandHystrix) defaultCheckHystrix() bool{
 	count := h.GetCounter().Count()
