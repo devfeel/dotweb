@@ -1,5 +1,32 @@
 ## dotweb版本记录：
 
+
+#### Version 1.5.7
+* New Feature: Add integration Timeout Middleware, support DotWeb.UseTimeoutHook to use it
+* Detail:
+  - Provide DefaultTimeoutHookHandler to simplify use, it will auto write log the req info which time out
+- Example:
+  ``` golang
+  app.UseTimeoutHook(dotweb.DefaultTimeoutHookHandler, time.Second * 2)
+  ```
+* New Feature: Add Mock module, support DotWeb.SetMock to use it
+* Detail:
+  - Provide StandardMock to simplify use, it implement Mock interface
+  - also you can create custom implement
+  - you can register MockHandle or register return string
+  - register key only support route
+  - special: mock mode only effective in DevelopMode
+- Example:
+  ``` golang
+  func AppMock() dotweb.Mock{
+  	m := dotweb.NewStandardMock()
+  	m.RegisterString("/", "mock data")
+  	return m
+  }
+  app.SetMock(AppMock())
+  ```
+* 2018-08-22 10:00
+
 #### Version 1.5.6.1
 * BugFixed: hystrix add doCleanHistoryCounter, used to clean history counter
 * 2018-08-18 10:00

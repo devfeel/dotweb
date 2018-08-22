@@ -65,6 +65,10 @@ func main() {
 		ctx.WriteJsonC(http.StatusInternalServerError, err.Error())
 	})
 
+	//设置超时钩子事件，当请求超过指定时间阀值，会自动调用传入的函数
+	//不会终止请求，只作为旁路执行
+	app.UseTimeoutHook(dotweb.DefaultTimeoutHookHandler, time.Second * 2)
+
 	//设置HttpModule
 	//InitModule(app)
 
