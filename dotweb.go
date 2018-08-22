@@ -218,6 +218,7 @@ func (app *DotWeb) UseTimeoutHook(handler StandardHandle, timeout time.Duration)
 // SetMock set mock logic
 func (app *DotWeb) SetMock(mock Mock){
 	app.Mock = mock
+	logger.Logger().Debug("DotWeb Mock SetMock", LogTarget_HttpServer)
 }
 
 // SetExceptionHandle set custom error handler
@@ -318,6 +319,9 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 
 	//special, if run mode is not develop, auto stop mock
 	if app.RunMode() != RunMode_Development{
+		if app.Mock != nil {
+			logger.Logger().Debug("DotWeb Mock RunMode is not DevelopMode, Auto stop mock", LogTarget_HttpServer)
+		}
 		app.Mock = nil
 	}
 
