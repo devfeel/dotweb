@@ -14,8 +14,8 @@ type Mock interface{
 	Register(route string, handler MockHandle)
 	// RegisterString register return mock string on route
 	RegisterString(route string, resData interface{})
-	// RegisterJson register return mock json on route
-	RegisterJson(route string, resData interface{})
+	// RegisterJSON register return mock json on route
+	RegisterJSON(route string, resData interface{})
 	// CheckNeedMock check is need do mock logic
 	CheckNeedMock(Context) bool
 	// Do do mock logic
@@ -62,8 +62,8 @@ func (m *StandardMock) RegisterString(route string, resData interface{}){
 	}
 }
 
-// RegisterJson register return mock json on route
-func (m *StandardMock) RegisterJson(route string, resData interface{}){
+// RegisterJSON register return mock json on route
+func (m *StandardMock) RegisterJSON(route string, resData interface{}){
 	m.routeMap[route] = func(ctx Context) {
 		ctx.Response().SetHeader(requestHeaderUseMockKey, requestHeaderUseMockFlag)
 		ctx.WriteJson(resData)
