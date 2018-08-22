@@ -322,6 +322,15 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 			}
 		}()
 
+
+		//do mock, special, mock will ignore all middlewares
+		if r.server.DotApp.Mock != nil && r.server.DotApp.Mock.CheckNeedMock(httpCtx){
+			r.server.DotApp.Mock.Do(httpCtx)
+			if httpCtx.isEnd{
+				return
+			}
+		}
+
 		//处理用户handle
 		var ctxErr error
 		//if len(r.server.DotApp.Middlewares) > 0 {

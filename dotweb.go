@@ -30,6 +30,7 @@ type (
 		cache                   cache.Cache
 		OfflineServer           servers.Server
 		Config                  *config.Config
+		Mock					Mock
 		Middlewares             []Middleware
 		ExceptionHandler        ExceptionHandle
 		NotFoundHandler         StandardHandle // NotFoundHandler 支持自定义404处理代码能力
@@ -214,6 +215,11 @@ func (app *DotWeb) UseTimeoutHook(handler StandardHandle, timeout time.Duration)
 	})
 }
 
+// SetMock set mock logic
+func (app *DotWeb) SetMock(mock Mock){
+	app.Mock = mock
+}
+
 // SetExceptionHandle set custom error handler
 func (app *DotWeb) SetExceptionHandle(handler ExceptionHandle) {
 	app.ExceptionHandler = handler
@@ -308,6 +314,11 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 
 	if app.StartMode == StartMode_Classic {
 		app.IncludeDotwebGroup()
+	}
+
+	//special, if run mode is not develop, auto stop mock
+	if app.RunMode() != RunMode_Development{
+		app.Mock = nil
 	}
 
 	if app.HttpServer.ServerConfig().EnabledTLS {
@@ -574,6 +585,12 @@ func (app *DotWeb) DefaultNotFoundHandler(ctx Context) {
 func (app *DotWeb) DefaultMethodNotAllowedHandler(ctx Context) {
 	ctx.Response().Header().Set(HeaderContentType, CharsetUTF8)
 	ctx.WriteStringC(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed))
+}
+
+func DefaultTimeoutHookHandler(ctx Context){
+	realDration := ctx.Items().GetTimeDuration(ItemKeyHandleDuration)
+	logs := fmt.Sprintf("req %v, cost %v", ctx.Request().Url(), realDration.Seconds())
+	logger.Logger().Warn(logs, LogTarget_RequestTimeout)
 }
 
 // Close immediately stops the server.
