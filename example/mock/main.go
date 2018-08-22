@@ -30,17 +30,19 @@ func main() {
 	fmt.Println("dotweb.StartServer error => ", err)
 }
 
+// Index index handler
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
 	err := ctx.WriteString("index  => ", ctx.Request().Url())
 	return err
 }
 
+// InitRoute init app's route
 func InitRoute(server *dotweb.HttpServer) {
 	server.Router().GET("/", Index)
 }
 
-
+// AppMock create app Mock
 func AppMock() dotweb.Mock{
 	m := dotweb.NewStandardMock()
 	m.RegisterString("/", "mock data")

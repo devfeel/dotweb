@@ -1,17 +1,18 @@
 package dotweb
 
 const(
-	requestHeader_UseMock_Key = "dotweb_req_mock"
-	requestHeader_UseMock_Flag = "true"
+	requestHeaderUseMockKey = "dotweb_req_mock"
+	requestHeaderUseMockFlag = "true"
 )
 
-
+// MockHandle the handle define on mock module
 type MockHandle func(ctx Context)
 
+// Mock the define Mock module
 type Mock interface{
-	// Register reg mock handler on route
+	// Register register MockHandle on route
 	Register(route string, handler MockHandle)
-	// RegisterString reg mock return string on route
+	// RegisterString register return mock string on route
 	RegisterString(route string, resData string)
 	// CheckNeedMock check is need do mock logic
 	CheckNeedMock(Context) bool
@@ -19,21 +20,25 @@ type Mock interface{
 	Do(Context)
 }
 
+// StandardMock standard mock implement for Mock interface
 type StandardMock struct{
 	routeMap map[string]MockHandle
 }
 
+// NewStandardMock create new StandardMock
 func NewStandardMock() *StandardMock{
 	return &StandardMock{routeMap:make(map[string]MockHandle)}
 }
 
+// CheckNeedMock check is need do mock logic
 func (m *StandardMock) CheckNeedMock(ctx Context) bool{
-	if ctx.Request().QueryHeader(requestHeader_UseMock_Key) == requestHeader_UseMock_Flag{
+	if ctx.Request().QueryHeader(requestHeaderUseMockKey) == requestHeaderUseMockFlag{
 		return true
 	}
 	return false
 }
 
+// Do do mock logic
 func (m *StandardMock) Do(ctx Context){
 	handler, exists:=m.routeMap[ctx.RouterNode().Node().fullPath]
 	if exists{
@@ -41,14 +46,16 @@ func (m *StandardMock) Do(ctx Context){
 	}
 }
 
+// Register register MockHandle on route
 func (m *StandardMock) Register(route string, handler MockHandle){
 	m.routeMap[route] = handler
 }
 
+// RegisterString register return mock string on route
 func (m *StandardMock) RegisterString(route string, resData string){
 	m.routeMap[route] = func(ctx Context) {
 		ctx.WriteString(resData)
-		ctx.Response().SetHeader(requestHeader_UseMock_Key, requestHeader_UseMock_Flag)
+		ctx.Response().SetHeader(requestHeaderUseMockKey, requestHeaderUseMockFlag)
 		ctx.End()
 	}
 }
