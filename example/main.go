@@ -30,6 +30,8 @@ func main() {
 
 	//开启development模式
 	app.SetDevelopmentMode()
+	app.SetProductionMode()
+
 
 	//设置gzip开关
 	//app.HttpServer.SetEnabledGzip(true)
