@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+#### Version 1.5.7.2
+* Fixed Bug: App.RunMode always is RunMode_Development
+* Update: Add RunMode log output
+* 2018-08-24 10:00
+
 #### Version 1.5.7.1
 * Add DotWeb Mock log
 * Mock support Register\RegisterString\RegisterJson

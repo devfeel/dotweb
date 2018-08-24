@@ -91,6 +91,7 @@ func New() *DotWeb {
 
 	//init logger
 	logger.InitLog()
+
 	return app
 }
 
@@ -107,8 +108,10 @@ func Classic(logPath string) *DotWeb {
 		app.SetLogPath(logPath)
 	}
 	app.SetEnabledLog(true)
+
 	//print logo
 	printDotLogo()
+
 	logger.Logger().Debug("DotWeb Start New AppServer", LogTarget_HttpServer)
 	return app
 }
@@ -172,7 +175,7 @@ func (app *DotWeb) SetDevelopmentMode() {
 // SetProductionMode set run mode on production mode
 func (app *DotWeb) SetProductionMode() {
 	app.Config.App.RunMode = RunMode_Production
-	logger.SetEnabledConsole(false)
+	logger.SetEnabledConsole(true)
 }
 
 // ExcludeUse registers a middleware exclude routers
@@ -324,6 +327,8 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 		}
 		app.Mock = nil
 	}
+	//output run mode
+	logger.Logger().Debug("DotWeb RunMode is " + app.RunMode(), LogTarget_HttpServer)
 
 	if app.HttpServer.ServerConfig().EnabledTLS {
 		err := app.HttpServer.ListenAndServeTLS(addr, app.HttpServer.ServerConfig().TLSCertFile, app.HttpServer.ServerConfig().TLSKeyFile)
@@ -345,8 +350,6 @@ func (app *DotWeb) initAppConfig() {
 
 	//run mode config
 	if app.Config.App.RunMode != RunMode_Development && app.Config.App.RunMode != RunMode_Production {
-		app.Config.App.RunMode = RunMode_Development
-	} else {
 		app.Config.App.RunMode = RunMode_Development
 	}
 
