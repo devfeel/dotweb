@@ -503,7 +503,7 @@ func (app *DotWeb) initBindMiddleware() {
 // IncludeDotwebGroup init inner routers
 func (app *DotWeb) IncludeDotwebGroup() {
 	//默认支持pprof信息查看
-	gInner := app.HttpServer.Group(app.HttpServer.VirtualPath() + "/dotweb")
+	gInner := app.HttpServer.Group("/dotweb")
 	gInner.GET("/debug/pprof/:key", initPProf)
 	gInner.GET("/debug/freemem", freeMemory)
 	gInner.GET("/state", showServerState)
