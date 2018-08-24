@@ -206,6 +206,8 @@ func (server *HttpServer) IsOffline() bool {
 // SetVirtualPath set current server's VirtualPath
 func (server *HttpServer) SetVirtualPath(path string){
 	server.virtualPath = path
+	logger.Logger().Debug("DotWeb:HttpServer SetVirtualPath ["+path+"]", LogTarget_HttpServer)
+
 }
 
 // VirtualPath return current server's VirtualPath
@@ -216,6 +218,8 @@ func (server *HttpServer) VirtualPath() string{
 // SetOffline set server offline config
 func (server *HttpServer) SetOffline(offline bool, offlineText string, offlineUrl string) {
 	server.offline = offline
+	logger.Logger().Debug("DotWeb:HttpServer SetOffline ["+strconv.FormatBool(offline)+", " + offlineText +", " + offlineUrl + "]", LogTarget_HttpServer)
+
 }
 
 // IndexPage default index page name
