@@ -55,6 +55,7 @@ type (
 		TLSKeyFile               string `xml:"tlskeyfile,attr"`               //TLS模式下秘钥文件地址
 		IndexPage                string `xml:"indexpage,attr"`                //默认index页面
 		EnabledDetailRequestData bool   `xml:"enableddetailrequestdata,attr"` //设置状态数据是否启用详细页面统计，默认不启用，请特别对待，如果站点url过多，会导致数据量过大
+		VirtualPath			     string //virtual path when deploy on no root path
 	}
 
 	// SessionNode dotweb app's session config

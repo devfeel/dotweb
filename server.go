@@ -37,6 +37,7 @@ type (
 		render         Renderer
 		offline        bool
 		Features       *feature.Feature
+		virtualPath    string //virtual path when deploy on no root path
 	}
 
 	//pool定义
@@ -75,6 +76,20 @@ func NewHttpServer() *HttpServer {
 	server.router = NewRouter(server)
 	server.stdServer = &http.Server{Handler: server}
 	return server
+}
+
+// initConfig init config from app config
+func (server *HttpServer) initConfig(){
+	//CROS Config
+	if server.ServerConfig().EnabledAutoCORS {
+		server.Features.SetEnabledCROS()
+	}
+	server.SetEnabledGzip(server.ServerConfig().EnabledGzip)
+
+	//VirtualPath config
+	if server.virtualPath != ""{
+		server.virtualPath = server.ServerConfig().VirtualPath
+	}
 }
 
 // ServerConfig a shortcut for App.Config.ServerConfig
@@ -186,6 +201,16 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 // IsOffline check server is set offline state
 func (server *HttpServer) IsOffline() bool {
 	return server.offline
+}
+
+// SetVirtualPath set current server's VirtualPath
+func (server *HttpServer) SetVirtualPath(path string){
+	server.virtualPath = path
+}
+
+// VirtualPath return current server's VirtualPath
+func (server *HttpServer) VirtualPath() string{
+	return server.virtualPath
 }
 
 // SetOffline set server offline config

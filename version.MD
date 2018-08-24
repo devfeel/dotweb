@@ -1,5 +1,12 @@
 ## dotweb版本记录：
 
+#### Version 1.5.7.3
+* New Feature: Add HttpServer.VirtualPath, used to set virtual path when deploy on no root path
+* Detail:
+  - when set virtual path "/vpath", if set route "/index", it will auto register "vpath/index"
+  - in effect on group & route
+* 2018-08-24 19:00
+
 #### Version 1.5.7.2
 * Fixed Bug: App.RunMode always is RunMode_Development
 * Update: Add RunMode log output

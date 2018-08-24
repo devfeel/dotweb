@@ -39,6 +39,9 @@ func main() {
 	//设置Session开关
 	app.HttpServer.SetEnabledSession(true)
 
+	//set virtual path
+	app.HttpServer.SetVirtualPath("/1")
+
 	//1.use default config
 	//app.HttpServer.Features.SetEnabledCROS()
 	//2.use user config
