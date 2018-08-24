@@ -87,7 +87,7 @@ func (server *HttpServer) initConfig(){
 	server.SetEnabledGzip(server.ServerConfig().EnabledGzip)
 
 	//VirtualPath config
-	if server.virtualPath != ""{
+	if server.virtualPath == ""{
 		server.virtualPath = server.ServerConfig().VirtualPath
 	}
 }
