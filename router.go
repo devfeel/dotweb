@@ -427,37 +427,38 @@ func (r *router) WebSocket(path string, handle HttpHandle) {
 // shortcut for router.Handle(httpmethod, path, handle)
 // support GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS\HiJack\WebSocket\ANY
 func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandle) RouterNode {
+	realPath := r.server.VirtualPath() + path
 	var node *Node
 	handleName := handlerName(handle)
 	routeMethod = strings.ToUpper(routeMethod)
 	if _, exists := HttpMethodMap[routeMethod]; !exists {
-		logger.Logger().Warn("DotWeb:Router:RegisterRoute failed [illegal method] ["+routeMethod+"] ["+path+"] ["+handleName+"]", LogTarget_HttpServer)
+		logger.Logger().Warn("DotWeb:Router:RegisterRoute failed [illegal method] ["+routeMethod+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 		return nil
 	} else {
-		logger.Logger().Debug("DotWeb:Router:RegisterRoute success ["+routeMethod+"] ["+path+"] ["+handleName+"]", LogTarget_HttpServer)
+		logger.Logger().Debug("DotWeb:Router:RegisterRoute success ["+routeMethod+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 	}
 
 	//websocket mode,use default httpserver
 	if routeMethod == RouteMethod_WebSocket {
-		http.Handle(path, websocket.Handler(r.wrapWebSocketHandle(handle)))
+		http.Handle(realPath, websocket.Handler(r.wrapWebSocketHandle(handle)))
 		return node
 	}
 
 	//hijack mode,use get and isHijack = true
 	if routeMethod == RouteMethod_HiJack {
-		r.add(RouteMethod_GET, path, r.wrapRouterHandle(handle, true))
+		r.add(RouteMethod_GET, realPath, r.wrapRouterHandle(handle, true))
 	} else {
 		//GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS mode
-		node = r.add(routeMethod, path, r.wrapRouterHandle(handle, false))
+		node = r.add(routeMethod, realPath, r.wrapRouterHandle(handle, false))
 	}
 
 	//if set auto-head, add head router
 	//only enabled in hijack\GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS
 	if r.server.ServerConfig().EnabledAutoHEAD {
 		if routeMethod == RouteMethod_HiJack {
-			r.add(RouteMethod_HEAD, path, r.wrapRouterHandle(handle, true))
+			r.add(RouteMethod_HEAD, realPath, r.wrapRouterHandle(handle, true))
 		} else if routeMethod != RouteMethod_Any {
-			r.add(RouteMethod_HEAD, path, r.wrapRouterHandle(handle, false))
+			r.add(RouteMethod_HEAD, realPath, r.wrapRouterHandle(handle, false))
 		}
 	}
 	return node

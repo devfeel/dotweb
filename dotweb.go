@@ -353,12 +353,7 @@ func (app *DotWeb) initAppConfig() {
 		app.Config.App.RunMode = RunMode_Development
 	}
 
-	//CROS Config
-	if config.Server.EnabledAutoCORS {
-		app.HttpServer.Features.SetEnabledCROS()
-	}
-
-	app.HttpServer.SetEnabledGzip(config.Server.EnabledGzip)
+	app.HttpServer.initConfig()
 
 	//设置维护
 	if config.Offline.Offline {
@@ -508,7 +503,7 @@ func (app *DotWeb) initBindMiddleware() {
 // IncludeDotwebGroup init inner routers
 func (app *DotWeb) IncludeDotwebGroup() {
 	//默认支持pprof信息查看
-	gInner := app.HttpServer.Group("/dotweb")
+	gInner := app.HttpServer.Group(app.HttpServer.VirtualPath() + "/dotweb")
 	gInner.GET("/debug/pprof/:key", initPProf)
 	gInner.GET("/debug/freemem", freeMemory)
 	gInner.GET("/state", showServerState)
