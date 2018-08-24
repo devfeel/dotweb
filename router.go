@@ -467,9 +467,10 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 // ServerFile is a shortcut for router.ServeFiles(path, filepath)
 // simple demo:server.ServerFile("/src/*filepath", "/var/www")
 func (r *router) ServerFile(path string, fileroot string) RouterNode {
+	realPath := r.server.VirtualPath() + path
 	node := &Node{}
-	if len(path) < 10 || path[len(path)-10:] != "/*filepath" {
-		panic("path must end with /*filepath in path '" + path + "'")
+	if len(realPath) < 10 || realPath[len(realPath)-10:] != "/*filepath" {
+		panic("path must end with /*filepath in path '" + realPath + "'")
 	}
 	var root http.FileSystem
 	root = http.Dir(fileroot)
@@ -477,7 +478,7 @@ func (r *router) ServerFile(path string, fileroot string) RouterNode {
 		root = &core.HideReaddirFS{root}
 	}
 	fileServer := http.FileServer(root)
-	node = r.add(RouteMethod_GET, path, r.wrapFileHandle(fileServer))
+	node = r.add(RouteMethod_GET, realPath, r.wrapFileHandle(fileServer))
 	return node
 }
 
