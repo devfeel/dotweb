@@ -1,5 +1,11 @@
 ## dotweb版本记录：
 
+#### Version 1.5.7.4
+* Fixed Bug: Remove auto set NotFound http status when happened 404, if auto set, it will ignore any ContentType set
+* For issue #149 router middleware handle http 404,405. cann`t response content-type:application/json, Thanks for @lyw1995
+* Update: Add HostName in State page
+* 2018-08-28 13:00
+
 #### Version 1.5.7.3
 * New Feature: Add HttpServer.VirtualPath, used to set virtual path when deploy on no root path
 * Detail:

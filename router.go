@@ -263,7 +263,6 @@ func (r *router) ServeHTTP(ctx *HttpContext) {
 	}
 
 	// Handle 404
-	ctx.Response().SetStatusCode(http.StatusNotFound)
 	r.server.DotApp.NotFoundHandler(ctx)
 }
 
