@@ -8,6 +8,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"github.com/devfeel/dotweb/framework/sysx"
 )
 
 var GlobalState *ServerStateInfo
@@ -106,6 +107,8 @@ type ServerStateInfo struct {
 //ShowHtmlData show server state data html-string format
 func (state *ServerStateInfo) ShowHtmlData(version string) string {
 	data := "<html><body><div>"
+	data += "HostInfo : " + sysx.GetHostName()
+	data += "<br>"
 	data += "CurrentTime : " + time.Now().Format("2006-01-02 15:04:05")
 	data += "<br>"
 	data += "ServerVersion : " + version
