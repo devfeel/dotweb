@@ -128,11 +128,11 @@ type RequestLogMiddleware struct {
 func (m *RequestLogMiddleware) Handle(ctx Context) error {
 	var timeDuration time.Duration
 	var timeTaken uint64
-	var err error
-	m.Next(ctx)
+	err := m.Next(ctx)
 	if ctx.Items().Exists(ItemKeyHandleDuration){
-		timeDuration, err = time.ParseDuration(ctx.Items().GetString(ItemKeyHandleDuration))
-		if err != nil{
+		var errParse error
+		timeDuration, errParse = time.ParseDuration(ctx.Items().GetString(ItemKeyHandleDuration))
+		if errParse != nil{
 			timeTaken = 0
 		}else{
 			timeTaken = uint64(timeDuration/time.Millisecond)
@@ -149,7 +149,7 @@ func (m *RequestLogMiddleware) Handle(ctx Context) error {
 	}
 	log := ctx.Request().Url() + " " + logContext(ctx, timeTaken)
 	logger.Logger().Debug(log, LogTarget_HttpRequest)
-	return nil
+	return err
 }
 
 //get default log string
@@ -193,7 +193,7 @@ func (m *TimeoutHookMiddleware) Handle(ctx Context) error {
 		}
 	}
 	//Do next
-	m.Next(ctx)
+	err := m.Next(ctx)
 	if m.HookHandle != nil{
 		realDuration := time.Now().Sub(begin)
 		ctx.Items().Set(ItemKeyHandleDuration, realDuration)
@@ -201,5 +201,5 @@ func (m *TimeoutHookMiddleware) Handle(ctx Context) error {
 			m.HookHandle(ctx)
 		}
 	}
-	return nil
+	return err
 }

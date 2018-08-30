@@ -1,5 +1,9 @@
 ## dotweb版本记录：
 
+#### Version 1.5.7.5
+* Fixed Bug: return err from Next() in RequestLogMiddleware & TimeoutHookMiddleware
+* 2018-08-30 10:00
+
 #### Version 1.5.7.4
 * Fixed Bug: Remove auto set NotFound http status when happened 404, if auto set, it will ignore any ContentType set
 * For issue #149 router middleware handle http 404,405. cann`t response content-type:application/json, Thanks for @lyw1995
