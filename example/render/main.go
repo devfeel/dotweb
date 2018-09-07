@@ -14,7 +14,7 @@ func main() {
 	//设置dotserver日志目录
 	app.SetLogPath(file.GetCurrentDirectory())
 
-	//app.SetDevelopmentMode()
+	app.SetDevelopmentMode()
 
 	//设置gzip开关
 	//app.HttpServer.SetEnabledGzip(true)
@@ -24,6 +24,9 @@ func main() {
 
 	//set default template path
 	app.HttpServer.Renderer().SetTemplatePath("d:/gotmp/")
+	app.HttpServer.Renderer().RegisterTemplateFunc("echo", func(x string) interface{}{
+		return "echo:" + x
+	})
 
 	//启动 监控服务
 	//app.SetPProfConfig(true, 8081)

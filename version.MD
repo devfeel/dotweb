@@ -1,5 +1,18 @@
 ## dotweb版本记录：
 
+#### Version 1.5.7.6
+* New Feature: Add Renderer.RegisterTemplateFunc, used to register template func in renderer
+* Detail:
+  - now inner support inner func like unescaped
+  - you can view example on example/render
+* Example:
+  ``` golang
+  app.HttpServer.Renderer().RegisterTemplateFunc("echo", func(x string) interface{}{
+  		return "echo:" + x
+  	})
+  ```
+* 2018-09-07
+
 #### Version 1.5.7.5
 * Fixed Bug: return err from Next() in RequestLogMiddleware & TimeoutHookMiddleware
 * 2018-08-30 10:00
