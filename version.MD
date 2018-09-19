@@ -1,5 +1,24 @@
 ## dotweb版本记录：
 
+#### Version 1.5.7.7
+* New Feature: Add HttpServer.SetEnabledAutoOPTIONS, used to set route use auto options
+* Detail:
+  - ignore auto set if register router is options method
+  - you can view example on example/router
+* Example:
+  ``` golang
+  app.HttpServer.SetEnabledAutoOPTIONS(true)
+  ```
+* Fixed Bug: When use HttpServer.SetEnabledAutoHead, ignore auto set if register router is head method
+* Log output: Add debug log when AutoOPTIONS and AutoHead doing
+* Like:
+  ~~~
+  2018-09-19 15:44:42.8189 [DEBUG] [router.go:437] DotWeb:Router:RegisterRoute success [GET] [/] [main.Index]
+  2018-09-19 15:44:42.8199 [DEBUG] [router.go:462] DotWeb:Router:RegisterRoute AutoHead success [HEAD] [/] [main.Index]
+  2018-09-19 15:44:42.8199 [DEBUG] [router.go:474] DotWeb:Router:RegisterRoute AutoOPTIONS success [OPTIONS] [/] [main.Index]
+  ~~~
+* 2018-09-19 18:00
+
 #### Version 1.5.7.6
 * New Feature: Add Renderer.RegisterTemplateFunc, used to register template func in renderer
 * Detail:

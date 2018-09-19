@@ -9,12 +9,12 @@ import (
 
 func main() {
 	//初始化DotServer
-	app := dotweb.New()
+	app := dotweb.Classic(file.GetCurrentDirectory())
 
-	//设置dotserver日志目录
-	app.SetLogPath(file.GetCurrentDirectory())
+	app.SetDevelopmentMode()
 
-	//app.HttpServer.SetEnabledAutoHEAD(true)
+	app.HttpServer.SetEnabledAutoHEAD(true)
+	app.HttpServer.SetEnabledAutoOPTIONS(true)
 
 	//设置路由
 	InitRoute(app.HttpServer)

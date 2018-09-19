@@ -456,8 +456,22 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 	if r.server.ServerConfig().EnabledAutoHEAD {
 		if routeMethod == RouteMethod_HiJack {
 			r.add(RouteMethod_HEAD, realPath, r.wrapRouterHandle(handle, true))
-		} else if routeMethod != RouteMethod_Any {
+			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoHead success ["+RouteMethod_HEAD+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
+		} else if routeMethod != RouteMethod_Any && routeMethod != RouteMethod_HEAD {
 			r.add(RouteMethod_HEAD, realPath, r.wrapRouterHandle(handle, false))
+			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoHead success ["+RouteMethod_HEAD+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
+		}
+	}
+
+	//if set auto-options, add options router
+	//only enabled in hijack\GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS
+	if r.server.ServerConfig().EnabledAutoOPTIONS {
+		if routeMethod == RouteMethod_HiJack {
+			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(handle, true))
+			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoOPTIONS success ["+RouteMethod_OPTIONS+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
+		} else if routeMethod != RouteMethod_Any && routeMethod != RouteMethod_OPTIONS {
+			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(handle, false))
+			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoOPTIONS success ["+RouteMethod_OPTIONS+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 		}
 	}
 	return node

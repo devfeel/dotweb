@@ -3,7 +3,7 @@ package dotweb
 //Global define
 const(
 	// Version current version
-	Version = "1.5.7.6"
+	Version = "1.5.7.7"
 )
 
 //Log define
