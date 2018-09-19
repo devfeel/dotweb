@@ -378,6 +378,14 @@ func (server *HttpServer) SetEnabledAutoHEAD(isEnabled bool) {
 	logger.Logger().Debug("DotWeb:HttpServer SetEnabledAutoHEAD ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
+// SetEnabledAutoOPTIONS set route use auto options
+// set SetEnabledAutoOPTIONS true or false
+// default is false
+func (server *HttpServer) SetEnabledAutoOPTIONS(isEnabled bool) {
+	server.ServerConfig().EnabledAutoOPTIONS = isEnabled
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledAutoOPTIONS ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+}
+
 // SetEnabledRequestID set create unique request id per request
 // set EnabledRequestID true or false
 // default is false
