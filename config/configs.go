@@ -64,7 +64,7 @@ type (
 		EnabledSession 	bool   `xml:"enabled,attr"`  //启用Session
 		SessionMode    	string `xml:"mode,attr"`     //session mode，now support runtime、redis
 		CookieName	   	string `xml:"cookiename,attr"` //custom cookie name which sessionid store, default is dotweb_sessionId
-		Timeout        	int64  `xml:"timeout,attr"`  //session time-out period, with minute
+		Timeout        	int64  `xml:"timeout,attr"`  //session time-out period, with second
 		ServerIP       	string `xml:"serverip,attr"` //remote session server url
 		BackupServerUrl	string `xml:"backupserverurl,attr"` //backup remote session server url
 		StoreKeyPre 	string `xml:"storekeypre,attr"` //remote session StoreKeyPre

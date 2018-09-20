@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+#### Version 1.5.7.8
+* Improve Comments about session Maxlifetime
+* Session.StoreConfig.Maxlifetime: session life time, with second
+* 2018-09-20 15:00
+
 #### Version 1.5.7.7
 * New Feature: Add HttpServer.SetEnabledAutoOPTIONS, used to set route use auto options
 * Detail:
