@@ -376,13 +376,7 @@ func (r *router) GET(path string, handle HttpHandle) RouterNode {
 // ANY is a shortcut for router.Handle("Any", path, handle)
 // it support GET\HEAD\POST\PUT\PATCH\OPTIONS\DELETE
 func (r *router) Any(path string, handle HttpHandle) {
-	r.RegisterRoute(RouteMethod_HEAD, path, handle)
-	r.RegisterRoute(RouteMethod_GET, path, handle)
-	r.RegisterRoute(RouteMethod_POST, path, handle)
-	r.RegisterRoute(RouteMethod_PUT, path, handle)
-	r.RegisterRoute(RouteMethod_DELETE, path, handle)
-	r.RegisterRoute(RouteMethod_PATCH, path, handle)
-	r.RegisterRoute(RouteMethod_OPTIONS, path, handle)
+	r.RegisterRoute(RouteMethod_Any, path, handle)
 }
 
 // HEAD is a shortcut for router.Handle("HEAD", path, handle)
@@ -433,31 +427,40 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 	if _, exists := HttpMethodMap[routeMethod]; !exists {
 		logger.Logger().Warn("DotWeb:Router:RegisterRoute failed [illegal method] ["+routeMethod+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 		return nil
-	} else {
-		logger.Logger().Debug("DotWeb:Router:RegisterRoute success ["+routeMethod+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 	}
 
 	//websocket mode,use default httpserver
 	if routeMethod == RouteMethod_WebSocket {
 		http.Handle(realPath, websocket.Handler(r.wrapWebSocketHandle(handle)))
-		return node
+	}else{
+		//hijack mode,use get and isHijack = true
+		if routeMethod == RouteMethod_HiJack {
+			r.add(RouteMethod_GET, realPath, r.wrapRouterHandle(handle, true))
+		} else if routeMethod == RouteMethod_Any {
+			//All GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS mode
+			r.add(RouteMethod_HEAD, realPath, r.wrapRouterHandle(handle, false))
+			r.add(RouteMethod_GET, realPath, r.wrapRouterHandle(handle, false))
+			r.add(RouteMethod_POST, realPath, r.wrapRouterHandle(handle, false))
+			r.add(RouteMethod_PUT, realPath, r.wrapRouterHandle(handle, false))
+			r.add(RouteMethod_DELETE, realPath, r.wrapRouterHandle(handle, false))
+			r.add(RouteMethod_PATCH, realPath, r.wrapRouterHandle(handle, false))
+			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(handle, false))
+		} else {
+			//Single GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS mode
+			node = r.add(routeMethod, realPath, r.wrapRouterHandle(handle, false))
+		}
 	}
-
-	//hijack mode,use get and isHijack = true
-	if routeMethod == RouteMethod_HiJack {
-		r.add(RouteMethod_GET, realPath, r.wrapRouterHandle(handle, true))
-	} else {
-		//GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS mode
-		node = r.add(routeMethod, realPath, r.wrapRouterHandle(handle, false))
-	}
+	logger.Logger().Debug("DotWeb:Router:RegisterRoute success ["+routeMethod+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 
 	//if set auto-head, add head router
 	//only enabled in hijack\GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS
 	if r.server.ServerConfig().EnabledAutoHEAD {
-		if routeMethod == RouteMethod_HiJack {
+		if routeMethod == RouteMethod_WebSocket{
+			//Nothing to do
+		}else if routeMethod == RouteMethod_HiJack {
 			r.add(RouteMethod_HEAD, realPath, r.wrapRouterHandle(handle, true))
 			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoHead success ["+RouteMethod_HEAD+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
-		} else if routeMethod != RouteMethod_Any && routeMethod != RouteMethod_HEAD {
+		} else if !r.existsRouter(RouteMethod_HEAD, realPath) {
 			r.add(RouteMethod_HEAD, realPath, r.wrapRouterHandle(handle, false))
 			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoHead success ["+RouteMethod_HEAD+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 		}
@@ -466,14 +469,17 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 	//if set auto-options, add options router
 	//only enabled in hijack\GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS
 	if r.server.ServerConfig().EnabledAutoOPTIONS {
-		if routeMethod == RouteMethod_HiJack {
+		if routeMethod == RouteMethod_WebSocket{
+			//Nothing to do
+		}else if routeMethod == RouteMethod_HiJack {
 			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(handle, true))
 			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoOPTIONS success ["+RouteMethod_OPTIONS+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
-		} else if routeMethod != RouteMethod_Any && routeMethod != RouteMethod_OPTIONS {
+		} else if !r.existsRouter(RouteMethod_OPTIONS, realPath) {
 			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(handle, false))
 			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoOPTIONS success ["+RouteMethod_OPTIONS+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 		}
 	}
+
 	return node
 }
 
@@ -616,6 +622,12 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 
 		handler(httpCtx)
 	}
+}
+
+// existsRouter check is exists with method and path in current router
+func (r *router) existsRouter(method, path string) bool {
+	_, exists := r.allRouterExpress[method + routerExpressSplit + path]
+	return exists
 }
 
 //get default log string
