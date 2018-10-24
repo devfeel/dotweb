@@ -1,5 +1,16 @@
 ## dotweb版本记录：
 
+#### Version 1.5.8
+* New Feature: Add HttpServer.SetBinder, used to set custom Binder on HttpServer
+* Detail:
+  - Custom binder must implement dotweb.Binder interface
+* Example:
+  ``` golang
+  app.HttpServer.SetBinder(newUserBinder())
+  ```
+* update example/bind
+* 2018-10-24 21:00
+
 #### Version 1.5.7.8
 * Improve Comments about session Maxlifetime
 * Session.StoreConfig.Maxlifetime: session life time, with second
