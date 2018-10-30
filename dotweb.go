@@ -473,13 +473,9 @@ func (app *DotWeb) initBindMiddleware() {
 		xg := g.(*xGroup)
 		if len(xg.middlewares) <= 0 {
 			continue
-		} else {
-			firstMiddleware := &xMiddleware{}
-			firstMiddleware.SetNext(xg.middlewares[0])
-			xg.middlewares = append([]Middleware{firstMiddleware}, xg.middlewares...)
 		}
 		for fullExpress, _ := range xg.allRouterExpress {
-			expresses := strings.Split(fullExpress, "_")
+			expresses := strings.Split(fullExpress, routerExpressSplit)
 			if len(expresses) < 2 {
 				continue
 			}

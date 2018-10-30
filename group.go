@@ -15,6 +15,7 @@ type (
 		PATCH(path string, h HttpHandle) RouterNode
 		POST(path string, h HttpHandle) RouterNode
 		PUT(path string, h HttpHandle) RouterNode
+		ServerFile(path string, fileroot string) RouterNode
 		RegisterRoute(method, path string, h HttpHandle) RouterNode
 	}
 	xGroup struct {
@@ -85,6 +86,14 @@ func (g *xGroup) PUT(path string, h HttpHandle) RouterNode {
 	return g.add(RouteMethod_PUT, path, h)
 }
 
+// PUT implements `Router#PUT()` for sub-routes within the Group.
+func (g *xGroup) ServerFile(path string, fileroot string) RouterNode {
+	g.allRouterExpress[RouteMethod_GET+routerExpressSplit+g.prefix+path] = struct{}{}
+	node :=  g.server.Router().ServerFile(g.prefix+path, fileroot)
+	node.Node().groupMiddlewares = g.middlewares
+	return node
+}
+
 // Group creates a new sub-group with prefix and optional sub-group-level middleware.
 func (g *xGroup) Group(prefix string, m ...Middleware) Group {
 	return NewGroup(g.prefix+prefix, g.server).Use(g.middlewares...).Use(m...)
@@ -96,7 +105,9 @@ func (g *xGroup) RegisterRoute(method, path string, handler HttpHandle) RouterNo
 
 func (g *xGroup) add(method, path string, handler HttpHandle) RouterNode {
 	node := g.server.Router().RegisterRoute(method, g.prefix+path, handler)
-	g.allRouterExpress[method+"_"+g.prefix+path] = struct{}{}
+	g.allRouterExpress[method+routerExpressSplit+g.prefix+path] = struct{}{}
 	node.Node().groupMiddlewares = g.middlewares
 	return node
 }
+
+
