@@ -11,6 +11,7 @@
 app.HttpServer.SetEnabledStaticFileMiddleware(true)
 ```
 * New Feature: Add Group.ServerFile used to registe static file router in group
+* New Feature: Add ping check when init redis session, if can not ping successful, it will panic error info, like "panic: redis session [redis] ping error"
 * update dotweb-example/static
 * 2018-10-30 15:00
 
