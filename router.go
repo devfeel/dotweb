@@ -359,12 +359,25 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 //wrap fileHandler to httprouter.Handle
 func (r *router) wrapFileHandle(fileHandler http.Handler) RouterHandle {
 	return func(httpCtx *HttpContext) {
+		httpCtx.handler = transStaticFileHandler(fileHandler)
 		startTime := time.Now()
+		httpCtx.Request().realUrl = httpCtx.Request().URL.String()
 		httpCtx.Request().URL.Path = httpCtx.RouterParams().ByName("filepath")
-		fileHandler.ServeHTTP(httpCtx.Response().Writer(), httpCtx.Request().Request)
-		timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
-		//HttpServer Logging
-		logger.Logger().Debug(httpCtx.Request().Url()+" "+logRequest(httpCtx.Request().Request, timetaken), LogTarget_HttpRequest)
+		if httpCtx.HttpServer().ServerConfig().EnabledStaticFileMiddleware && len(httpCtx.routerNode.AppMiddlewares()) > 0 {
+			ctxErr := httpCtx.routerNode.AppMiddlewares()[0].Handle(httpCtx)
+			if ctxErr != nil {
+				if r.server.DotApp.ExceptionHandler != nil {
+					r.server.DotApp.ExceptionHandler(httpCtx, ctxErr)
+					core.GlobalState.AddErrorCount(httpCtx.Request().Path(), ctxErr, 1)
+				}
+			}
+		} else {
+			httpCtx.Handler()(httpCtx)
+		}
+		if logger.EnabledLog {
+			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
+			logger.Logger().Debug(httpCtx.Request().Url() +" "+logRequest(httpCtx.Request().Request, timetaken), LogTarget_HttpRequest)
+		}
 	}
 }
 
@@ -447,7 +460,8 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(handle, false))
 		} else {
 			//Single GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS mode
-			node = r.add(routeMethod, realPath, r.wrapRouterHandle(handle, false))
+			r.add(routeMethod, realPath, r.wrapRouterHandle(handle, false))
+			node = r.getNode(routeMethod, realPath)
 		}
 	}
 	logger.Logger().Debug("DotWeb:Router:RegisterRoute success ["+routeMethod+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
@@ -487,6 +501,7 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 // simple demo:server.ServerFile("/src/*filepath", "/var/www")
 func (r *router) ServerFile(path string, fileroot string) RouterNode {
 	realPath := r.server.VirtualPath() + path
+	routeMethod := RouteMethod_GET
 	node := &Node{}
 	if len(realPath) < 10 || realPath[len(realPath)-10:] != "/*filepath" {
 		panic("path must end with /*filepath in path '" + realPath + "'")
@@ -497,7 +512,8 @@ func (r *router) ServerFile(path string, fileroot string) RouterNode {
 		root = &core.HideReaddirFS{root}
 	}
 	fileServer := http.FileServer(root)
-	node = r.add(RouteMethod_GET, realPath, r.wrapFileHandle(fileServer))
+	r.add(routeMethod, realPath, r.wrapFileHandle(fileServer))
+	node = r.getNode(routeMethod, realPath)
 	return node
 }
 
@@ -621,6 +637,13 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 		}()
 
 		handler(httpCtx)
+	}
+}
+
+func transStaticFileHandler(fileHandler http.Handler) HttpHandle{
+	return func(httpCtx Context) error {
+		fileHandler.ServeHTTP(httpCtx.Response().Writer(), httpCtx.Request().Request)
+		return nil
 	}
 }
 

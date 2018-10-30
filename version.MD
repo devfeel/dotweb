@@ -1,5 +1,20 @@
 ## dotweb版本记录：
 
+#### Version 1.5.9
+* New Feature: Add HttpServer.SetEnabledStaticFileMiddleware, used to set flag which enabled or disabled middleware for static-file route
+* Detail:
+  - if enabled, when visit static file route, will use middlewares like other router
+  - the execute order: App -> Group -> Router
+  - default is not enabled
+* Example:
+``` golang
+app.HttpServer.SetEnabledStaticFileMiddleware(true)
+```
+* New Feature: Add Group.ServerFile used to registe static file router in group
+* New Feature: Add ping check when init redis session, if can not ping successful, it will panic error info, like "panic: redis session [redis] ping error"
+* update dotweb-example/static
+* 2018-10-30 15:00
+
 #### Version 1.5.8
 * New Feature: Add HttpServer.SetBinder, used to set custom Binder on HttpServer
 * Detail:

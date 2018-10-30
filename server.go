@@ -448,6 +448,12 @@ func (server *HttpServer) SetEnabledDetailRequestData(isEnabled bool) {
 	logger.Logger().Debug("DotWeb:HttpServer SetEnabledDetailRequestData ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
+// SetEnabledStaticFileMiddleware set flag which enabled or disabled middleware for static-file route
+func (server *HttpServer) SetEnabledStaticFileMiddleware(isEnabled bool){
+	server.ServerConfig().EnabledStaticFileMiddleware = isEnabled
+	logger.Logger().Debug("DotWeb:HttpServer SetEnabledStaticFileMiddleware ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+}
+
 // RegisterModule 添加处理模块
 func (server *HttpServer) RegisterModule(module *HttpModule) {
 	server.Modules = append(server.Modules, module)

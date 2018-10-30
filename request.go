@@ -12,6 +12,7 @@ type Request struct {
 	*http.Request
 	httpCtx    *HttpContext
 	postBody   []byte
+	realUrl	   string
 	isReadBody bool
 	requestID  string
 }
@@ -175,5 +176,9 @@ func (req *Request) IsAJAX() bool {
 
 // Url get request url
 func (req *Request) Url() string {
-	return req.URL.String()
+	if req.realUrl != ""{
+		return req.realUrl
+	}else{
+		return req.URL.String()
+	}
 }
