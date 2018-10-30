@@ -3,7 +3,7 @@
 #### Version 1.5.9
 * New Feature: Add HttpServer.SetEnabledStaticFileMiddleware, used to set flag which enabled or disabled middleware for static-file route
 * Detail:
-  - if set ture, when visit static file route, will use middlewares like other router
+  - if enabled, when visit static file route, will use middlewares like other router
   - the execute order: App -> Group -> Router
   - default is not enabled
 * Example:
