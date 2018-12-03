@@ -507,7 +507,7 @@ func (r *router) ServerFile(path string, fileroot string) RouterNode {
 	if len(realPath) < 2{
 		panic("path length must be greater than or equal to 2")
 	}
-	if realPath[len(realPath)-2:] == "/*"{
+	if realPath[len(realPath)-2:] == "/*"{ //fixed for #125
 		realPath = realPath + "filepath"
 	}
 	if len(realPath) < 10 || realPath[len(realPath)-10:] != "/*filepath" {

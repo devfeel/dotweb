@@ -149,8 +149,9 @@ func (req *Request) RemoteIP() string {
 	return host
 }
 
-// RealIP returns the first ip from 'X-Forwarded-For' header key
+// RealIP returns the first ip from 'X-Forwarded-For' or 'X-Real-IP' header key
 // if not exists data, returns request.RemoteAddr
+// fixed for #164
 func (req *Request) RealIP() string {
 	if ip := req.Header.Get(HeaderXForwardedFor); ip != "" {
 		return strings.Split(ip, ", ")[0]
