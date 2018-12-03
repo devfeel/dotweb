@@ -3,6 +3,7 @@ package dotweb
 import (
 	"github.com/devfeel/dotweb/framework/crypto/uuid"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -121,16 +122,14 @@ func (req *Request) QueryHeader(key string) string {
 	return req.Header.Get(key)
 }
 
-//Deprecated: Use the PostFormValue instead
-//returns the first value for the named component of the POST
+// PostString returns the first value for the named component of the POST
 // or PUT request body. URL query parameters are ignored.
+// Deprecated: Use the PostFormValue instead
 func (req *Request) PostString(key string) string {
 	return req.PostFormValue(key)
 }
 
-/*
-* 获取post提交的字节数组
- */
+// PostBody returns data from the POST or PUT request body
 func (req *Request) PostBody() []byte {
 	if !req.isReadBody {
 		bts, err := ioutil.ReadAll(req.Body)
@@ -144,19 +143,27 @@ func (req *Request) PostBody() []byte {
 	return req.postBody
 }
 
-//RemoteAddr to an "IP" address
+// RemoteIP RemoteAddr to an "IP" address
 func (req *Request) RemoteIP() string {
-	fullIp := req.Request.RemoteAddr
-	//special: if run in win10, localIp will be like "[::]:port"
-	//fixed for #20 cann't get RemoteIP and RemoteAddr in win10
-	lastFlagIndex := strings.LastIndex(fullIp, ":")
-	if lastFlagIndex >= 0 {
-		return fullIp[:lastFlagIndex]
-	}
-	return fullIp
+	host, _, _ := net.SplitHostPort(req.RemoteAddr)
+	return host
 }
 
-//RemoteAddr to an "IP:port" address
+// RealIP returns the first ip from 'X-Forwarded-For' or 'X-Real-IP' header key
+// if not exists data, returns request.RemoteAddr
+// fixed for #164
+func (req *Request) RealIP() string {
+	if ip := req.Header.Get(HeaderXForwardedFor); ip != "" {
+		return strings.Split(ip, ", ")[0]
+	}
+	if ip := req.Header.Get(HeaderXRealIP); ip != "" {
+		return ip
+	}
+	host, _, _ := net.SplitHostPort(req.RemoteAddr)
+	return host
+}
+
+// FullRemoteIP RemoteAddr to an "IP:port" address
 func (req *Request) FullRemoteIP() string {
 	fullIp := req.Request.RemoteAddr
 	return fullIp

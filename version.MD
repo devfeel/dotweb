@@ -1,5 +1,15 @@
 ## dotweb版本记录：
 
+#### Version 1.5.9.1
+* New Feature: Add Request.RealIP used to returns the first ip from 'X-Forwarded-For' or 'X-Real-IP' header key, fixed for #164
+* New Feature: route.ServerFile support '*filepath' or '/*', to simplify register static file router, fixed for #125
+* Example:
+``` golang
+app.HttpServer.ServerFile("/*", "D:/gotmp")
+```
+* update example/main
+* 2018-12-03 15:00
+
 #### Version 1.5.9
 * New Feature: Add HttpServer.SetEnabledStaticFileMiddleware, used to set flag which enabled or disabled middleware for static-file route
 * Detail:

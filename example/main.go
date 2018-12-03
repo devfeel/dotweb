@@ -93,7 +93,7 @@ func main() {
 
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	ctx.WriteString(ctx.Request().URL.Path)
+	ctx.WriteString(ctx.Request().RemoteIP())
 	//_, err := ctx.WriteStringC(201, "index => ", ctx.RemoteIP(), "我是首页")
 	return nil
 }
