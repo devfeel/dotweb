@@ -122,9 +122,9 @@ func (req *Request) QueryHeader(key string) string {
 	return req.Header.Get(key)
 }
 
-// Deprecated: Use the PostFormValue instead
 // PostString returns the first value for the named component of the POST
 // or PUT request body. URL query parameters are ignored.
+// Deprecated: Use the PostFormValue instead
 func (req *Request) PostString(key string) string {
 	return req.PostFormValue(key)
 }
