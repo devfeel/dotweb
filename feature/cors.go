@@ -1,6 +1,6 @@
 package feature
 
-//CROS配置
+// CROS settings
 type CROSConfig struct {
 	EnabledCROS      bool
 	AllowedOrigins   string

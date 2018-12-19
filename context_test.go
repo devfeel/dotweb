@@ -14,7 +14,7 @@ type Animal struct {
 	HasMouth bool
 }
 
-//normal write
+// normal write
 func TestWrite(t *testing.T) {
 	param := &InitContextParam{
 		t,
@@ -23,7 +23,7 @@ func TestWrite(t *testing.T) {
 		test.ToDefault,
 	}
 
-	//init param
+	// init param
 	context := initResponseContext(param)
 
 	exceptedObject := &Animal{
@@ -34,26 +34,27 @@ func TestWrite(t *testing.T) {
 	animalJson, err := json.Marshal(exceptedObject)
 	test.Nil(t, err)
 
-	//call function
+	// call function
 	status := http.StatusNotFound
 	_, contextErr := context.Write(status, animalJson)
 	test.Nil(t, contextErr)
 
-	//check result
+	// check result
 
-	//header
+	// header
 	contentType := context.response.header.Get(HeaderContentType)
-	//因writer中的header方法调用过http.Header默认设置
+
+	//  check the default value
 	test.Contains(t, CharsetUTF8, contentType)
 	test.Equal(t, status, context.response.Status)
 
-	//body
+	// body
 	body := string(context.response.body)
 
 	test.Equal(t, string(animalJson), body)
 }
 
-//normal write string
+// normal write string
 func TestWriteString(t *testing.T) {
 	param := &InitContextParam{
 		t,
@@ -62,7 +63,7 @@ func TestWriteString(t *testing.T) {
 		test.ToDefault,
 	}
 
-	//init param
+	// init param
 	context := initResponseContext(param)
 
 	exceptedObject := &Animal{
@@ -73,21 +74,19 @@ func TestWriteString(t *testing.T) {
 	animalJson, err := json.Marshal(exceptedObject)
 	test.Nil(t, err)
 
-	//call function
-	//这里是一个interface数组,用例需要小心.
+	// call function
+	// 这里是一个interface数组,用例需要小心.
 	contextErr := context.WriteString(string(animalJson))
 	test.Nil(t, contextErr)
 
-	//header
+	// header
 	contentType := context.response.header.Get(HeaderContentType)
-	//因writer中的header方法调用过http.Header默认设置
+	// 因writer中的header方法调用过http.Header默认设置
 	test.Contains(t, CharsetUTF8, contentType)
 	test.Equal(t, defaultHttpCode, context.response.Status)
 
-	//body
+	// body
 	body := string(context.response.body)
-
-	//fmt.Printf("%T",context.response.body)
 
 	test.Equal(t, string(animalJson), body)
 }
@@ -100,7 +99,7 @@ func TestWriteJson(t *testing.T) {
 		test.ToDefault,
 	}
 
-	//init param
+	// init param
 	context := initResponseContext(param)
 
 	exceptedObject := &Animal{
@@ -111,23 +110,23 @@ func TestWriteJson(t *testing.T) {
 	animalJson, err := json.Marshal(exceptedObject)
 	test.Nil(t, err)
 
-	//call function
+	// call function
 	contextErr := context.WriteJson(exceptedObject)
 	test.Nil(t, contextErr)
 
-	//header
+	// header
 	contentType := context.response.header.Get(HeaderContentType)
-	//因writer中的header方法调用过http.Header默认设置
+	// 因writer中的header方法调用过http.Header默认设置
 	test.Equal(t, MIMEApplicationJSONCharsetUTF8, contentType)
 	test.Equal(t, defaultHttpCode, context.response.Status)
 
-	//body
+	// body
 	body := string(context.response.body)
 
 	test.Equal(t, string(animalJson), body)
 }
 
-//normal jsonp
+// normal jsonp
 func TestWriteJsonp(t *testing.T) {
 	param := &InitContextParam{
 		t,
@@ -136,7 +135,7 @@ func TestWriteJsonp(t *testing.T) {
 		test.ToDefault,
 	}
 
-	//init param
+	// init param
 	context := initResponseContext(param)
 
 	exceptedObject := &Animal{
@@ -146,18 +145,18 @@ func TestWriteJsonp(t *testing.T) {
 
 	callback := "jsonCallBack"
 
-	//call function
+	// call function
 	err := context.WriteJsonp(callback, exceptedObject)
 	test.Nil(t, err)
 
-	//check result
+	// check result
 
-	//header
+	// header
 	contentType := context.response.header.Get(HeaderContentType)
 	test.Equal(t, MIMEApplicationJavaScriptCharsetUTF8, contentType)
 	test.Equal(t, defaultHttpCode, context.response.Status)
 
-	//body
+	// body
 	body := string(context.response.body)
 
 	animalJson, err := json.Marshal(exceptedObject)

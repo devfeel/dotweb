@@ -52,59 +52,54 @@ func init() {
 	go time.AfterFunc(time.Duration(defaultCheckTimeMinutes)*time.Minute, GlobalState.checkAndRemoveIntervalData)
 }
 
-//pool定义
 type pool struct {
 	requestInfo  sync.Pool
 	errorInfo    sync.Pool
 	httpCodeInfo sync.Pool
 }
 
-//http request count info
+// http request count info
 type RequestInfo struct {
 	URL  string
 	Code int
 	Num  uint64
 }
 
-//error count info
+// error count info
 type ErrorInfo struct {
 	URL    string
 	ErrMsg string
 	Num    uint64
 }
 
-//服务器状态信息
+// Server state
 type ServerStateInfo struct {
-	//服务启动时间
 	ServerStartTime time.Time
-	//是否启用详细请求数据统计 fixed #63 状态数据，当url较多时，导致内存占用过大
+	// enable detailed request statistics, fixes #63 request statistics, high memory usage when URL number is high
 	EnabledDetailRequestData bool
-	//该运行期间总访问次数
-	TotalRequestCount uint64
-	//当前活跃的请求数
+	TotalRequestCount        uint64
+	// active request count
 	CurrentRequestCount uint64
-	//单位时间内请求数据 - 按分钟为单位
+	// request statistics per minute
 	IntervalRequestData *ItemMap
-	//明细请求页面数据 - 以不带参数的访问url为key
+	// detailed request statistics, the key is url without parameters
 	DetailRequestURLData *ItemMap
-	//该运行期间异常次数
-	TotalErrorCount uint64
-	//单位时间内异常次数 - 按分钟为单位
+	TotalErrorCount      uint64
+	// request error statistics per minute
 	IntervalErrorData *ItemMap
-	//明细异常页面数据 - 以不带参数的访问url为key
+	// detailed request error statistics, the key is url without parameters
 	DetailErrorPageData *ItemMap
-	//明细异常数据 - 以不带参数的访问url为key
+	// detailed error statistics, the key is url without parameters
 	DetailErrorData *ItemMap
-	//明细Http状态码数据 - 以HttpCode为key，例如200、500等
+	// detailed reponse statistics of http code, the key is HttpCode, e.g. 200, 500 etc.
 	DetailHTTPCodeData *ItemMap
 
 	dataChan_Request chan *RequestInfo
 	dataChan_Error   chan *ErrorInfo
-	//对象池
-	infoPool *pool
+	infoPool         *pool
 }
 
-//ShowHtmlData show server state data html-string format
+// ShowHtmlData show server state data html-string format
 func (state *ServerStateInfo) ShowHtmlData(version string) string {
 	data := "<html><body><div>"
 	data += "HostInfo : " + sysx.GetHostName()
@@ -148,34 +143,34 @@ func (state *ServerStateInfo) ShowHtmlData(version string) string {
 	return data
 }
 
-//QueryIntervalRequestData query request count by query time
+// QueryIntervalRequestData query request count by query time
 func (state *ServerStateInfo) QueryIntervalRequestData(queryKey string) uint64 {
 	return state.IntervalRequestData.GetUInt64(queryKey)
 }
 
-//QueryIntervalErrorData query error count by query time
+// QueryIntervalErrorData query error count by query time
 func (state *ServerStateInfo) QueryIntervalErrorData(queryKey string) uint64 {
 	return state.IntervalErrorData.GetUInt64(queryKey)
 }
 
-//AddRequestCount 增加请求数
+// AddRequestCount add request count
 func (state *ServerStateInfo) AddRequestCount(page string, code int, num uint64) {
 	state.addRequestData(page, code, num)
 }
 
-//AddCurrentRequest 增加请求数
+// AddCurrentRequest increment current request count
 func (state *ServerStateInfo) AddCurrentRequest(num uint64) uint64 {
 	atomic.AddUint64(&state.CurrentRequestCount, num)
 	return state.CurrentRequestCount
 }
 
-//SubCurrentRequest 消除请求数
+// SubCurrentRequest subtract current request count
 func (state *ServerStateInfo) SubCurrentRequest(num uint64) uint64 {
 	atomic.AddUint64(&state.CurrentRequestCount, ^uint64(num-1))
 	return state.CurrentRequestCount
 }
 
-//AddErrorCount 增加错误数
+// AddErrorCount add error count
 func (state *ServerStateInfo) AddErrorCount(page string, err error, num uint64) uint64 {
 	atomic.AddUint64(&state.TotalErrorCount, num)
 	state.addErrorData(page, err, num)
@@ -183,7 +178,7 @@ func (state *ServerStateInfo) AddErrorCount(page string, err error, num uint64) 
 }
 
 func (state *ServerStateInfo) addRequestData(page string, code int, num uint64) {
-	//get from pool
+	// get from pool
 	info := state.infoPool.requestInfo.Get().(*RequestInfo)
 	info.URL = page
 	info.Code = code
@@ -192,7 +187,7 @@ func (state *ServerStateInfo) addRequestData(page string, code int, num uint64) 
 }
 
 func (state *ServerStateInfo) addErrorData(page string, err error, num uint64) {
-	//get from pool
+	// get from pool
 	info := state.infoPool.errorInfo.Get().(*ErrorInfo)
 	info.URL = page
 	info.ErrMsg = err.Error()
@@ -200,7 +195,7 @@ func (state *ServerStateInfo) addErrorData(page string, err error, num uint64) {
 	state.dataChan_Error <- info
 }
 
-//处理日志内部函数
+// handle logging
 func (state *ServerStateInfo) handleInfo() {
 	for {
 		select {
@@ -209,59 +204,59 @@ func (state *ServerStateInfo) handleInfo() {
 				if strings.Index(info.URL, "/dotweb/") != 0 {
 					atomic.AddUint64(&state.TotalRequestCount, info.Num)
 				}
-				//fixed #63 状态数据，当url较多时，导致内存占用过大
+				// fixes #63 request statistics, high memory usage when URL number is high
 				if state.EnabledDetailRequestData {
-					//ignore 404 request
+					// ignore 404 request
 					if info.Code != http.StatusNotFound {
-						//set detail url data
+						// set detail url data
 						key := strings.ToLower(info.URL)
 						val := state.DetailRequestURLData.GetUInt64(key)
 						state.DetailRequestURLData.Set(key, val+info.Num)
 					}
 				}
-				//set interval data
+				// set interval data
 				key := time.Now().Format(minuteTimeLayout)
 				val := state.IntervalRequestData.GetUInt64(key)
 				state.IntervalRequestData.Set(key, val+info.Num)
 
-				//set code data
+				// set code data
 				key = strconv.Itoa(info.Code)
 				val = state.DetailHTTPCodeData.GetUInt64(key)
 				state.DetailHTTPCodeData.Set(key, val+info.Num)
 
-				//put info obj
+				// put info obj
 				state.infoPool.requestInfo.Put(info)
 			}
 		case info := <-state.dataChan_Error:
 			{
-				//set detail error page data
+				// set detail error page data
 				key := strings.ToLower(info.URL)
 				val := state.DetailErrorPageData.GetUInt64(key)
 				state.DetailErrorPageData.Set(key, val+info.Num)
 
-				//set detail error data
+				// set detail error data
 				key = info.ErrMsg
 				val = state.DetailErrorData.GetUInt64(key)
 				state.DetailErrorData.Set(key, val+info.Num)
 
-				//set interval data
+				// set interval data
 				key = time.Now().Format(minuteTimeLayout)
 				val = state.IntervalErrorData.GetUInt64(key)
 				state.IntervalErrorData.Set(key, val+info.Num)
 
-				//put info obj
+				// put info obj
 				state.infoPool.errorInfo.Put(info)
 			}
 		}
 	}
 }
 
-//check and remove need to remove interval data with request and error
+// check and remove need to remove interval data with request and error
 func (state *ServerStateInfo) checkAndRemoveIntervalData() {
 	var needRemoveKey []string
 	now, _ := time.Parse(minuteTimeLayout, time.Now().Format(minuteTimeLayout))
 
-	//check IntervalRequestData
+	// check IntervalRequestData
 	state.IntervalRequestData.RLock()
 	if state.IntervalRequestData.Len() > defaultReserveMinutes {
 		for k := range state.IntervalRequestData.GetCurrentMap() {
@@ -275,12 +270,12 @@ func (state *ServerStateInfo) checkAndRemoveIntervalData() {
 		}
 	}
 	state.IntervalRequestData.RUnlock()
-	//remove keys
+	// remove keys
 	for _, v := range needRemoveKey {
 		state.IntervalRequestData.Remove(v)
 	}
 
-	//check IntervalErrorData
+	// check IntervalErrorData
 	needRemoveKey = []string{}
 	state.IntervalErrorData.RLock()
 	if state.IntervalErrorData.Len() > defaultReserveMinutes {
@@ -295,7 +290,7 @@ func (state *ServerStateInfo) checkAndRemoveIntervalData() {
 		}
 	}
 	state.IntervalErrorData.RUnlock()
-	//remove keys
+	// remove keys
 	for _, v := range needRemoveKey {
 		state.IntervalErrorData.Remove(v)
 	}

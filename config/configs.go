@@ -27,49 +27,49 @@ type (
 
 	// OfflineNode dotweb app offline config
 	OfflineNode struct {
-		Offline     bool   `xml:"offline,attr"`     //是否维护，默认false
-		OfflineText string `xml:"offlinetext,attr"` //当设置为维护，默认显示内容，如果设置url，优先url
-		OfflineUrl  string `xml:"offlineurl,attr"`  //当设置为维护，默认维护页地址，如果设置url，优先url
+		Offline     bool   `xml:"offline,attr"`     // maintenance mode, default false
+		OfflineText string `xml:"offlinetext,attr"` // text to display when Offline is true, OfflineUrl is used if set
+		OfflineUrl  string `xml:"offlineurl,attr"`  // maintenance page url
 	}
 
 	// AppNode dotweb app global config
 	AppNode struct {
-		LogPath      string `xml:"logpath,attr"`      //文件方式日志目录，如果为空，默认当前目录
-		EnabledLog   bool   `xml:"enabledlog,attr"`   //是否启用日志记录
-		RunMode      string `xml:"runmode,attr"`      //运行模式，目前支持development、production
-		PProfPort    int    `xml:"pprofport,attr"`    //pprof-server 端口，不能与主Server端口相同
-		EnabledPProf bool   `xml:"enabledpprof,attr"` //是否启用pprof server，默认不启用
+		LogPath      string `xml:"logpath,attr"`      // path of log files, use current directory if empty
+		EnabledLog   bool   `xml:"enabledlog,attr"`   // enable logging
+		RunMode      string `xml:"runmode,attr"`      // run mode, currently supports [development, production]
+		PProfPort    int    `xml:"pprofport,attr"`    // pprof-server port, cann't be same as server port
+		EnabledPProf bool   `xml:"enabledpprof,attr"` // enable pprof server, default is false
 	}
 
 	// ServerNode dotweb app's httpserver config
 	ServerNode struct {
-		EnabledListDir              bool   `xml:"enabledlistdir,attr"`   //设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
-		EnabledRequestID            bool   `xml:"enabledrequestid,attr"` //设置是否启用唯一请求ID，默认不开启，开启后使用32位UUID
-		EnabledGzip                 bool   `xml:"enabledgzip,attr"`      //是否启用gzip
-		EnabledAutoHEAD             bool   `xml:"enabledautohead,attr"`  //设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
-		EnabledAutoOPTIONS          bool   //设置是否自动启用Options路由，若设置该项，则会为除Websocket\Options外所有路由方式默认添加Options路由，默认不开启
-		EnabledAutoCORS             bool   `xml:"enabledautocors,attr"`       //设置是否自动跨域支持，若设置，默认“GET, POST, PUT, DELETE, OPTIONS”全部请求均支持跨域
-		EnabledIgnoreFavicon        bool   `xml:"enabledignorefavicon,attr"`  //设置是否忽略favicon.ico请求，若设置，网站将把所有favicon.ico请求直接空返回
-		EnabledBindUseJsonTag       bool   `xml:"enabledbindusejsontag,attr"` //设置bind是否启用json标签,默认不启用,若设置，bind自动识别json tag,忽略form tag
-		EnabledStaticFileMiddleware bool   //The flag which enabled or disabled middleware for static-file route
-		Port                        int    `xml:"port,attr"`                     //端口
-		EnabledTLS                  bool   `xml:"enabledtls,attr"`               //是否启用TLS模式
-		TLSCertFile                 string `xml:"tlscertfile,attr"`              //TLS模式下Certificate证书文件地址
-		TLSKeyFile                  string `xml:"tlskeyfile,attr"`               //TLS模式下秘钥文件地址
-		IndexPage                   string `xml:"indexpage,attr"`                //默认index页面
-		EnabledDetailRequestData    bool   `xml:"enableddetailrequestdata,attr"` //设置状态数据是否启用详细页面统计，默认不启用，请特别对待，如果站点url过多，会导致数据量过大
-		VirtualPath                 string //virtual path when deploy on no root path
+		EnabledListDir              bool   `xml:"enabledlistdir,attr"`   // enable listing of directories, only valid for Router.ServerFile, default is false
+		EnabledRequestID            bool   `xml:"enabledrequestid,attr"` // enable uniq request ID, default is false, 32-bit UUID is used if enabled
+		EnabledGzip                 bool   `xml:"enabledgzip,attr"`      // enable gzip
+		EnabledAutoHEAD             bool   `xml:"enabledautohead,attr"`  // ehanble HEAD routing, default is false, will add HEAD routing for all routes except for websocket and HEAD
+		EnabledAutoOPTIONS          bool   // enable OPTIONS routing, default is false, will add OPTIONS routing for all routes except for websocket and OPTIONS
+		EnabledAutoCORS             bool   `xml:"enabledautocors,attr"`       // enable automatic CORS, if set, all [GET, POST, PUT, DELETE, OPTIONS] requests will allow CORS
+		EnabledIgnoreFavicon        bool   `xml:"enabledignorefavicon,attr"`  // ignore favicon.ico request, return empty reponse if set
+		EnabledBindUseJsonTag       bool   `xml:"enabledbindusejsontag,attr"` // allow Bind to use JSON tag, default is false, Bind will use json tag automatically and ignore form tag
+		EnabledStaticFileMiddleware bool   // The flag which enabled or disabled middleware for static-file route
+		Port                        int    `xml:"port,attr"`                     // port
+		EnabledTLS                  bool   `xml:"enabledtls,attr"`               // enable TLS
+		TLSCertFile                 string `xml:"tlscertfile,attr"`              // certifications file for TLS
+		TLSKeyFile                  string `xml:"tlskeyfile,attr"`               // keys file for TLS
+		IndexPage                   string `xml:"indexpage,attr"`                // default index page
+		EnabledDetailRequestData    bool   `xml:"enableddetailrequestdata,attr"` // enable detailed statics for requests, default is false. Please use with care, it will have performance issues if the site have lots of URLs
+		VirtualPath                 string // virtual path when deploy on no root path
 	}
 
 	// SessionNode dotweb app's session config
 	SessionNode struct {
-		EnabledSession  bool   `xml:"enabled,attr"`         //启用Session
-		SessionMode     string `xml:"mode,attr"`            //session mode，now support runtime、redis
-		CookieName      string `xml:"cookiename,attr"`      //custom cookie name which sessionid store, default is dotweb_sessionId
-		Timeout         int64  `xml:"timeout,attr"`         //session time-out period, with second
-		ServerIP        string `xml:"serverip,attr"`        //remote session server url
-		BackupServerUrl string `xml:"backupserverurl,attr"` //backup remote session server url
-		StoreKeyPre     string `xml:"storekeypre,attr"`     //remote session StoreKeyPre
+		EnabledSession  bool   `xml:"enabled,attr"`         // enable session
+		SessionMode     string `xml:"mode,attr"`            // session mode，now support runtime、redis
+		CookieName      string `xml:"cookiename,attr"`      // custom cookie name which sessionid store, default is dotweb_sessionId
+		Timeout         int64  `xml:"timeout,attr"`         // session time-out period, with second
+		ServerIP        string `xml:"serverip,attr"`        // remote session server url
+		BackupServerUrl string `xml:"backupserverurl,attr"` // backup remote session server url
+		StoreKeyPre     string `xml:"storekeypre,attr"`     // remote session StoreKeyPre
 	}
 
 	// RouterNode dotweb app's router config
@@ -78,7 +78,7 @@ type (
 		Path        string            `xml:"path,attr"`
 		HandlerName string            `xml:"handler,attr"`
 		Middlewares []*MiddlewareNode `xml:"middleware"`
-		IsUse       bool              `xml:"isuse,attr"` //是否启用，默认false
+		IsUse       bool              `xml:"isuse,attr"` // enable router, default is false
 	}
 
 	// GroupNode dotweb app's group router config
@@ -86,13 +86,13 @@ type (
 		Path        string            `xml:"path,attr"`
 		Routers     []*RouterNode     `xml:"router"`
 		Middlewares []*MiddlewareNode `xml:"middleware"`
-		IsUse       bool              `xml:"isuse,attr"` //是否启用，默认false
+		IsUse       bool              `xml:"isuse,attr"` // enable group, default is false
 	}
 
 	// MiddlewareNode dotweb app's middleware config
 	MiddlewareNode struct {
 		Name  string `xml:"name,attr"`
-		IsUse bool   `xml:"isuse,attr"` //是否启用，默认false
+		IsUse bool   `xml:"isuse,attr"` // enable middleware, default is false
 	}
 )
 
@@ -164,8 +164,8 @@ func NewSessionNode() *SessionNode {
 	return config
 }
 
-//init config file
-//If an exception occurs, will be panic it
+// init config file
+// If an exception occurs, will be panic it
 func MustInitConfig(configFile string, confType ...interface{}) *Config {
 	conf, err := InitConfig(configFile, confType...)
 	if err != nil {
@@ -174,15 +174,14 @@ func MustInitConfig(configFile string, confType ...interface{}) *Config {
 	return conf
 }
 
-//初始化配置文件
-//如果发生异常，返回异常
+// InitConfig initialize the config with configFile
 func InitConfig(configFile string, confType ...interface{}) (config *Config, err error) {
 
-	//检查配置文件有效性
-	//1、按绝对路径检查
-	//2、尝试在当前进程根目录下寻找
-	//3、尝试在当前进程根目录/config/ 下寻找
-	//fixed for issue #15 读取配置文件路径
+	// Validity check
+	// 1. Try read as absolute path
+	// 2. Try the current working directory
+	// 3. Try $PWD/config
+	// fixed for issue #15 config file path
 	realFile := configFile
 	if !file.Exist(realFile) {
 		realFile = file.GetCurrentDirectory() + "/" + configFile
@@ -236,7 +235,7 @@ func InitConfig(configFile string, confType ...interface{}) (config *Config, err
 	}
 	config.ConfigSet = tmpConfigSetMap
 
-	//deal config default value
+	// deal config default value
 	dealConfigDefaultSet(config)
 
 	return config, nil
@@ -249,13 +248,13 @@ func dealConfigDefaultSet(c *Config) {
 func initConfig(configFile string, ctType string, parser func([]byte, interface{}) error) (*Config, error) {
 	content, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		return nil, errors.New("DotWeb:Config:initConfig 当前cType:" + ctType + " 配置文件[" + configFile + "]无法解析 - " + err.Error())
+		return nil, errors.New("DotWeb:Config:initConfig current cType:" + ctType + " config file [" + configFile + "] cannot be parsed - " + err.Error())
 	}
 
 	var config *Config
 	err = parser(content, &config)
 	if err != nil {
-		return nil, errors.New("DotWeb:Config:initConfig 当前cType:" + ctType + " 配置文件[" + configFile + "]解析失败 - " + err.Error())
+		return nil, errors.New("DotWeb:Config:initConfig current cType:" + ctType + " config file [" + configFile + "] cannot be parsed - " + err.Error())
 	}
 	return config, nil
 }

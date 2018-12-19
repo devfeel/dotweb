@@ -26,7 +26,7 @@ type xLog struct {
 	enabledConsole bool
 }
 
-//create new xLog
+// NewXLog create new xLog
 func NewXLog() *xLog {
 	l := &xLog{logChan_Custom: make(chan chanLog, 10000)}
 	go l.handleCustom()
@@ -85,26 +85,26 @@ func (l *xLog) log(log string, logTarget string, logLevel string, isRaw bool) {
 	}
 }
 
-//SetLogPath set log path
+// SetLogPath set log path
 func (l *xLog) SetLogPath(rootPath string) {
-	//设置日志根目录
+	// set root path of the log file
 	l.logRootPath = rootPath
 	if !strings.HasSuffix(l.logRootPath, "/") {
 		l.logRootPath = l.logRootPath + "/"
 	}
 }
 
-//SetEnabledLog set enabled log
+// SetEnabledLog set enabled log
 func (l *xLog) SetEnabledLog(enabledLog bool) {
 	l.enabledLog = enabledLog
 }
 
-//SetEnabledConsole set enabled Console output
+// SetEnabledConsole set enabled Console output
 func (l *xLog) SetEnabledConsole(enabled bool) {
 	l.enabledConsole = enabled
 }
 
-//处理日志内部函数
+// custom handling of the log
 func (l *xLog) handleCustom() {
 	for {
 		log := <-l.logChan_Custom
@@ -132,7 +132,7 @@ func (l *xLog) writeLog(chanLog chanLog, level string) {
 func writeFile(logFile string, log string) {
 	pathDir := filepath.Dir(logFile)
 	if !file.Exist(pathDir) {
-		//create path
+		// create path
 		err := os.MkdirAll(pathDir, 0777)
 		if err != nil {
 			fmt.Println("xlog.writeFile create path error ", err)

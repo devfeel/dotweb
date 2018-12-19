@@ -13,7 +13,7 @@ type Person struct {
 	Legs     []string
 }
 
-//json
+// json
 func TestBinder_Bind_json(t *testing.T) {
 
 	binder := newBinder()
@@ -22,14 +22,14 @@ func TestBinder_Bind_json(t *testing.T) {
 		t.Error("binder can not be nil!")
 	}
 
-	//init DotServer
+	// init DotServer
 	app := New()
 
 	if app == nil {
 		t.Error("app can not be nil!")
 	}
 
-	//expected
+	// expected
 	expected := &Person{
 		Hair:     "Brown",
 		HasGlass: true,
@@ -37,7 +37,7 @@ func TestBinder_Bind_json(t *testing.T) {
 		Legs:     []string{"Left", "Right"},
 	}
 
-	//init param
+	// init param
 	param := &InitContextParam{
 		t,
 		expected,
@@ -45,17 +45,17 @@ func TestBinder_Bind_json(t *testing.T) {
 		test.ToJson,
 	}
 
-	//init param
+	// init param
 	context := initContext(param)
-	//actual
+	// actual
 	person := &Person{}
 
 	err := binder.Bind(person, context)
 
-	//check error must nil
+	// check error must nil
 	test.Nil(t, err)
 
-	//check expected
+	// check expected
 	test.Equal(t, expected, person)
 
 	t.Log("person:", person)
@@ -63,7 +63,7 @@ func TestBinder_Bind_json(t *testing.T) {
 
 }
 
-//json
+// json
 func TestBinder_Bind_json_error(t *testing.T) {
 
 	binder := newBinder()
@@ -72,14 +72,14 @@ func TestBinder_Bind_json_error(t *testing.T) {
 		t.Error("binder can not be nil!")
 	}
 
-	//init DotServer
+	// init DotServer
 	app := New()
 
 	if app == nil {
 		t.Error("app can not be nil!")
 	}
 
-	//expected
+	// expected
 	expected := &Person{
 		Hair:     "Brown",
 		HasGlass: true,
@@ -87,7 +87,7 @@ func TestBinder_Bind_json_error(t *testing.T) {
 		Legs:     []string{"Left", "Right"},
 	}
 
-	//init param
+	// init param
 	param := &InitContextParam{
 		t,
 		expected,
@@ -95,18 +95,18 @@ func TestBinder_Bind_json_error(t *testing.T) {
 		test.ToJson,
 	}
 
-	//init param
+	// init param
 	context := initContext(param)
-	//actual
+	// actual
 	person := &Person{}
 
 	err := binder.Bind(person, context)
 
-	//check error must not nil
+	// check error must not nil
 	test.NotNil(t, err)
 }
 
-//xml
+// xml
 func TestBinder_Bind_xml(t *testing.T) {
 
 	binder := newBinder()
@@ -115,14 +115,14 @@ func TestBinder_Bind_xml(t *testing.T) {
 		t.Error("binder can not be nil!")
 	}
 
-	//init DotServer
+	// init DotServer
 	app := New()
 
 	if app == nil {
 		t.Error("app can not be nil!")
 	}
 
-	//expected
+	// expected
 	expected := &Person{
 		Hair:     "Brown",
 		HasGlass: true,
@@ -136,17 +136,17 @@ func TestBinder_Bind_xml(t *testing.T) {
 		test.ToXML,
 	}
 
-	//init param
+	// init param
 	context := initContext(param)
-	//actual
+	// actual
 	person := &Person{}
 
 	err := binder.Bind(person, context)
 
-	//check error must nil
+	// check error must nil
 	test.Nil(t, err)
 
-	//check expected
+	// check expected
 	test.Equal(t, expected, person)
 
 	t.Log("person:", person)
@@ -154,7 +154,7 @@ func TestBinder_Bind_xml(t *testing.T) {
 
 }
 
-//xml
+// xml
 func TestBinder_Bind_xml_error(t *testing.T) {
 
 	binder := newBinder()
@@ -163,14 +163,14 @@ func TestBinder_Bind_xml_error(t *testing.T) {
 		t.Error("binder can not be nil!")
 	}
 
-	//init DotServer
+	// init DotServer
 	app := New()
 
 	if app == nil {
 		t.Error("app can not be nil!")
 	}
 
-	//expected
+	// expected
 	expected := &Person{
 		Hair:     "Brown",
 		HasGlass: true,
@@ -184,18 +184,18 @@ func TestBinder_Bind_xml_error(t *testing.T) {
 		test.ToXML,
 	}
 
-	//init param
+	// init param
 	context := initContext(param)
-	//actual
+	// actual
 	person := &Person{}
 
 	err := binder.Bind(person, context)
 
-	//check error must not nil
+	// check error must not nil
 	test.NotNil(t, err)
 }
 
-//else
+// else
 func TestBinder_Bind_default(t *testing.T) {
 
 	binder := newBinder()
@@ -204,14 +204,14 @@ func TestBinder_Bind_default(t *testing.T) {
 		t.Error("binder can not be nil!")
 	}
 
-	//init DotServer
+	// init DotServer
 	app := New()
 
 	if app == nil {
 		t.Error("app can not be nil!")
 	}
 
-	//expected
+	// expected
 	expected := &Person{
 		Hair:     "Brown",
 		HasGlass: true,
@@ -225,7 +225,7 @@ func TestBinder_Bind_default(t *testing.T) {
 		test.ToDefault,
 	}
 
-	//init param
+	// init param
 	context := initContext(param)
 
 	form := make(map[string][]string)
@@ -235,15 +235,15 @@ func TestBinder_Bind_default(t *testing.T) {
 	form["Legs"] = []string{"Left", "Right"}
 
 	context.request.Form = form
-	//actual
+	// actual
 	person := &Person{}
 
 	err := binder.Bind(person, context)
 
-	//check error must nil
+	// check error must nil
 	test.Nil(t, err)
 
-	//check expected
+	// check expected
 	test.Equal(t, expected, person)
 
 	t.Log("person:", person)
@@ -251,7 +251,7 @@ func TestBinder_Bind_default(t *testing.T) {
 
 }
 
-//else
+// else
 func TestBinder_Bind_default_error(t *testing.T) {
 
 	binder := newBinder()
@@ -260,14 +260,14 @@ func TestBinder_Bind_default_error(t *testing.T) {
 		t.Error("binder can not be nil!")
 	}
 
-	//init DotServer
+	// init DotServer
 	app := New()
 
 	if app == nil {
 		t.Error("app can not be nil!")
 	}
 
-	//expected
+	// expected
 	expected := &Person{
 		Hair:     "Brown",
 		HasGlass: true,
@@ -281,7 +281,7 @@ func TestBinder_Bind_default_error(t *testing.T) {
 		test.ToDefault,
 	}
 
-	//init param
+	// init param
 	context := initContext(param)
 
 	form := make(map[string][]string)
@@ -291,18 +291,18 @@ func TestBinder_Bind_default_error(t *testing.T) {
 	form["Legs"] = []string{"Left", "Right"}
 
 	context.request.Form = form
-	//actual
+	// actual
 	person := &Person{}
 
 	err := binder.Bind(person, context)
 
-	//check error must not nil
+	// check error must not nil
 	test.NotNil(t, err)
 
 }
 
-//default
-//TODO:content type is null but body not null,is it right??
+// default
+// TODO:content type is null but body not null,is it right??
 func TestBinder_Bind_ContentTypeNull(t *testing.T) {
 
 	binder := newBinder()
@@ -311,14 +311,14 @@ func TestBinder_Bind_ContentTypeNull(t *testing.T) {
 		t.Error("binder can not be nil!")
 	}
 
-	//init DotServer
+	// init DotServer
 	app := New()
 
 	if app == nil {
 		t.Error("app can not be nil!")
 	}
 
-	//expected
+	// expected
 	expected := &Person{
 		Hair:     "Brown",
 		HasGlass: true,
@@ -332,13 +332,13 @@ func TestBinder_Bind_ContentTypeNull(t *testing.T) {
 		test.ToXML,
 	}
 
-	//init param
+	// init param
 	context := initContext(param)
-	//actual
+	// actual
 	person := &Person{}
 
 	err := binder.Bind(person, context)
 
-	//check error must nil?
+	// check error must nil?
 	test.Nil(t, err)
 }

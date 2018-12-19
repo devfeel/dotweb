@@ -10,7 +10,7 @@ func NewFeature() *Feature {
 	}
 }
 
-//set Enabled CROS true, with default config
+// SetEnabledCROS enable CROS, with default config
 func (f *Feature) SetEnabledCROS() *CROSConfig {
 	if f.CROSConfig == nil {
 		f.CROSConfig = NewCORSConfig()
@@ -20,7 +20,7 @@ func (f *Feature) SetEnabledCROS() *CROSConfig {
 	return f.CROSConfig
 }
 
-//set Disabled CROS false
+// SetDisabledCROS disable CROS
 func (f *Feature) SetDisabledCROS() {
 	if f.CROSConfig == nil {
 		f.CROSConfig = NewCORSConfig()

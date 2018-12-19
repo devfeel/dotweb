@@ -24,7 +24,6 @@ const (
 )
 
 type (
-	//HttpServer定义
 	HttpServer struct {
 		stdServer      *http.Server
 		router         Router
@@ -39,10 +38,9 @@ type (
 		render         Renderer
 		offline        bool
 		Features       *feature.Feature
-		virtualPath    string //virtual path when deploy on no root path
+		virtualPath    string // virtual path when deploy on no root path
 	}
 
-	//pool定义
 	pool struct {
 		request  sync.Pool
 		response sync.Pool
@@ -74,7 +72,7 @@ func NewHttpServer() *HttpServer {
 		binder:       newBinder(),
 		Features:     &feature.Feature{},
 	}
-	//设置router
+	// setup router
 	server.router = NewRouter(server)
 	server.stdServer = &http.Server{Handler: server}
 	return server
@@ -82,13 +80,13 @@ func NewHttpServer() *HttpServer {
 
 // initConfig init config from app config
 func (server *HttpServer) initConfig() {
-	//CROS Config
+	// CROS Config
 	if server.ServerConfig().EnabledAutoCORS {
 		server.Features.SetEnabledCROS()
 	}
 	server.SetEnabledGzip(server.ServerConfig().EnabledGzip)
 
-	//VirtualPath config
+	// VirtualPath config
 	if server.virtualPath == "" {
 		server.virtualPath = server.ServerConfig().VirtualPath
 	}
@@ -133,7 +131,7 @@ func (server *HttpServer) ListenAndServe(addr string) error {
 // ListenAndServeTLS always returns a non-nil error.
 func (server *HttpServer) ListenAndServeTLS(addr string, certFile, keyFile string) error {
 	server.stdServer.Addr = addr
-	//check tls config
+	// check tls config
 	if !file.Exist(certFile) {
 		logger.Logger().Error("DotWeb:HttpServer ListenAndServeTLS ["+addr+","+certFile+","+keyFile+"] error => Server EnabledTLS is true, but TLSCertFile not exists", LogTarget_HttpServer)
 		panic("Server EnabledTLS is true, but TLSCertFile not exists")
@@ -151,19 +149,18 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	core.GlobalState.AddCurrentRequest(1)
 	defer core.GlobalState.SubCurrentRequest(1)
 
-	//针对websocket与调试信息特殊处理
+	// special handling for websocket and debugging
 	if checkIsWebSocketRequest(req) {
 		http.DefaultServeMux.ServeHTTP(w, req)
-		//增加状态计数
 		core.GlobalState.AddRequestCount(req.URL.Path, defaultHttpCode, 1)
 	} else {
-		//设置header信息
+		// setup header
 		w.Header().Set(HeaderServer, DefaultServerName)
-		//处理维护
+		// maintenance mode
 		if server.IsOffline() {
 			server.DotApp.OfflineServer.ServeHTTP(w, req)
 		} else {
-			//get from pool
+			// get from pool
 			response := server.pool.response.Get().(*Response)
 			request := server.pool.request.Get().(*Request)
 			httpCtx := server.pool.context.Get().(*HttpContext)
@@ -171,7 +168,7 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			response.reset(w)
 			request.reset(req, httpCtx)
 
-			//处理前置Module集合
+			// process OnBeginRequest of modules
 			for _, module := range server.Modules {
 				if module.OnBeginRequest != nil {
 					module.OnBeginRequest(httpCtx)
@@ -182,23 +179,21 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 				server.Router().ServeHTTP(httpCtx)
 			}
 
-			//处理后置Module集合
+			// process OnEndRequest of modules
 			for _, module := range server.Modules {
 				if module.OnEndRequest != nil {
 					module.OnEndRequest(httpCtx)
 				}
 			}
 
-			//增加状态计数
 			core.GlobalState.AddRequestCount(httpCtx.Request().Path(), httpCtx.Response().HttpCode(), 1)
-
-			//release response
+			// release response
 			response.release()
 			server.pool.response.Put(response)
-			//release request
+			// release request
 			request.release()
 			server.pool.request.Put(request)
-			//release context
+			// release context
 			httpCtx.release()
 			server.pool.context.Put(httpCtx)
 		}
@@ -240,7 +235,7 @@ func (server *HttpServer) IndexPage() string {
 
 // SetSessionConfig set session store config
 func (server *HttpServer) SetSessionConfig(storeConfig *session.StoreConfig) {
-	//sync session config
+	// sync session config
 	server.SessionConfig().Timeout = storeConfig.Maxlifetime
 	server.SessionConfig().SessionMode = storeConfig.StoreName
 	server.SessionConfig().ServerIP = storeConfig.ServerIP
@@ -261,10 +256,10 @@ func (server *HttpServer) InitSessionManager() {
 	storeConfig.CookieName = server.SessionConfig().CookieName
 
 	if server.sessionManager == nil {
-		//设置Session
+		// setup session
 		server.lock_session.Lock()
 		if manager, err := session.NewDefaultSessionManager(storeConfig); err != nil {
-			//panic error with create session manager
+			// panic error with create session manager
 			panic(err.Error())
 		} else {
 			server.sessionManager = manager
@@ -274,7 +269,7 @@ func (server *HttpServer) InitSessionManager() {
 	logger.Logger().Debug("DotWeb:HttpServer InitSessionManager ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
 }
 
-// setDotApp 关联当前HttpServer实例对应的DotServer实例
+// setDotApp associates the dotApp to the current HttpServer
 func (server *HttpServer) setDotApp(dotApp *DotWeb) {
 	server.DotApp = dotApp
 }
@@ -401,25 +396,25 @@ func (server *HttpServer) SetEnabledRequestID(isEnabled bool) {
 	logger.Logger().Debug("DotWeb:HttpServer SetEnabledRequestID ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
-// SetEnabledListDir 设置是否允许目录浏览,默认为false
+// SetEnabledListDir set whether to allow listing of directories, default is false
 func (server *HttpServer) SetEnabledListDir(isEnabled bool) {
 	server.ServerConfig().EnabledListDir = isEnabled
 	logger.Logger().Debug("DotWeb:HttpServer SetEnabledListDir ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
-// SetEnabledSession 设置是否启用Session,默认为false
+// SetEnabledSession set whether to enable session, default is false
 func (server *HttpServer) SetEnabledSession(isEnabled bool) {
 	server.SessionConfig().EnabledSession = isEnabled
 	logger.Logger().Debug("DotWeb:HttpServer SetEnabledSession ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
-// SetEnabledGzip 设置是否启用gzip,默认为false
+// SetEnabledGzip set whether to enable gzip, default is false
 func (server *HttpServer) SetEnabledGzip(isEnabled bool) {
 	server.ServerConfig().EnabledGzip = isEnabled
 	logger.Logger().Debug("DotWeb:HttpServer SetEnabledGzip ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
-// SetEnabledBindUseJsonTag 设置bind是否启用json标签,默认为false, fixed for issue #91
+// SetEnabledBindUseJsonTag set whethr to enable json tab on Bind, default is false
 func (server *HttpServer) SetEnabledBindUseJsonTag(isEnabled bool) {
 	server.ServerConfig().EnabledBindUseJsonTag = isEnabled
 	logger.Logger().Debug("DotWeb:HttpServer SetEnabledBindUseJsonTag ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
@@ -455,7 +450,7 @@ func (server *HttpServer) SetEnabledStaticFileMiddleware(isEnabled bool) {
 	logger.Logger().Debug("DotWeb:HttpServer SetEnabledStaticFileMiddleware ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
-// RegisterModule 添加处理模块
+// RegisterModule add HttpModule
 func (server *HttpServer) RegisterModule(module *HttpModule) {
 	server.Modules = append(server.Modules, module)
 	logger.Logger().Debug("DotWeb:HttpServer RegisterModule ["+module.Name+"]", LogTarget_HttpServer)
@@ -467,8 +462,8 @@ type LogJson struct {
 	HttpBody   string
 }
 
-//check request is the websocket request
-//check Connection contains upgrade
+// check request is the websocket request
+// check Connection contains upgrade
 func checkIsWebSocketRequest(req *http.Request) bool {
 	if strings.Index(strings.ToLower(req.Header.Get("Connection")), "upgrade") >= 0 {
 		return true
@@ -476,7 +471,7 @@ func checkIsWebSocketRequest(req *http.Request) bool {
 	return false
 }
 
-//check request is startwith /debug/
+// check request is startwith /debug/
 func checkIsDebugRequest(req *http.Request) bool {
 	if strings.Index(req.RequestURI, "/debug/") == 0 {
 		return true
