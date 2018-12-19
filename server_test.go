@@ -31,6 +31,7 @@ func TestNewHttpServer(t *testing.T) {
 //总感觉和名字不是太匹配
 func TestSesionConfig(t *testing.T) {
 	server := NewHttpServer()
+	server.DotApp = New()
 	//use default config
 	server.SetSessionConfig(session.NewDefaultRuntimeConfig())
 

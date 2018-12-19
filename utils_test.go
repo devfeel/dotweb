@@ -18,6 +18,9 @@ func initContext(param *InitContextParam) *HttpContext {
 		request: &Request{
 			Request: httpRequest,
 		},
+		httpServer: &HttpServer{
+			DotApp: New(),
+		},
 	}
 	header := make(map[string][]string)
 	header["Accept-Encoding"] = []string{"gzip, deflate"}
@@ -60,7 +63,12 @@ func initAllContext(param *InitContextParam) *HttpContext {
 		request: &Request{
 			Request: &http.Request{},
 		},
+		httpServer: &HttpServer{
+			DotApp: New(),
+		},
+		routerNode: &Node{},
 	}
+
 	header := make(map[string][]string)
 	header["Accept-Encoding"] = []string{"gzip, deflate"}
 	header["Accept-Language"] = []string{"en-us"}

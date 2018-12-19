@@ -44,7 +44,7 @@ func TestWrite(t *testing.T) {
 	//header
 	contentType := context.response.header.Get(HeaderContentType)
 	//因writer中的header方法调用过http.Header默认设置
-	test.Equal(t, CharsetUTF8, contentType)
+	test.Contains(t, CharsetUTF8, contentType)
 	test.Equal(t, status, context.response.Status)
 
 	//body
@@ -81,7 +81,7 @@ func TestWriteString(t *testing.T) {
 	//header
 	contentType := context.response.header.Get(HeaderContentType)
 	//因writer中的header方法调用过http.Header默认设置
-	test.Equal(t, CharsetUTF8, contentType)
+	test.Contains(t, CharsetUTF8, contentType)
 	test.Equal(t, defaultHttpCode, context.response.Status)
 
 	//body

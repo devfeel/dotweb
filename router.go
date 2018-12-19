@@ -264,7 +264,9 @@ func (r *router) ServeHTTP(ctx *HttpContext) {
 	}
 
 	// Handle 404
-	r.server.DotApp.NotFoundHandler(ctx)
+	if r.server.DotApp.NotFoundHandler != nil {
+		r.server.DotApp.NotFoundHandler(ctx)
+	}
 }
 
 //wrap HttpHandle to Handle
