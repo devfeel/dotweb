@@ -1,8 +1,9 @@
 package redis
 
 import (
-	"github.com/devfeel/dotweb/framework/redis"
 	"strconv"
+
+	"github.com/devfeel/dotweb/framework/redis"
 )
 
 var (
@@ -101,9 +102,9 @@ func (ca *RedisCache) GetInt64(key string) (int64, error) {
 func (ca *RedisCache) Set(key string, value interface{}, ttl int64) error {
 	redisClient := redisutil.GetRedisClient(ca.serverURL)
 	var err error
-	if ttl <= 0{
+	if ttl <= 0 {
 		_, err = redisClient.Set(key, value)
-	}else{
+	} else {
 		_, err = redisClient.SetWithExpire(key, value, ttl)
 	}
 	return err

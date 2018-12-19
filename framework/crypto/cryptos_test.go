@@ -1,8 +1,9 @@
 package cryptos
 
 import (
-	"github.com/devfeel/dotweb/test"
 	"testing"
+
+	"github.com/devfeel/dotweb/test"
 )
 
 //

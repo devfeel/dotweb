@@ -1,12 +1,12 @@
 package dotweb
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
-	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -428,6 +428,7 @@ func (ctx *HttpContext) Bind(i interface{}) error {
 func (ctx *HttpContext) BindJsonBody(i interface{}) error {
 	return ctx.httpServer.Binder().BindJsonBody(i, ctx)
 }
+
 // Validate validates data with HttpServer::Validator
 // We will implementing inner validator on next version
 func (ctx *HttpContext) Validate(i interface{}) error {

@@ -1,13 +1,14 @@
 package dotweb
 
 import (
-	"github.com/devfeel/dotweb/framework/file"
+	"errors"
 	"html/template"
 	"io"
 	"path"
-	"sync"
 	"path/filepath"
-	"errors"
+	"sync"
+
+	"github.com/devfeel/dotweb/framework/file"
 )
 
 // Renderer is the interface that wraps the render method.
@@ -20,19 +21,18 @@ type Renderer interface {
 type innerRenderer struct {
 	templatePath string
 	// Template cache (for FromCache())
-	enabledCache 	   bool
+	enabledCache       bool
 	templateCache      map[string]*template.Template
 	templateCacheMutex sync.RWMutex
 
 	// used to manager template func
-	templateFuncs 	   map[string]interface{}
+	templateFuncs      map[string]interface{}
 	templateFuncsMutex *sync.RWMutex
-
 }
 
 // Render render view use http/template
 func (r *innerRenderer) Render(w io.Writer, data interface{}, ctx Context, tpl ...string) error {
-	if len(tpl) <= 0{
+	if len(tpl) <= 0 {
 		return errors.New("no enough render template files")
 	}
 	t, err := r.parseFiles(tpl...)
@@ -48,12 +48,11 @@ func (r *innerRenderer) SetTemplatePath(path string) {
 }
 
 // RegisterTemplateFunc used to register template func in renderer
-func (r *innerRenderer) RegisterTemplateFunc(funcName string, funcHandler interface{}){
+func (r *innerRenderer) RegisterTemplateFunc(funcName string, funcHandler interface{}) {
 	r.templateFuncsMutex.Lock()
 	r.templateFuncs[funcName] = funcHandler
 	r.templateFuncsMutex.Unlock()
 }
-
 
 // unescaped inner template func used to encapsulates a known safe HTML document fragment
 func unescaped(x string) interface{} { return template.HTML(x) }
@@ -77,10 +76,10 @@ func (r *innerRenderer) parseFiles(fileNames ...string) (*template.Template, err
 		//check from chach
 		t, exists = r.parseFilesFromCache(filesCacheKey)
 	}
-	if !exists{
+	if !exists {
 		name := filepath.Base(fileNames[0])
 		t = template.New(name)
-		if len(r.templateFuncs) > 0{
+		if len(r.templateFuncs) > 0 {
 			t = t.Funcs(r.templateFuncs)
 		}
 		t, err = t.ParseFiles(realFileNames...)
@@ -95,15 +94,15 @@ func (r *innerRenderer) parseFiles(fileNames ...string) (*template.Template, err
 	return t, nil
 }
 
-func (r *innerRenderer) parseFilesFromCache(filesCacheKey string) (*template.Template, bool){
+func (r *innerRenderer) parseFilesFromCache(filesCacheKey string) (*template.Template, bool) {
 	r.templateCacheMutex.RLock()
 	defer r.templateCacheMutex.RUnlock()
-	t, exists:= r.templateCache[filesCacheKey]
+	t, exists := r.templateCache[filesCacheKey]
 	return t, exists
 }
 
 // registeInnerTemplateFunc registe default support funcs
-func registeInnerTemplateFunc(funcMap map[string]interface{}){
+func registeInnerTemplateFunc(funcMap map[string]interface{}) {
 	funcMap["unescaped"] = unescaped
 }
 
@@ -124,4 +123,3 @@ func NewInnerRendererNoCache() Renderer {
 	r.enabledCache = false
 	return r
 }
-

@@ -6,9 +6,9 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
-  "net/url"
 )
 
 //common init context
@@ -17,6 +17,9 @@ func initContext(param *InitContextParam) *HttpContext {
 	context := &HttpContext{
 		request: &Request{
 			Request: httpRequest,
+		},
+		httpServer: &HttpServer{
+			DotApp: New(),
 		},
 	}
 	header := make(map[string][]string)
@@ -60,7 +63,12 @@ func initAllContext(param *InitContextParam) *HttpContext {
 		request: &Request{
 			Request: &http.Request{},
 		},
+		httpServer: &HttpServer{
+			DotApp: New(),
+		},
+		routerNode: &Node{},
 	}
+
 	header := make(map[string][]string)
 	header["Accept-Encoding"] = []string{"gzip, deflate"}
 	header["Accept-Language"] = []string{"en-us"}
@@ -69,12 +77,12 @@ func initAllContext(param *InitContextParam) *HttpContext {
 	header["Content-Type"] = []string{param.contentType}
 	context.request.Header = header
 
-	u:=&url.URL{
-		Path:"/index",
+	u := &url.URL{
+		Path: "/index",
 	}
 
-	context.request.URL=u
-	context.request.Method="POST"
+	context.request.URL = u
+	context.request.Method = "POST"
 
 	jsonStr := param.convertHandler(param.t, param.v)
 	body := format(jsonStr)

@@ -11,7 +11,7 @@ type RuntimeStore struct {
 	lock        *sync.RWMutex            // locker
 	sessions    map[string]*list.Element // map in memory
 	list        *list.List               // for gc
-	maxlifetime int64					 // session life time, with second
+	maxlifetime int64                    // session life time, with second
 }
 
 func NewRuntimeStore(config *StoreConfig) *RuntimeStore {

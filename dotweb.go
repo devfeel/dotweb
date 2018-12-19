@@ -12,6 +12,10 @@ import (
 
 	"context"
 	"errors"
+	"reflect"
+	"sync"
+	"time"
+
 	"github.com/devfeel/dotweb/cache"
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/core"
@@ -19,9 +23,6 @@ import (
 	"github.com/devfeel/dotweb/logger"
 	"github.com/devfeel/dotweb/servers"
 	"github.com/devfeel/dotweb/session"
-	"reflect"
-	"sync"
-	"time"
 )
 
 type (
@@ -30,41 +31,41 @@ type (
 		cache                   cache.Cache
 		OfflineServer           servers.Server
 		Config                  *config.Config
-		Mock					Mock
+		Mock                    Mock
 		Middlewares             []Middleware
 		ExceptionHandler        ExceptionHandle
-		NotFoundHandler         StandardHandle // NotFoundHandler 支持自定义404处理代码能力
-		MethodNotAllowedHandler StandardHandle // MethodNotAllowedHandler fixed for #64 增加MethodNotAllowed自定义处理
+		NotFoundHandler         StandardHandle // NotFoundHandler supports user defined 404 handler
+		MethodNotAllowedHandler StandardHandle // MethodNotAllowedHandler fixed for #64 supports user defined MethodNotAllowed handler
 		Items                   core.ConcurrenceMap
 		middlewareMap           map[string]MiddlewareFunc
 		middlewareMutex         *sync.RWMutex
 		StartMode               string
 	}
 
-	// ExceptionHandle 支持自定义异常处理代码能力
+	// ExceptionHandle supports exception handling
 	ExceptionHandle func(Context, error)
 
-	// StandardHandle 标准处理函数，需传入Context参数
+	// StandardHandle for standard request handling
 	StandardHandle func(Context)
 
-	// Handle is a function that can be registered to a route to handle HTTP
+	// HttpHandle is a function that can be registered to a route to handle HTTP
 	// requests. Like http.HandlerFunc, but has a special parameter Context contain all request and response data.
 	HttpHandle func(Context) error
 )
 
 const (
 	// DefaultHTTPPort default http port; fixed for #70 UPDATE default http port 80 to 8080
-	DefaultHTTPPort           = 8080
+	DefaultHTTPPort = 8080
 
 	DefaultLogPath = ""
 
 	// RunMode_Development app runmode in development mode
-	RunMode_Development       = "development"
+	RunMode_Development = "development"
 	// RunMode_Production app runmode in production mode
-	RunMode_Production        = "production"
+	RunMode_Production = "production"
 
 	//StartMode_New app startmode in New mode
-	StartMode_New     = "New"
+	StartMode_New = "New"
 	//StartMode_Classic app startmode in Classic mode
 	StartMode_Classic = "Classic"
 )
@@ -104,7 +105,7 @@ func Classic(logPath string) *DotWeb {
 	app := New()
 	app.StartMode = StartMode_Classic
 
-	if logPath != ""{
+	if logPath != "" {
 		app.SetLogPath(logPath)
 	}
 	app.SetEnabledLog(true)
@@ -118,20 +119,20 @@ func Classic(logPath string) *DotWeb {
 
 // ClassicWithConf create and return DotApp instance
 // must set config info
-func ClassicWithConf(config *config.Config) *DotWeb{
+func ClassicWithConf(config *config.Config) *DotWeb {
 	app := Classic(config.App.LogPath)
 	app.SetConfig(config)
 	return app
 }
 
-// RegisterMiddlewareFunc register middleware with gived name & middleware
+// RegisterMiddlewareFunc register middleware with given name & middleware
 func (app *DotWeb) RegisterMiddlewareFunc(name string, middleFunc MiddlewareFunc) {
 	app.middlewareMutex.Lock()
 	app.middlewareMap[name] = middleFunc
 	app.middlewareMutex.Unlock()
 }
 
-// GetMiddlewareFunc get middleware with gived name
+// GetMiddlewareFunc get middleware with given name
 func (app *DotWeb) GetMiddlewareFunc(name string) (MiddlewareFunc, bool) {
 	app.middlewareMutex.RLock()
 	v, exists := app.middlewareMap[name]
@@ -211,15 +212,15 @@ func (app *DotWeb) UseRequestLog() {
 }
 
 // UseTimeoutHook register TimeoutHookMiddleware
-func (app *DotWeb) UseTimeoutHook(handler StandardHandle, timeout time.Duration){
+func (app *DotWeb) UseTimeoutHook(handler StandardHandle, timeout time.Duration) {
 	app.Use(&TimeoutHookMiddleware{
-		HookHandle: handler,
-		TimeoutDuration:timeout,
+		HookHandle:      handler,
+		TimeoutDuration: timeout,
 	})
 }
 
 // SetMock set mock logic
-func (app *DotWeb) SetMock(mock Mock){
+func (app *DotWeb) SetMock(mock Mock) {
 	app.Mock = mock
 	logger.Logger().Debug("DotWeb Mock SetMock", LogTarget_HttpServer)
 }
@@ -321,14 +322,14 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 	}
 
 	//special, if run mode is not develop, auto stop mock
-	if app.RunMode() != RunMode_Development{
+	if app.RunMode() != RunMode_Development {
 		if app.Mock != nil {
 			logger.Logger().Debug("DotWeb Mock RunMode is not DevelopMode, Auto stop mock", LogTarget_HttpServer)
 		}
 		app.Mock = nil
 	}
 	//output run mode
-	logger.Logger().Debug("DotWeb RunMode is " + app.RunMode(), LogTarget_HttpServer)
+	logger.Logger().Debug("DotWeb RunMode is "+app.RunMode(), LogTarget_HttpServer)
 
 	if app.HttpServer.ServerConfig().EnabledTLS {
 		err := app.HttpServer.ListenAndServeTLS(addr, app.HttpServer.ServerConfig().TLSCertFile, app.HttpServer.ServerConfig().TLSKeyFile)
@@ -355,13 +356,13 @@ func (app *DotWeb) initAppConfig() {
 
 	app.HttpServer.initConfig()
 
-	//设置维护
+	// maintenance mode
 	if config.Offline.Offline {
 		app.HttpServer.SetOffline(config.Offline.Offline, config.Offline.OfflineText, config.Offline.OfflineUrl)
 		app.OfflineServer.SetOffline(config.Offline.Offline, config.Offline.OfflineText, config.Offline.OfflineUrl)
 	}
 
-	//设置启用详细请求数据统计
+	// detailed request metrics
 	if config.Server.EnabledDetailRequestData {
 		core.GlobalState.EnabledDetailRequestData = config.Server.EnabledDetailRequestData
 	}
@@ -498,7 +499,7 @@ func (app *DotWeb) initBindMiddleware() {
 
 // IncludeDotwebGroup init inner routers
 func (app *DotWeb) IncludeDotwebGroup() {
-	//默认支持pprof信息查看
+	// supports pprof by default
 	gInner := app.HttpServer.Group("/dotweb")
 	gInner.GET("/debug/pprof/:key", initPProf)
 	gInner.GET("/debug/freemem", freeMemory)
@@ -539,9 +540,9 @@ func (app *DotWeb) initServerEnvironment() {
 	//if renderer not set, create inner renderer
 	//if is develop mode, it will use nocache mode
 	if app.HttpServer.Renderer() == nil {
-		if app.RunMode() == RunMode_Development{
+		if app.RunMode() == RunMode_Development {
 			app.HttpServer.SetRenderer(NewInnerRendererNoCache())
-		}else{
+		} else {
 			app.HttpServer.SetRenderer(NewInnerRenderer())
 		}
 	}
@@ -562,7 +563,6 @@ func (app *DotWeb) initServerEnvironment() {
 
 // DefaultHTTPErrorHandler default exception handler
 func (app *DotWeb) DefaultHTTPErrorHandler(ctx Context, err error) {
-	//输出内容
 	ctx.Response().Header().Set(HeaderContentType, CharsetUTF8)
 	//if in development mode, output the error info
 	if app.IsDevelopmentMode() {
@@ -585,7 +585,7 @@ func (app *DotWeb) DefaultMethodNotAllowedHandler(ctx Context) {
 	ctx.WriteStringC(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed))
 }
 
-func DefaultTimeoutHookHandler(ctx Context){
+func DefaultTimeoutHookHandler(ctx Context) {
 	realDration := ctx.Items().GetTimeDuration(ItemKeyHandleDuration)
 	logs := fmt.Sprintf("req %v, cost %v", ctx.Request().Url(), realDration.Seconds())
 	logger.Logger().Warn(logs, LogTarget_RequestTimeout)
@@ -638,13 +638,13 @@ func showIntervalData(ctx Context) error {
 	return nil
 }
 
-//显示服务器状态信息
+// snow server status
 func showServerState(ctx Context) error {
 	ctx.WriteHtml(core.GlobalState.ShowHtmlData(Version))
 	return nil
 }
 
-//显示服务器状态信息
+// query server information
 func showQuery(ctx Context) error {
 	querykey := ctx.GetRouterName("key")
 	switch querykey {

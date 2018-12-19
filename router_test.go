@@ -1,10 +1,11 @@
 package dotweb
 
 import (
-	"github.com/devfeel/dotweb/session"
-	"github.com/devfeel/dotweb/test"
 	"testing"
 	"time"
+
+	"github.com/devfeel/dotweb/session"
+	"github.com/devfeel/dotweb/test"
 )
 
 func TestRouter_ServeHTTP(t *testing.T) {

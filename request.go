@@ -1,19 +1,20 @@
 package dotweb
 
 import (
-	"github.com/devfeel/dotweb/framework/crypto/uuid"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/devfeel/dotweb/framework/crypto/uuid"
 )
 
 type Request struct {
 	*http.Request
 	httpCtx    *HttpContext
 	postBody   []byte
-	realUrl	   string
+	realUrl    string
 	isReadBody bool
 	requestID  string
 }
@@ -70,16 +71,16 @@ func (req *Request) FormFile(key string) (*UploadFile, error) {
 
 // FormFiles get multi files
 // fixed #92
-func (req *Request) FormFiles()(map[string]*UploadFile, error){
+func (req *Request) FormFiles() (map[string]*UploadFile, error) {
 	files := make(map[string]*UploadFile)
 	req.parseForm()
 	if req.Request.MultipartForm == nil || req.Request.MultipartForm.File == nil {
 		return nil, http.ErrMissingFile
 	}
-	for key, fileMap:=range req.Request.MultipartForm.File{
-		if len(fileMap) > 0{
+	for key, fileMap := range req.Request.MultipartForm.File {
+		if len(fileMap) > 0 {
 			file, err := fileMap[0].Open()
-			if err== nil{
+			if err == nil {
 				files[key] = NewUploadFile(file, fileMap[0])
 			}
 		}
@@ -183,9 +184,9 @@ func (req *Request) IsAJAX() bool {
 
 // Url get request url
 func (req *Request) Url() string {
-	if req.realUrl != ""{
+	if req.realUrl != "" {
 		return req.realUrl
-	}else{
+	} else {
 		return req.URL.String()
 	}
 }

@@ -3,9 +3,10 @@ package config
 import (
 	"encoding/xml"
 	"errors"
+	"io/ioutil"
+
 	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/framework/file"
-	"io/ioutil"
 )
 
 type (
@@ -42,33 +43,33 @@ type (
 
 	// ServerNode dotweb app's httpserver config
 	ServerNode struct {
-		EnabledListDir           bool   `xml:"enabledlistdir,attr"`           //设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
-		EnabledRequestID         bool   `xml:"enabledrequestid,attr"`         //设置是否启用唯一请求ID，默认不开启，开启后使用32位UUID
-		EnabledGzip              bool   `xml:"enabledgzip,attr"`              //是否启用gzip
-		EnabledAutoHEAD          bool   `xml:"enabledautohead,attr"`          //设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
-		EnabledAutoOPTIONS       bool   							          //设置是否自动启用Options路由，若设置该项，则会为除Websocket\Options外所有路由方式默认添加Options路由，默认不开启
-		EnabledAutoCORS          bool   `xml:"enabledautocors,attr"`          //设置是否自动跨域支持，若设置，默认“GET, POST, PUT, DELETE, OPTIONS”全部请求均支持跨域
-		EnabledIgnoreFavicon     bool   `xml:"enabledignorefavicon,attr"`     //设置是否忽略favicon.ico请求，若设置，网站将把所有favicon.ico请求直接空返回
-		EnabledBindUseJsonTag    bool   `xml:"enabledbindusejsontag,attr"`    //设置bind是否启用json标签,默认不启用,若设置，bind自动识别json tag,忽略form tag
-		EnabledStaticFileMiddleware	 bool   								  //The flag which enabled or disabled middleware for static-file route
-		Port                     int    `xml:"port,attr"`                     //端口
-		EnabledTLS               bool   `xml:"enabledtls,attr"`               //是否启用TLS模式
-		TLSCertFile              string `xml:"tlscertfile,attr"`              //TLS模式下Certificate证书文件地址
-		TLSKeyFile               string `xml:"tlskeyfile,attr"`               //TLS模式下秘钥文件地址
-		IndexPage                string `xml:"indexpage,attr"`                //默认index页面
-		EnabledDetailRequestData bool   `xml:"enableddetailrequestdata,attr"` //设置状态数据是否启用详细页面统计，默认不启用，请特别对待，如果站点url过多，会导致数据量过大
-		VirtualPath			     string //virtual path when deploy on no root path
+		EnabledListDir              bool   `xml:"enabledlistdir,attr"`   //设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
+		EnabledRequestID            bool   `xml:"enabledrequestid,attr"` //设置是否启用唯一请求ID，默认不开启，开启后使用32位UUID
+		EnabledGzip                 bool   `xml:"enabledgzip,attr"`      //是否启用gzip
+		EnabledAutoHEAD             bool   `xml:"enabledautohead,attr"`  //设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
+		EnabledAutoOPTIONS          bool   //设置是否自动启用Options路由，若设置该项，则会为除Websocket\Options外所有路由方式默认添加Options路由，默认不开启
+		EnabledAutoCORS             bool   `xml:"enabledautocors,attr"`       //设置是否自动跨域支持，若设置，默认“GET, POST, PUT, DELETE, OPTIONS”全部请求均支持跨域
+		EnabledIgnoreFavicon        bool   `xml:"enabledignorefavicon,attr"`  //设置是否忽略favicon.ico请求，若设置，网站将把所有favicon.ico请求直接空返回
+		EnabledBindUseJsonTag       bool   `xml:"enabledbindusejsontag,attr"` //设置bind是否启用json标签,默认不启用,若设置，bind自动识别json tag,忽略form tag
+		EnabledStaticFileMiddleware bool   //The flag which enabled or disabled middleware for static-file route
+		Port                        int    `xml:"port,attr"`                     //端口
+		EnabledTLS                  bool   `xml:"enabledtls,attr"`               //是否启用TLS模式
+		TLSCertFile                 string `xml:"tlscertfile,attr"`              //TLS模式下Certificate证书文件地址
+		TLSKeyFile                  string `xml:"tlskeyfile,attr"`               //TLS模式下秘钥文件地址
+		IndexPage                   string `xml:"indexpage,attr"`                //默认index页面
+		EnabledDetailRequestData    bool   `xml:"enableddetailrequestdata,attr"` //设置状态数据是否启用详细页面统计，默认不启用，请特别对待，如果站点url过多，会导致数据量过大
+		VirtualPath                 string //virtual path when deploy on no root path
 	}
 
 	// SessionNode dotweb app's session config
 	SessionNode struct {
-		EnabledSession 	bool   `xml:"enabled,attr"`  //启用Session
-		SessionMode    	string `xml:"mode,attr"`     //session mode，now support runtime、redis
-		CookieName	   	string `xml:"cookiename,attr"` //custom cookie name which sessionid store, default is dotweb_sessionId
-		Timeout        	int64  `xml:"timeout,attr"`  //session time-out period, with second
-		ServerIP       	string `xml:"serverip,attr"` //remote session server url
-		BackupServerUrl	string `xml:"backupserverurl,attr"` //backup remote session server url
-		StoreKeyPre 	string `xml:"storekeypre,attr"` //remote session StoreKeyPre
+		EnabledSession  bool   `xml:"enabled,attr"`         //启用Session
+		SessionMode     string `xml:"mode,attr"`            //session mode，now support runtime、redis
+		CookieName      string `xml:"cookiename,attr"`      //custom cookie name which sessionid store, default is dotweb_sessionId
+		Timeout         int64  `xml:"timeout,attr"`         //session time-out period, with second
+		ServerIP        string `xml:"serverip,attr"`        //remote session server url
+		BackupServerUrl string `xml:"backupserverurl,attr"` //backup remote session server url
+		StoreKeyPre     string `xml:"storekeypre,attr"`     //remote session StoreKeyPre
 	}
 
 	// RouterNode dotweb app's router config
@@ -97,7 +98,7 @@ type (
 
 const (
 	// ConfigType_XML xml config file
-	ConfigType_XML  = "xml"
+	ConfigType_XML = "xml"
 	// ConfigType_JSON json config file
 	ConfigType_JSON = "json"
 	// ConfigType_Yaml yaml config file

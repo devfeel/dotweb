@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"errors"
-	"github.com/devfeel/dotweb/framework/reflects"
 	"strings"
+
+	"github.com/devfeel/dotweb/framework/reflects"
 )
 
 const (
 	defaultTagName = "form"
-	jsonTagName = "json"
+	jsonTagName    = "json"
 )
 
 type (
@@ -43,7 +44,7 @@ func (b *binder) Bind(i interface{}, ctx Context) (err error) {
 	default:
 		//check is use json tag, fixed for issue #91
 		tagName := defaultTagName
-		if ctx.HttpServer().ServerConfig().EnabledBindUseJsonTag{
+		if ctx.HttpServer().ServerConfig().EnabledBindUseJsonTag {
 			tagName = jsonTagName
 		}
 		//no check content type for fixed issue #6

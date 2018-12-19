@@ -1,8 +1,9 @@
 package uuid
 
 import (
-	"github.com/devfeel/dotweb/test"
 	"testing"
+
+	"github.com/devfeel/dotweb/test"
 )
 
 // Test_GetUUID_V1_32 test uuid with v1 and return 32 len string

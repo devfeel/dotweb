@@ -5,8 +5,9 @@
 package redisutil
 
 import (
-	"github.com/garyburd/redigo/redis"
 	"sync"
+
+	"github.com/garyburd/redigo/redis"
 )
 
 type RedisClient struct {
@@ -123,7 +124,6 @@ func (rc *RedisClient) DECR(key string) (int, error) {
 	return val, err
 }
 
-
 // Append 如果 key 已经存在并且是一个字符串， APPEND 命令将 value 追加到 key 原来的值的末尾。
 // 如果 key 不存在， APPEND 就简单地将给定 key 设为 value ，就像执行 SET key value 一样。
 func (rc *RedisClient) Append(key string, val interface{}) (interface{}, error) {
@@ -145,7 +145,6 @@ func (rc *RedisClient) Set(key string, val interface{}) (interface{}, error) {
 	return val, err
 }
 
-
 // Expire 设置指定key的过期时间
 func (rc *RedisClient) Expire(key string, timeOutSeconds int64) (int64, error) {
 	conn := rc.pool.Get()
@@ -164,15 +163,13 @@ func (rc *RedisClient) SetWithExpire(key string, val interface{}, timeOutSeconds
 
 // SetNX  将 key 的值设为 value ，当且仅当 key 不存在。
 // 若给定的 key 已经存在，则 SETNX 不做任何动作。 成功返回1, 失败返回0
-func (rc *RedisClient) SetNX(key, value string) (interface{}, error){
+func (rc *RedisClient) SetNX(key, value string) (interface{}, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 
 	val, err := conn.Do("SETNX", key, value)
 	return val, err
 }
-
-
 
 //****************** hash 集合 ***********************
 
@@ -214,7 +211,7 @@ func (rc *RedisClient) HSetNX(hashID, field, value string) (interface{}, error) 
 }
 
 // HExist 返回hash里面field是否存在
-func (rc *RedisClient) HExist(hashID string, field string) (int, error){
+func (rc *RedisClient) HExist(hashID string, field string) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.Int(conn.Do("HEXISTS", hashID, field))
@@ -222,7 +219,7 @@ func (rc *RedisClient) HExist(hashID string, field string) (int, error){
 }
 
 // HIncrBy 增加 key 指定的哈希集中指定字段的数值
-func (rc *RedisClient) HIncrBy(hashID string, field string, increment int)(int, error){
+func (rc *RedisClient) HIncrBy(hashID string, field string, increment int) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.Int(conn.Do("HINCRBY", hashID, field, increment))
@@ -277,21 +274,21 @@ func (rc *RedisClient) LPushX(key string, value string) (int, error) {
 	return resp, err
 }
 
-func (rc *RedisClient) LRange(key string, start int, stop int) ([]string, error){
+func (rc *RedisClient) LRange(key string, start int, stop int) ([]string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	resp, err := redis.Strings(conn.Do("LRANGE", key, start, stop))
 	return resp, err
 }
 
-func (rc *RedisClient) LRem(key string, count int, value string) (int, error){
+func (rc *RedisClient) LRem(key string, count int, value string) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	resp, err := redis.Int(conn.Do("LREM", key, count, value))
 	return resp, err
 }
 
-func (rc *RedisClient) LSet(key string, index int, value string)(string, error){
+func (rc *RedisClient) LSet(key string, index int, value string) (string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	resp, err := redis.String(conn.Do("LSET", key, index, value))
@@ -312,7 +309,7 @@ func (rc *RedisClient) RPop(key string) (string, error) {
 	return resp, err
 }
 
-func (rc *RedisClient) RPush(key string, value ...interface{}) (int, error){
+func (rc *RedisClient) RPush(key string, value ...interface{}) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	args := append([]interface{}{key}, value...)
@@ -328,15 +325,14 @@ func (rc *RedisClient) RPushX(key string, value ...interface{}) (int, error) {
 	return resp, err
 }
 
-func (rc *RedisClient) RPopLPush(source string, destination string)(string, error) {
+func (rc *RedisClient) RPopLPush(source string, destination string) (string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	resp, err := redis.String(conn.Do("RPOPLPUSH", source, destination))
 	return resp, err
 }
 
-
-func (rc *RedisClient) BLPop(key ...interface{})(map[string]string, error){
+func (rc *RedisClient) BLPop(key ...interface{}) (map[string]string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.StringMap(conn.Do("BLPOP", key, defaultTimeout))
@@ -351,42 +347,42 @@ func (rc *RedisClient) BRPop(key ...interface{}) (map[string]string, error) {
 	return val, err
 }
 
-func (rc *RedisClient) BRPopLPush(source string, destination string)(string, error){
+func (rc *RedisClient) BRPopLPush(source string, destination string) (string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.String(conn.Do("BRPOPLPUSH", source, destination))
 	return val, err
 }
 
-func (rc *RedisClient) LIndex(key string, index int)(string, error){
+func (rc *RedisClient) LIndex(key string, index int) (string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.String(conn.Do("LINDEX", key, index))
 	return val, err
 }
 
-func (rc *RedisClient) LInsertBefore(key string, pivot string, value string)(int, error){
+func (rc *RedisClient) LInsertBefore(key string, pivot string, value string) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.Int(conn.Do("LINSERT", key, "BEFORE", pivot, value))
 	return val, err
 }
 
-func (rc *RedisClient) LInsertAfter(key string, pivot string, value string)(int, error){
+func (rc *RedisClient) LInsertAfter(key string, pivot string, value string) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.Int(conn.Do("LINSERT", key, "AFTER", pivot, value))
 	return val, err
 }
 
-func (rc *RedisClient) LLen(key string)(int, error){
+func (rc *RedisClient) LLen(key string) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.Int(conn.Do("LLEN", key))
 	return val, err
 }
 
-func (rc *RedisClient) LPop(key string)(string, error){
+func (rc *RedisClient) LPop(key string) (string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.String(conn.Do("LPOP", key))
@@ -397,7 +393,7 @@ func (rc *RedisClient) LPop(key string)(string, error){
 
 // SAdd 将一个或多个 member 元素加入到集合 key 当中，已经存在于集合的 member 元素将被忽略。
 // 假如 key 不存在，则创建一个只包含 member 元素作成员的集合。
-func (rc *RedisClient) SAdd(key string, member ...interface{}) (int, error){
+func (rc *RedisClient) SAdd(key string, member ...interface{}) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	args := append([]interface{}{key}, member...)
@@ -447,14 +443,14 @@ func (rc *RedisClient) SRem(key string, member ...interface{}) (int, error) {
 	return val, err
 }
 
-func (rc *RedisClient) SDiff(key ...interface{}) ([]string, error){
+func (rc *RedisClient) SDiff(key ...interface{}) ([]string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.Strings(conn.Do("SDIFF", key...))
 	return val, err
 }
 
-func (rc *RedisClient) SDiffStore(destination string, key ...interface{}) (int, error){
+func (rc *RedisClient) SDiffStore(destination string, key ...interface{}) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	args := append([]interface{}{destination}, key...)
@@ -462,14 +458,14 @@ func (rc *RedisClient) SDiffStore(destination string, key ...interface{}) (int, 
 	return val, err
 }
 
-func (rc *RedisClient) SInter(key ...interface{}) ([]string, error){
+func (rc *RedisClient) SInter(key ...interface{}) ([]string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.Strings(conn.Do("SINTER", key...))
 	return val, err
 }
 
-func (rc *RedisClient) SInterStore(destination string, key ...interface{})(int, error){
+func (rc *RedisClient) SInterStore(destination string, key ...interface{}) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	args := append([]interface{}{destination}, key...)
@@ -477,14 +473,14 @@ func (rc *RedisClient) SInterStore(destination string, key ...interface{})(int, 
 	return val, err
 }
 
-func (rc *RedisClient) SIsMember(key string, member string) (bool, error){
+func (rc *RedisClient) SIsMember(key string, member string) (bool, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.Bool(conn.Do("SISMEMBER", key, member))
 	return val, err
 }
 
-func (rc *RedisClient) SMembers(key string) ([]string, error){
+func (rc *RedisClient) SMembers(key string) ([]string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.Strings(conn.Do("SMEMBERS", key))
@@ -492,21 +488,21 @@ func (rc *RedisClient) SMembers(key string) ([]string, error){
 }
 
 // smove is a atomic operate
-func (rc *RedisClient) SMove(source string, destination string, member string) (bool, error){
+func (rc *RedisClient) SMove(source string, destination string, member string) (bool, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.Bool(conn.Do("SMOVE", source, destination, member))
 	return val, err
 }
 
-func (rc *RedisClient) SUnion(key ...interface{}) ([]string, error){
+func (rc *RedisClient) SUnion(key ...interface{}) ([]string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	val, err := redis.Strings(conn.Do("SUNION", key...))
 	return val, err
 }
 
-func (rc *RedisClient) SUnionStore(destination string, key ...interface{})(int, error){
+func (rc *RedisClient) SUnionStore(destination string, key ...interface{}) (int, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 	args := append([]interface{}{destination}, key...)
@@ -517,15 +513,15 @@ func (rc *RedisClient) SUnionStore(destination string, key ...interface{})(int, 
 //****************** 全局操作 ***********************
 
 // Ping 测试一个连接是否可用
-func (rc *RedisClient) Ping()(string,error){
+func (rc *RedisClient) Ping() (string, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
-	val, err:=redis.String(conn.Do("PING"))
+	val, err := redis.String(conn.Do("PING"))
 	return val, err
 }
 
 // DBSize 返回当前数据库的 key 的数量
-func (rc *RedisClient) DBSize()(int64, error){
+func (rc *RedisClient) DBSize() (int64, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 
@@ -541,9 +537,8 @@ func (rc *RedisClient) FlushDB() {
 	conn.Do("FLUSHALL")
 }
 
-
 // GetConn 返回一个从连接池获取的redis连接,
 // 需要手动释放redis连接
-func (rc *RedisClient) GetConn() redis.Conn{
+func (rc *RedisClient) GetConn() redis.Conn {
 	return rc.pool.Get()
 }

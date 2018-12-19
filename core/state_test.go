@@ -2,9 +2,10 @@ package core
 
 import (
 	"errors"
-	"github.com/devfeel/dotweb/test"
 	"sync"
 	"testing"
+
+	"github.com/devfeel/dotweb/test"
 )
 
 // 以下为功能测试
@@ -102,7 +103,6 @@ func Benchmark_AddRequestCount_1(b *testing.B) {
 	}
 }
 
-
 //基准测试
 func Benchmark_AddCurrentRequestCount_1(b *testing.B) {
 	var num uint64 = 1
@@ -110,7 +110,6 @@ func Benchmark_AddCurrentRequestCount_1(b *testing.B) {
 		GlobalState.AddCurrentRequest(num)
 	}
 }
-
 
 // 测试并发效率
 func Benchmark_AddRequestCount_Parallel(b *testing.B) {

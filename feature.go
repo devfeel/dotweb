@@ -2,11 +2,12 @@ package dotweb
 
 import (
 	"compress/gzip"
-	"github.com/devfeel/dotweb/feature"
 	"io"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"github.com/devfeel/dotweb/feature"
 )
 
 type xFeatureTools struct{}

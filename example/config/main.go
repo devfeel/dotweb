@@ -3,11 +3,12 @@ package main
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/devfeel/dotweb"
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/framework/json"
-	"net/http"
-	"time"
 )
 
 func main() {
