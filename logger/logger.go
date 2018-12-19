@@ -2,19 +2,20 @@ package logger
 
 import (
 	"errors"
-	"github.com/devfeel/dotweb/framework/file"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/devfeel/dotweb/framework/file"
 )
 
 const (
 	// LogLevelDebug debug log level
 	LogLevelDebug = "DEBUG"
 	// LogLevelInfo info log level
-	LogLevelInfo  = "INFO"
+	LogLevelInfo = "INFO"
 	// LogLevelWarn warn log level
-	LogLevelWarn  = "WARN"
+	LogLevelWarn = "WARN"
 	// LogLevelError error log level
 	LogLevelError = "ERROR"
 )
@@ -73,7 +74,7 @@ func SetEnabledConsole(enabled bool) {
 
 func InitLog() {
 	if DefaultLogPath == "" {
-		DefaultLogPath = file.GetCurrentDirectory() +"/logs"
+		DefaultLogPath = file.GetCurrentDirectory() + "/logs"
 	}
 	if appLog == nil {
 		appLog = NewXLog()

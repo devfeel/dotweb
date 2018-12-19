@@ -1,9 +1,10 @@
 package des
 
 import (
-	"testing"
-	"github.com/devfeel/dotweb/test"
 	"fmt"
+	"testing"
+
+	"github.com/devfeel/dotweb/test"
 )
 
 //
@@ -18,7 +19,7 @@ func Test_ECBEncrypt_1(t *testing.T) {
 		t.Logf("%x\n", b)
 	}
 
-	test.Equal(t,"a5296e4c525693a3892bbe31e1ed630121f26338ce9aa280",fmt.Sprintf("%x",b))
+	test.Equal(t, "a5296e4c525693a3892bbe31e1ed630121f26338ce9aa280", fmt.Sprintf("%x", b))
 }
 
 //ECBDecrypt方法有bug，这个方法会报空指针

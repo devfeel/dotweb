@@ -2,12 +2,13 @@ package logger
 
 import (
 	"fmt"
-	"github.com/devfeel/dotweb/framework/file"
 	"os"
 	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/devfeel/dotweb/framework/file"
 )
 
 type chanLog struct {

@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/devfeel/dotweb"
 	"github.com/devfeel/dotweb/framework/file"
-	"strconv"
 )
 
 func main() {
@@ -24,7 +25,7 @@ func main() {
 
 	//set default template path
 	app.HttpServer.Renderer().SetTemplatePath("d:/gotmp/")
-	app.HttpServer.Renderer().RegisterTemplateFunc("echo", func(x string) interface{}{
+	app.HttpServer.Renderer().RegisterTemplateFunc("echo", func(x string) interface{} {
 		return "echo:" + x
 	})
 

@@ -8,13 +8,13 @@ func TestEncodeString(t *testing.T) {
 }
 
 func TestDecodeString(t *testing.T) {
-	source :=  "welcome to dotweb!"
+	source := "welcome to dotweb!"
 	encode := EncodeString(source)
 
 	dst, err := DecodeString(encode)
-	if err != nil{
+	if err != nil {
 		t.Error("TestDecodeString error", err)
-	}else{
+	} else {
 		t.Log("TestDecodeString success", dst, source)
 	}
 }

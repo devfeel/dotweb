@@ -13,7 +13,6 @@ type Person struct {
 	Legs     []string
 }
 
-
 //json
 func TestBinder_Bind_json(t *testing.T) {
 

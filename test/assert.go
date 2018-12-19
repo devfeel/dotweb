@@ -2,9 +2,9 @@ package test
 
 import (
 	"path/filepath"
-	"testing"
 	"reflect"
 	"runtime"
+	"testing"
 )
 
 func Equal(t *testing.T, expected, actual interface{}) {

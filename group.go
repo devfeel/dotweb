@@ -19,15 +19,15 @@ type (
 		RegisterRoute(method, path string, h HttpHandle) RouterNode
 	}
 	xGroup struct {
-		prefix      string
-		middlewares []Middleware
-		allRouterExpress   map[string]struct{}
-		server      *HttpServer
+		prefix           string
+		middlewares      []Middleware
+		allRouterExpress map[string]struct{}
+		server           *HttpServer
 	}
 )
 
 func NewGroup(prefix string, server *HttpServer) Group {
-	g := &xGroup{prefix: prefix, server: server, allRouterExpress:make(map[string]struct{})}
+	g := &xGroup{prefix: prefix, server: server, allRouterExpress: make(map[string]struct{})}
 	server.groups = append(server.groups, g)
 	logger.Logger().Debug("DotWeb:Group NewGroup ["+prefix+"]", LogTarget_HttpServer)
 	return g
@@ -89,7 +89,7 @@ func (g *xGroup) PUT(path string, h HttpHandle) RouterNode {
 // PUT implements `Router#PUT()` for sub-routes within the Group.
 func (g *xGroup) ServerFile(path string, fileroot string) RouterNode {
 	g.allRouterExpress[RouteMethod_GET+routerExpressSplit+g.prefix+path] = struct{}{}
-	node :=  g.server.Router().ServerFile(g.prefix+path, fileroot)
+	node := g.server.Router().ServerFile(g.prefix+path, fileroot)
 	node.Node().groupMiddlewares = g.middlewares
 	return node
 }
@@ -109,5 +109,3 @@ func (g *xGroup) add(method, path string, handler HttpHandle) RouterNode {
 	node.Node().groupMiddlewares = g.middlewares
 	return node
 }
-
-

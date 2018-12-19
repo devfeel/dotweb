@@ -2,13 +2,6 @@ package dotweb
 
 import (
 	"fmt"
-	"github.com/devfeel/dotweb/core"
-	"github.com/devfeel/dotweb/framework/convert"
-	"github.com/devfeel/dotweb/framework/exception"
-	_ "github.com/devfeel/dotweb/framework/file"
-	"github.com/devfeel/dotweb/framework/json"
-	"github.com/devfeel/dotweb/logger"
-	"golang.org/x/net/websocket"
 	"net/http"
 	paths "path"
 	"reflect"
@@ -16,6 +9,14 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/devfeel/dotweb/core"
+	"github.com/devfeel/dotweb/framework/convert"
+	"github.com/devfeel/dotweb/framework/exception"
+	_ "github.com/devfeel/dotweb/framework/file"
+	"github.com/devfeel/dotweb/framework/json"
+	"github.com/devfeel/dotweb/logger"
+	"golang.org/x/net/websocket"
 )
 
 const (
@@ -31,7 +32,7 @@ const (
 	RouteMethod_WebSocket = "WEBSOCKET"
 )
 
-const(
+const (
 	routerExpressSplit = "^$^"
 )
 
@@ -99,11 +100,11 @@ type (
 	// router is a http.Handler which can be used to dispatch requests to different
 	// handler functions via configurable routes
 	router struct {
-		Nodes        map[string]*Node
-		allRouterExpress   map[string]struct{}
-		server       *HttpServer
-		handlerMap   map[string]HttpHandle
-		handlerMutex *sync.RWMutex
+		Nodes            map[string]*Node
+		allRouterExpress map[string]struct{}
+		server           *HttpServer
+		handlerMap       map[string]HttpHandle
+		handlerMutex     *sync.RWMutex
 
 		// Enables automatic redirection if the current route can't be matched but a
 		// handler for the path with (without) the trailing slash exists.
@@ -191,7 +192,7 @@ func (r *router) MatchPath(ctx Context, routePath string) bool {
 	return false
 }
 
-func (r *router) getNode(httpMethod string, routePath string) *Node{
+func (r *router) getNode(httpMethod string, routePath string) *Node {
 	if root := r.Nodes[httpMethod]; root != nil {
 		n := root.getNode(routePath)
 		return n
@@ -299,7 +300,7 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 				//if set enabledLog, take the error log
 				if logger.EnabledLog {
 					//记录访问日志
-					headinfo := fmt.Sprintln(httpCtx.Response().Header)
+					headinfo := fmt.Sprintln(httpCtx.Response().Header())
 					logJson := LogJson{
 						RequestUrl: httpCtx.Request().RequestURI,
 						HttpHeader: headinfo,
@@ -321,11 +322,10 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 			}
 		}()
 
-
 		//do mock, special, mock will ignore all middlewares
-		if r.server.DotApp.Mock != nil && r.server.DotApp.Mock.CheckNeedMock(httpCtx){
+		if r.server.DotApp.Mock != nil && r.server.DotApp.Mock.CheckNeedMock(httpCtx) {
 			r.server.DotApp.Mock.Do(httpCtx)
-			if httpCtx.isEnd{
+			if httpCtx.isEnd {
 				return
 			}
 		}
@@ -376,7 +376,7 @@ func (r *router) wrapFileHandle(fileHandler http.Handler) RouterHandle {
 		}
 		if logger.EnabledLog {
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
-			logger.Logger().Debug(httpCtx.Request().Url() +" "+logRequest(httpCtx.Request().Request, timetaken), LogTarget_HttpRequest)
+			logger.Logger().Debug(httpCtx.Request().Url()+" "+logRequest(httpCtx.Request().Request, timetaken), LogTarget_HttpRequest)
 		}
 	}
 }
@@ -445,7 +445,7 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 	//websocket mode,use default httpserver
 	if routeMethod == RouteMethod_WebSocket {
 		http.Handle(realPath, websocket.Handler(r.wrapWebSocketHandle(handle)))
-	}else{
+	} else {
 		//hijack mode,use get and isHijack = true
 		if routeMethod == RouteMethod_HiJack {
 			r.add(RouteMethod_GET, realPath, r.wrapRouterHandle(handle, true))
@@ -469,9 +469,9 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 	//if set auto-head, add head router
 	//only enabled in hijack\GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS
 	if r.server.ServerConfig().EnabledAutoHEAD {
-		if routeMethod == RouteMethod_WebSocket{
+		if routeMethod == RouteMethod_WebSocket {
 			//Nothing to do
-		}else if routeMethod == RouteMethod_HiJack {
+		} else if routeMethod == RouteMethod_HiJack {
 			r.add(RouteMethod_HEAD, realPath, r.wrapRouterHandle(handle, true))
 			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoHead success ["+RouteMethod_HEAD+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 		} else if !r.existsRouter(RouteMethod_HEAD, realPath) {
@@ -483,9 +483,9 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 	//if set auto-options, add options router
 	//only enabled in hijack\GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS
 	if r.server.ServerConfig().EnabledAutoOPTIONS {
-		if routeMethod == RouteMethod_WebSocket{
+		if routeMethod == RouteMethod_WebSocket {
 			//Nothing to do
-		}else if routeMethod == RouteMethod_HiJack {
+		} else if routeMethod == RouteMethod_HiJack {
 			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(handle, true))
 			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoOPTIONS success ["+RouteMethod_OPTIONS+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 		} else if !r.existsRouter(RouteMethod_OPTIONS, realPath) {
@@ -504,10 +504,10 @@ func (r *router) ServerFile(path string, fileroot string) RouterNode {
 	realPath := r.server.VirtualPath() + path
 	routeMethod := RouteMethod_GET
 	node := &Node{}
-	if len(realPath) < 2{
+	if len(realPath) < 2 {
 		panic("path length must be greater than or equal to 2")
 	}
-	if realPath[len(realPath)-2:] == "/*"{ //fixed for #125
+	if realPath[len(realPath)-2:] == "/*" { //fixed for #125
 		realPath = realPath + "filepath"
 	}
 	if len(realPath) < 10 || realPath[len(realPath)-10:] != "/*filepath" {
@@ -557,7 +557,7 @@ func (r *router) add(method, path string, handle RouterHandle, m ...Middleware) 
 	//fmt.Println("Handle => ", method, " - ", *root, " - ", path)
 	outnode = root.addRoute(path, handle, m...)
 	outnode.fullPath = path
-	r.allRouterExpress[method + routerExpressSplit + path] = struct{}{}
+	r.allRouterExpress[method+routerExpressSplit+path] = struct{}{}
 	return
 }
 
@@ -647,7 +647,7 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 	}
 }
 
-func transStaticFileHandler(fileHandler http.Handler) HttpHandle{
+func transStaticFileHandler(fileHandler http.Handler) HttpHandle {
 	return func(httpCtx Context) error {
 		fileHandler.ServeHTTP(httpCtx.Response().Writer(), httpCtx.Request().Request)
 		return nil
@@ -656,7 +656,7 @@ func transStaticFileHandler(fileHandler http.Handler) HttpHandle{
 
 // existsRouter check is exists with method and path in current router
 func (r *router) existsRouter(method, path string) bool {
-	_, exists := r.allRouterExpress[method + routerExpressSplit + path]
+	_, exists := r.allRouterExpress[method+routerExpressSplit+path]
 	return exists
 }
 

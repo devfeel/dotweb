@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/devfeel/dotweb"
 	"strconv"
+
+	"github.com/devfeel/dotweb"
 )
 
 func main() {
@@ -43,7 +44,7 @@ func InitRoute(server *dotweb.HttpServer) {
 }
 
 // AppMock create app Mock
-func AppMock() dotweb.Mock{
+func AppMock() dotweb.Mock {
 	m := dotweb.NewStandardMock()
 	m.RegisterString("/", "mock data")
 	return m

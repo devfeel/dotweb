@@ -5,11 +5,12 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/devfeel/dotweb"
 	"github.com/devfeel/dotweb/framework/file"
 	"github.com/devfeel/dotweb/framework/reflects"
-	"strconv"
-	"strings"
 )
 
 func main() {
@@ -79,7 +80,7 @@ func GetBind(ctx dotweb.Context) error {
 	return ctx.WriteString("GetBind [" + errstr + "] " + fmt.Sprint(user))
 }
 
-func PostJsonBind(ctx dotweb.Context) error{
+func PostJsonBind(ctx dotweb.Context) error {
 	type UserInfo struct {
 		UserName string `json:"user"`
 		Sex      int    `json:"sex"`
@@ -101,9 +102,7 @@ func InitRoute(server *dotweb.HttpServer) {
 	server.Router().POST("/jsonbind", PostJsonBind)
 }
 
-
-type userBinder struct{
-
+type userBinder struct {
 }
 
 //Bind decode req.Body or form-value to struct
@@ -127,7 +126,7 @@ func (b *userBinder) Bind(i interface{}, ctx dotweb.Context) (err error) {
 	default:
 		//check is use json tag, fixed for issue #91
 		tagName := "form"
-		if ctx.HttpServer().ServerConfig().EnabledBindUseJsonTag{
+		if ctx.HttpServer().ServerConfig().EnabledBindUseJsonTag {
 			tagName = "json"
 		}
 		//no check content type for fixed issue #6

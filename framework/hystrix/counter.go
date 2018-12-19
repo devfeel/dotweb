@@ -4,14 +4,9 @@ import (
 	"sync/atomic"
 )
 
-const	(
+const (
 	minuteTimeLayout = "200601021504"
 )
-
-
-
-
-
 
 // Counter incremented and decremented base on int64 value.
 type Counter interface {
@@ -25,7 +20,6 @@ type Counter interface {
 func NewCounter() Counter {
 	return &StandardCounter{}
 }
-
 
 // StandardCounter is the standard implementation of a Counter
 type StandardCounter struct {
@@ -51,4 +45,3 @@ func (c *StandardCounter) Dec(i int64) {
 func (c *StandardCounter) Inc(i int64) {
 	atomic.AddInt64(&c.count, i)
 }
-

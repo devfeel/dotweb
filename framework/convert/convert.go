@@ -38,7 +38,7 @@ func String2UInt64(val string) (uint64, error) {
 }
 
 // UInt642String convert uint64 to string
-func UInt642String(val uint64) string{
+func UInt642String(val uint64) string {
 	return strconv.FormatUint(val, 10)
 }
 

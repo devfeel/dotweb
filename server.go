@@ -1,18 +1,20 @@
 package dotweb
 
 import (
-	"github.com/devfeel/dotweb/core"
-	"github.com/devfeel/dotweb/session"
 	"net/http"
 	"strings"
 	"sync"
+
+	"github.com/devfeel/dotweb/core"
+	"github.com/devfeel/dotweb/session"
+
+	"strconv"
 
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/feature"
 	"github.com/devfeel/dotweb/framework/file"
 	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/logger"
-	"strconv"
 )
 
 const (
@@ -26,7 +28,7 @@ type (
 	HttpServer struct {
 		stdServer      *http.Server
 		router         Router
-		groups	 	   []Group
+		groups         []Group
 		Modules        []*HttpModule
 		DotApp         *DotWeb
 		Validator      Validator
@@ -79,7 +81,7 @@ func NewHttpServer() *HttpServer {
 }
 
 // initConfig init config from app config
-func (server *HttpServer) initConfig(){
+func (server *HttpServer) initConfig() {
 	//CROS Config
 	if server.ServerConfig().EnabledAutoCORS {
 		server.Features.SetEnabledCROS()
@@ -87,7 +89,7 @@ func (server *HttpServer) initConfig(){
 	server.SetEnabledGzip(server.ServerConfig().EnabledGzip)
 
 	//VirtualPath config
-	if server.virtualPath == ""{
+	if server.virtualPath == "" {
 		server.virtualPath = server.ServerConfig().VirtualPath
 	}
 }
@@ -103,7 +105,7 @@ func (server *HttpServer) SessionConfig() *config.SessionNode {
 }
 
 // SetBinder set custom Binder on HttpServer
-func (server *HttpServer) SetBinder(binder Binder){
+func (server *HttpServer) SetBinder(binder Binder) {
 	server.binder = binder
 }
 
@@ -209,21 +211,21 @@ func (server *HttpServer) IsOffline() bool {
 }
 
 // SetVirtualPath set current server's VirtualPath
-func (server *HttpServer) SetVirtualPath(path string){
+func (server *HttpServer) SetVirtualPath(path string) {
 	server.virtualPath = path
 	logger.Logger().Debug("DotWeb:HttpServer SetVirtualPath ["+path+"]", LogTarget_HttpServer)
 
 }
 
 // VirtualPath return current server's VirtualPath
-func (server *HttpServer) VirtualPath() string{
+func (server *HttpServer) VirtualPath() string {
 	return server.virtualPath
 }
 
 // SetOffline set server offline config
 func (server *HttpServer) SetOffline(offline bool, offlineText string, offlineUrl string) {
 	server.offline = offline
-	logger.Logger().Debug("DotWeb:HttpServer SetOffline ["+strconv.FormatBool(offline)+", " + offlineText +", " + offlineUrl + "]", LogTarget_HttpServer)
+	logger.Logger().Debug("DotWeb:HttpServer SetOffline ["+strconv.FormatBool(offline)+", "+offlineText+", "+offlineUrl+"]", LogTarget_HttpServer)
 
 }
 
@@ -361,9 +363,9 @@ func (server *HttpServer) Binder() Binder {
 // if no set, init InnerRenderer
 func (server *HttpServer) Renderer() Renderer {
 	if server.render == nil {
-		if server.DotApp.RunMode() == RunMode_Development{
+		if server.DotApp.RunMode() == RunMode_Development {
 			server.SetRenderer(NewInnerRendererNoCache())
-		}else{
+		} else {
 			server.SetRenderer(NewInnerRenderer())
 		}
 	}
@@ -423,7 +425,6 @@ func (server *HttpServer) SetEnabledBindUseJsonTag(isEnabled bool) {
 	logger.Logger().Debug("DotWeb:HttpServer SetEnabledBindUseJsonTag ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
-
 // SetEnabledIgnoreFavicon set IgnoreFavicon Enabled
 // default is false
 func (server *HttpServer) SetEnabledIgnoreFavicon(isEnabled bool) {
@@ -449,7 +450,7 @@ func (server *HttpServer) SetEnabledDetailRequestData(isEnabled bool) {
 }
 
 // SetEnabledStaticFileMiddleware set flag which enabled or disabled middleware for static-file route
-func (server *HttpServer) SetEnabledStaticFileMiddleware(isEnabled bool){
+func (server *HttpServer) SetEnabledStaticFileMiddleware(isEnabled bool) {
 	server.ServerConfig().EnabledStaticFileMiddleware = isEnabled
 	logger.Logger().Debug("DotWeb:HttpServer SetEnabledStaticFileMiddleware ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }

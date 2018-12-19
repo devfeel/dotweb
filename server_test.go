@@ -1,9 +1,10 @@
 package dotweb
 
 import (
+	"testing"
+
 	"github.com/devfeel/dotweb/session"
 	"github.com/devfeel/dotweb/test"
-	"testing"
 )
 
 //check httpServer
@@ -47,12 +48,12 @@ func TestSesionConfig(t *testing.T) {
 	sessionManager = server.GetSessionManager()
 
 	test.NotNil(t, sessionManager)
-	test.Equal(t, server.sessionManager.CookieName, session.DefaultSessionCookieName)
+	test.Equal(t, server.sessionManager.StoreConfig().CookieName, session.DefaultSessionCookieName)
 	test.Equal(t, server.sessionManager.GCLifetime, int64(session.DefaultSessionGCLifeTime))
 }
 
 func Index(ctx Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, err := ctx.WriteStringC(201, "index => ", ctx.RemoteIP(), "我是首页")
+	err := ctx.WriteStringC(201, "index => ", ctx.RemoteIP(), "我是首页")
 	return err
 }

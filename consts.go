@@ -1,16 +1,16 @@
 package dotweb
 
 //Global define
-const(
+const (
 	// Version current version
 	Version = "1.5.9.1"
 )
 
 //Log define
 const (
-	LogTarget_Default     = "dotweb_default"
-	LogTarget_HttpRequest = "dotweb_request"
-	LogTarget_HttpServer  = "dotweb_server"
+	LogTarget_Default        = "dotweb_default"
+	LogTarget_HttpRequest    = "dotweb_request"
+	LogTarget_HttpServer     = "dotweb_server"
 	LogTarget_RequestTimeout = "dotweb_req_timeout"
 
 	LogLevel_Debug = "debug"

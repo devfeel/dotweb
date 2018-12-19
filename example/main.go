@@ -3,11 +3,12 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/devfeel/dotweb"
-	"github.com/devfeel/dotweb/framework/exception"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/devfeel/dotweb"
+	"github.com/devfeel/dotweb/framework/exception"
 	"github.com/devfeel/dotweb/session"
 )
 
@@ -31,7 +32,6 @@ func main() {
 	//开启development模式
 	app.SetDevelopmentMode()
 	app.SetProductionMode()
-
 
 	//设置gzip开关
 	//app.HttpServer.SetEnabledGzip(true)
@@ -72,7 +72,7 @@ func main() {
 
 	//设置超时钩子事件，当请求超过指定时间阀值，会自动调用传入的函数
 	//不会终止请求，只作为旁路执行
-	app.UseTimeoutHook(dotweb.DefaultTimeoutHookHandler, time.Second * 2)
+	app.UseTimeoutHook(dotweb.DefaultTimeoutHookHandler, time.Second*2)
 
 	//设置HttpModule
 	//InitModule(app)
