@@ -1,13 +1,14 @@
 package core
 
 import (
-	"github.com/devfeel/dotweb/framework/json"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/framework/sysx"
 )
 
@@ -72,7 +73,6 @@ type ErrorInfo struct {
 	Num    uint64
 }
 
-
 //服务器状态信息
 type ServerStateInfo struct {
 	//服务启动时间
@@ -98,8 +98,8 @@ type ServerStateInfo struct {
 	//明细Http状态码数据 - 以HttpCode为key，例如200、500等
 	DetailHTTPCodeData *ItemMap
 
-	dataChan_Request  chan *RequestInfo
-	dataChan_Error    chan *ErrorInfo
+	dataChan_Request chan *RequestInfo
+	dataChan_Error   chan *ErrorInfo
 	//对象池
 	infoPool *pool
 }
@@ -199,7 +199,6 @@ func (state *ServerStateInfo) addErrorData(page string, err error, num uint64) {
 	info.Num = num
 	state.dataChan_Error <- info
 }
-
 
 //处理日志内部函数
 func (state *ServerStateInfo) handleInfo() {

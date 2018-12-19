@@ -35,13 +35,13 @@ func (mi *RuntimeItem) isExpire() bool {
 type RuntimeCache struct {
 	sync.RWMutex
 	gcInterval time.Duration
-	items 		*sync.Map
+	items      *sync.Map
 	//items      map[string]*RuntimeItem
 }
 
 // NewRuntimeCache returns a new *RuntimeCache.
 func NewRuntimeCache() *RuntimeCache {
-	cache := RuntimeCache{items:new(sync.Map),gcInterval: DefaultGCInterval}
+	cache := RuntimeCache{items: new(sync.Map), gcInterval: DefaultGCInterval}
 	go cache.gc()
 	return &cache
 }
@@ -244,7 +244,7 @@ func (ca *RuntimeCache) gc() {
 		if ca.items == nil {
 			return
 		}
-		ca.items.Range(func(key interface{}, v interface{}) bool{
+		ca.items.Range(func(key interface{}, v interface{}) bool {
 			ca.itemExpired(fmt.Sprint(key))
 			return true
 		})

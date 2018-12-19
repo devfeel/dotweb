@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/devfeel/dotweb"
 	"strconv"
 	"time"
+
+	"github.com/devfeel/dotweb"
 )
 
 func main() {
@@ -21,8 +22,8 @@ func main() {
 	//启用超时处理，这里设置为3秒
 	app.UseTimeoutHook(
 		func(ctx dotweb.Context) {
-			fmt.Println(ctx.Items().GetTimeDuration(dotweb.ItemKeyHandleDuration)/time.Millisecond)
-		}, time.Second * 3)
+			fmt.Println(ctx.Items().GetTimeDuration(dotweb.ItemKeyHandleDuration) / time.Millisecond)
+		}, time.Second*3)
 	//设置路由
 	InitRoute(app.HttpServer)
 
@@ -46,7 +47,7 @@ func Index(ctx dotweb.Context) error {
 }
 
 // Wait10Second
-func Wait10Second(ctx dotweb.Context) error{
+func Wait10Second(ctx dotweb.Context) error {
 	time.Sleep(time.Second * 10)
 	ctx.WriteString("HandleDuration:", fmt.Sprint(ctx.Items().Get(dotweb.ItemKeyHandleStartTime)))
 	return nil
@@ -57,5 +58,3 @@ func InitRoute(server *dotweb.HttpServer) {
 	server.Router().GET("/index", Index)
 	server.Router().GET("/wait", Wait10Second)
 }
-
-

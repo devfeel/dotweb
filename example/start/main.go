@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/devfeel/dotweb"
 	"fmt"
 	"strconv"
+
+	"github.com/devfeel/dotweb"
 )
 
-func main(){
+func main() {
 	app := dotweb.Classic(dotweb.DefaultLogPath)
 	//app := dotweb.New()
 	//开启development模式
@@ -14,7 +15,6 @@ func main(){
 
 	//设置路由
 	InitRoute(app.HttpServer)
-
 
 	// 开始服务
 	port := 8080

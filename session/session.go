@@ -1,13 +1,14 @@
 package session
 
 import (
-	"github.com/devfeel/dotweb/framework/crypto"
-	"github.com/devfeel/dotweb/logger"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
-	"fmt"
+
+	"github.com/devfeel/dotweb/framework/crypto"
+	"github.com/devfeel/dotweb/logger"
 )
 
 const (
@@ -33,17 +34,18 @@ type (
 
 	//session config info
 	StoreConfig struct {
-		StoreName   	string
-		Maxlifetime 	int64  //session life time, with second
-		CookieName  	string //custom cookie name which sessionid store
-		ServerIP    	string //if use redis, connection string, like "redis://:password@10.0.1.11:6379/0"
+		StoreName       string
+		Maxlifetime     int64  //session life time, with second
+		CookieName      string //custom cookie name which sessionid store
+		ServerIP        string //if use redis, connection string, like "redis://:password@10.0.1.11:6379/0"
 		BackupServerUrl string //if use redis, if ServerIP is down, use this server, like "redis://:password@10.0.1.11:6379/0"
-		StoreKeyPre		string //if use redis, set custom redis key-pre; default is dotweb:session:
+		StoreKeyPre     string //if use redis, set custom redis key-pre; default is dotweb:session:
 	}
 
 	SessionManager struct {
+		GCLifetime int64 `json:"gclifetime"`
+
 		store       SessionStore
-		GCLifetime  int64  `json:"gclifetime"`
 		storeConfig *StoreConfig
 	}
 )
@@ -55,9 +57,9 @@ func GetSessionStore(config *StoreConfig) SessionStore {
 		return NewRuntimeStore(config)
 	case SessionMode_Redis:
 		store, err := NewRedisStore(config)
-		if err != nil{
+		if err != nil {
 			panic(fmt.Sprintf("redis session [%v] ping error -> %v", config.StoreName, err.Error()))
-		}else{
+		} else {
 			return store
 		}
 	default:
@@ -82,14 +84,13 @@ func NewRedisConfig(serverIp string, storeKeyPre string) *StoreConfig {
 	return NewStoreConfig(SessionMode_Redis, DefaultSessionMaxLifeTime, serverIp, storeKeyPre)
 }
 
-
 //create new store config
 func NewStoreConfig(storeName string, maxlifetime int64, serverIp string, storeKeyPre string) *StoreConfig {
 	return &StoreConfig{
 		StoreName:   storeName,
 		Maxlifetime: maxlifetime,
 		ServerIP:    serverIp,
-		StoreKeyPre:storeKeyPre,
+		StoreKeyPre: storeKeyPre,
 	}
 }
 
@@ -125,7 +126,7 @@ func (manager *SessionManager) NewSessionID() string {
 }
 
 // StoreConfig return store config
-func (manager *SessionManager) StoreConfig() *StoreConfig{
+func (manager *SessionManager) StoreConfig() *StoreConfig {
 	return manager.storeConfig
 }
 

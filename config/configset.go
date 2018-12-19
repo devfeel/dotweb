@@ -3,8 +3,9 @@ package config
 import (
 	"encoding/xml"
 	"errors"
-	"github.com/devfeel/dotweb/core"
 	"io/ioutil"
+
+	"github.com/devfeel/dotweb/core"
 )
 
 type (

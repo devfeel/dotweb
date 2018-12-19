@@ -1,5 +1,11 @@
 ## dotweb版本记录：
 
+#### Version 1.5.9.2
+* Fix typo and translate Chinse to English
+* Reformat code
+* Update by @yangbor
+* 2018-12-19 18:00
+
 #### Version 1.5.9.1
 * New Feature: Add Request.RealIP used to returns the first ip from 'X-Forwarded-For' or 'X-Real-IP' header key, fixed for #164
 * New Feature: route.ServerFile support '*filepath' or '/*', to simplify register static file router, fixed for #125

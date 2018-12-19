@@ -7,27 +7,28 @@ import (
 	"mime/multipart"
 	"os"
 	"path/filepath"
+
 	"github.com/devfeel/dotweb/framework/crypto"
 )
 
 const randFileNameLength = 12
 
 type UploadFile struct {
-	File     multipart.File
-	Header   *multipart.FileHeader
-	fileExt  string //file extensions
-	fileName string
+	File           multipart.File
+	Header         *multipart.FileHeader
+	fileExt        string //file extensions
+	fileName       string
 	randomFileName string
-	fileSize int64
+	fileSize       int64
 }
 
 func NewUploadFile(file multipart.File, header *multipart.FileHeader) *UploadFile {
 	return &UploadFile{
-		File:     file,
-		Header:   header,
-		fileName: header.Filename,
-		randomFileName:cryptos.GetRandString(randFileNameLength) + filepath.Ext(header.Filename),
-		fileExt:  filepath.Ext(header.Filename), //update for issue #99
+		File:           file,
+		Header:         header,
+		fileName:       header.Filename,
+		randomFileName: cryptos.GetRandString(randFileNameLength) + filepath.Ext(header.Filename),
+		fileExt:        filepath.Ext(header.Filename), //update for issue #99
 	}
 }
 
@@ -37,7 +38,7 @@ func (f *UploadFile) FileName() string {
 }
 
 // RandomFileName get upload file random name with uuid
-func (f *UploadFile) RandomFileName() string{
+func (f *UploadFile) RandomFileName() string {
 	return f.randomFileName
 }
 

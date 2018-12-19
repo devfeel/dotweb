@@ -1,9 +1,10 @@
 package dotweb
 
 import (
+	"time"
+
 	"github.com/devfeel/dotweb/framework/convert"
 	"github.com/devfeel/dotweb/logger"
-	"time"
 )
 
 const (
@@ -129,20 +130,20 @@ func (m *RequestLogMiddleware) Handle(ctx Context) error {
 	var timeDuration time.Duration
 	var timeTaken uint64
 	err := m.Next(ctx)
-	if ctx.Items().Exists(ItemKeyHandleDuration){
+	if ctx.Items().Exists(ItemKeyHandleDuration) {
 		var errParse error
 		timeDuration, errParse = time.ParseDuration(ctx.Items().GetString(ItemKeyHandleDuration))
-		if errParse != nil{
+		if errParse != nil {
 			timeTaken = 0
-		}else{
-			timeTaken = uint64(timeDuration/time.Millisecond)
+		} else {
+			timeTaken = uint64(timeDuration / time.Millisecond)
 		}
-	}else{
+	} else {
 		var begin time.Time
 		beginVal, exists := ctx.Items().Get(ItemKeyHandleStartTime)
-		if !exists{
-			begin  = time.Now()
-		}else{
+		if !exists {
+			begin = time.Now()
+		} else {
 			begin = beginVal.(time.Time)
 		}
 		timeTaken = uint64(time.Now().Sub(begin) / time.Millisecond)
@@ -178,26 +179,26 @@ func logContext(ctx Context, timetaken uint64) string {
 // TimeoutHookMiddleware 超时钩子中间件
 type TimeoutHookMiddleware struct {
 	BaseMiddlware
-	HookHandle StandardHandle
+	HookHandle      StandardHandle
 	TimeoutDuration time.Duration
 }
 
 func (m *TimeoutHookMiddleware) Handle(ctx Context) error {
 	var begin time.Time
-	if m.HookHandle != nil{
+	if m.HookHandle != nil {
 		beginVal, exists := ctx.Items().Get(ItemKeyHandleStartTime)
-		if !exists{
-			begin  = time.Now()
-		}else{
+		if !exists {
+			begin = time.Now()
+		} else {
 			begin = beginVal.(time.Time)
 		}
 	}
 	//Do next
 	err := m.Next(ctx)
-	if m.HookHandle != nil{
+	if m.HookHandle != nil {
 		realDuration := time.Now().Sub(begin)
 		ctx.Items().Set(ItemKeyHandleDuration, realDuration)
-		if realDuration > m.TimeoutDuration{
+		if realDuration > m.TimeoutDuration {
 			m.HookHandle(ctx)
 		}
 	}

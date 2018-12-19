@@ -1,15 +1,16 @@
 package main
 
 import (
-	"github.com/devfeel/dotweb"
 	"fmt"
 	"strconv"
+
+	"github.com/devfeel/dotweb"
 	"github.com/devfeel/dotweb/logger"
 )
 
 const loggerFileName = "develop-mode"
 
-func main(){
+func main() {
 	app := dotweb.New()
 	//if use develop mode
 	//1. Enabled Log
@@ -31,7 +32,7 @@ func main(){
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
 	ctx.WriteString(ctx.Request().URL.Path)
-	logger.Logger().Debug("Index:WriteString " + ctx.Request().URL.Path, loggerFileName)
+	logger.Logger().Debug("Index:WriteString "+ctx.Request().URL.Path, loggerFileName)
 	return nil
 }
 
