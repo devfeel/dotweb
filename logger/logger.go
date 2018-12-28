@@ -42,7 +42,7 @@ func Logger() AppLog {
 	return appLog
 }
 
-//SetLogPath set log path
+// SetLogPath set log path
 func SetLogger(logger AppLog) {
 	appLog = logger
 	logger.SetLogPath(DefaultLogPath)
@@ -56,7 +56,7 @@ func SetLogPath(path string) {
 	}
 }
 
-//SetEnabledLog set enabled log
+// SetEnabledLog set enabled log
 func SetEnabledLog(isLog bool) {
 	EnabledLog = isLog
 	if appLog != nil {
@@ -64,7 +64,7 @@ func SetEnabledLog(isLog bool) {
 	}
 }
 
-//SetEnabledConsole set enabled Console output
+// SetEnabledConsole set enabled Console output
 func SetEnabledConsole(enabled bool) {
 	EnabledConsole = enabled
 	if appLog != nil {
@@ -80,16 +80,16 @@ func InitLog() {
 		appLog = NewXLog()
 	}
 
-	SetLogPath(DefaultLogPath)        //set default log path
-	SetEnabledLog(EnabledLog)         //set default enabled log
-	SetEnabledConsole(EnabledConsole) //set default enabled console output
+	SetLogPath(DefaultLogPath)        // set default log path
+	SetEnabledLog(EnabledLog)         // set default enabled log
+	SetEnabledConsole(EnabledConsole) // set default enabled console output
 }
 
-//日志内容
-// fileName 文件名字
-// line 调用行号
-// fullPath 文件全路径
-// funcName 那个方法进行调用
+// Log content
+// fileName source file name
+// line line number in source file
+// fullPath full path of source file
+// funcName function name of caller
 type logContext struct {
 	fileName string
 	line     int
@@ -97,15 +97,15 @@ type logContext struct {
 	funcName string
 }
 
-//打印
-// skip=0  runtime.Caller 的调用者.
-// skip=1  runtime/proc.c 的 runtime.main
-// skip=2  runtime/proc.c 的 runtime.goexit
+// priting
+// skip=0  runtime.Caller
+// skip=1  runtime/proc.c: runtime.main
+// skip=2  runtime/proc.c: runtime.goexit
 //
-//Go的普通程序的启动顺序:
-//1.runtime.goexit 为真正的函数入口(并不是main.main)
-//2.然后 runtime.goexit 调用 runtime.main 函数
-//3.最终 runtime.main 调用用户编写的 main.main 函数
+// Process startup procedure of a go program:
+// 1.runtime.goexit is the actual entry point(NOT main.main)
+// 2.then runtime.goexit calls runtime.main
+// 3.finally runtime.main calls user defined main.main
 func callerInfo(skip int) (ctx *logContext, err error) {
 	pc, file, line, ok := runtime.Caller(skip)
 	if !ok {

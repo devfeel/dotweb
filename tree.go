@@ -56,7 +56,7 @@ type Node struct {
 	priority             uint32
 }
 
-//Use registers a middleware
+// Use registers a middleware
 func (n *Node) Use(m ...Middleware) *Node {
 	if len(m) <= 0 {
 		return n

@@ -232,7 +232,7 @@ func (r *router) ServeHTTP(ctx *HttpContext) {
 			// Try to fix the request path
 			if r.RedirectFixedPath {
 				fixedPath, found := root.findCaseInsensitivePath(
-					//file.CleanPath(path),
+					// file.CleanPath(path),
 					paths.Clean(path),
 					r.RedirectTrailingSlash,
 				)
@@ -269,19 +269,18 @@ func (r *router) ServeHTTP(ctx *HttpContext) {
 	}
 }
 
-//wrap HttpHandle to Handle
+// wrap HttpHandle to Handle
 func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandle {
 	return func(httpCtx *HttpContext) {
 		httpCtx.handler = handler
 
-		//do features
+		// do features
 		FeatureTools.InitFeatures(r.server, httpCtx)
 
-		//hijack处理
+		// hijack handling
 		if isHijack {
 			_, hijack_err := httpCtx.Hijack()
 			if hijack_err != nil {
-				//输出内容
 				httpCtx.Response().WriteHeader(http.StatusInternalServerError)
 				httpCtx.Response().Header().Set(HeaderContentType, CharsetUTF8)
 				httpCtx.WriteString(hijack_err.Error())
@@ -294,14 +293,14 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 			if err := recover(); err != nil {
 				errmsg = exception.CatchError("HttpServer::RouterHandle", LogTarget_HttpServer, err)
 
-				//handler the exception
+				// handler the exception
 				if r.server.DotApp.ExceptionHandler != nil {
 					r.server.DotApp.ExceptionHandler(httpCtx, fmt.Errorf("%v", err))
 				}
 
-				//if set enabledLog, take the error log
+				// if set enabledLog, take the error log
 				if logger.EnabledLog {
-					//记录访问日志
+					// record access log
 					headinfo := fmt.Sprintln(httpCtx.Response().Header())
 					logJson := LogJson{
 						RequestUrl: httpCtx.Request().RequestURI,
@@ -312,19 +311,19 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 					logger.Logger().Error(logString, LogTarget_HttpServer)
 				}
 
-				//增加错误计数
+				// Increment error count
 				core.GlobalState.AddErrorCount(httpCtx.Request().Path(), fmt.Errorf("%v", err), 1)
 			}
 
 			FeatureTools.ReleaseFeatures(r.server, httpCtx)
 
-			//cancle Context
+			// cancle Context
 			if httpCtx.cancle != nil {
 				httpCtx.cancle()
 			}
 		}()
 
-		//do mock, special, mock will ignore all middlewares
+		// do mock, special, mock will ignore all middlewares
 		if r.server.DotApp.Mock != nil && r.server.DotApp.Mock.CheckNeedMock(httpCtx) {
 			r.server.DotApp.Mock.Do(httpCtx)
 			if httpCtx.isEnd {
@@ -332,13 +331,8 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 			}
 		}
 
-		//处理用户handle
+		// process user defined handle
 		var ctxErr error
-		//if len(r.server.DotApp.Middlewares) > 0 {
-		//	ctxErr = r.server.DotApp.Middlewares[0].Handle(httpCtx)
-		//} else {
-		//	ctxErr = handler(httpCtx)
-		//}
 
 		if len(httpCtx.routerNode.AppMiddlewares()) > 0 {
 			ctxErr = httpCtx.routerNode.AppMiddlewares()[0].Handle(httpCtx)
@@ -347,10 +341,10 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 		}
 
 		if ctxErr != nil {
-			//handler the exception
+			// handler the exception
 			if r.server.DotApp.ExceptionHandler != nil {
 				r.server.DotApp.ExceptionHandler(httpCtx, ctxErr)
-				//增加错误计数
+				// increment error count
 				core.GlobalState.AddErrorCount(httpCtx.Request().Path(), ctxErr, 1)
 			}
 		}
@@ -358,7 +352,7 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 	}
 }
 
-//wrap fileHandler to httprouter.Handle
+// wrap fileHandler to httprouter.Handle
 func (r *router) wrapFileHandle(fileHandler http.Handler) RouterHandle {
 	return func(httpCtx *HttpContext) {
 		httpCtx.handler = transStaticFileHandler(fileHandler)
@@ -444,15 +438,15 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 		return nil
 	}
 
-	//websocket mode,use default httpserver
+	// websocket mode,use default httpserver
 	if routeMethod == RouteMethod_WebSocket {
 		http.Handle(realPath, websocket.Handler(r.wrapWebSocketHandle(handle)))
 	} else {
-		//hijack mode,use get and isHijack = true
+		// hijack mode,use get and isHijack = true
 		if routeMethod == RouteMethod_HiJack {
 			r.add(RouteMethod_GET, realPath, r.wrapRouterHandle(handle, true))
 		} else if routeMethod == RouteMethod_Any {
-			//All GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS mode
+			// All GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS mode
 			r.add(RouteMethod_HEAD, realPath, r.wrapRouterHandle(handle, false))
 			r.add(RouteMethod_GET, realPath, r.wrapRouterHandle(handle, false))
 			r.add(RouteMethod_POST, realPath, r.wrapRouterHandle(handle, false))
@@ -461,18 +455,18 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 			r.add(RouteMethod_PATCH, realPath, r.wrapRouterHandle(handle, false))
 			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(handle, false))
 		} else {
-			//Single GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS mode
+			// Single GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS mode
 			r.add(routeMethod, realPath, r.wrapRouterHandle(handle, false))
 			node = r.getNode(routeMethod, realPath)
 		}
 	}
 	logger.Logger().Debug("DotWeb:Router:RegisterRoute success ["+routeMethod+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 
-	//if set auto-head, add head router
-	//only enabled in hijack\GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS
+	// if set auto-head, add head router
+	// only enabled in hijack\GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS
 	if r.server.ServerConfig().EnabledAutoHEAD {
 		if routeMethod == RouteMethod_WebSocket {
-			//Nothing to do
+			// Nothing to do
 		} else if routeMethod == RouteMethod_HiJack {
 			r.add(RouteMethod_HEAD, realPath, r.wrapRouterHandle(handle, true))
 			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoHead success ["+RouteMethod_HEAD+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
@@ -482,11 +476,11 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 		}
 	}
 
-	//if set auto-options, add options router
-	//only enabled in hijack\GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS
+	// if set auto-options, add options router
+	// only enabled in hijack\GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS
 	if r.server.ServerConfig().EnabledAutoOPTIONS {
 		if routeMethod == RouteMethod_WebSocket {
-			//Nothing to do
+			// Nothing to do
 		} else if routeMethod == RouteMethod_HiJack {
 			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(handle, true))
 			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoOPTIONS success ["+RouteMethod_OPTIONS+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
@@ -509,7 +503,7 @@ func (r *router) ServerFile(path string, fileroot string) RouterNode {
 	if len(realPath) < 2 {
 		panic("path length must be greater than or equal to 2")
 	}
-	if realPath[len(realPath)-2:] == "/*" { //fixed for #125
+	if realPath[len(realPath)-2:] == "/*" { // fixed for #125
 		realPath = realPath + "filepath"
 	}
 	if len(realPath) < 10 || realPath[len(realPath)-10:] != "/*filepath" {
@@ -556,7 +550,7 @@ func (r *router) add(method, path string, handle RouterHandle, m ...Middleware) 
 		root = new(Node)
 		r.Nodes[method] = root
 	}
-	//fmt.Println("Handle => ", method, " - ", *root, " - ", path)
+	// fmt.Println("Handle => ", method, " - ", *root, " - ", path)
 	outnode = root.addRoute(path, handle, m...)
 	outnode.fullPath = path
 	r.allRouterExpress[method+routerExpressSplit+path] = struct{}{}
@@ -601,10 +595,10 @@ func (r *router) allowed(path, reqMethod string) (allow string) {
 	return
 }
 
-//wrap HttpHandle to websocket.Handle
+// wrap HttpHandle to websocket.Handle
 func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 	return func(ws *websocket.Conn) {
-		//get from pool
+		// get from pool
 		req := r.server.pool.request.Get().(*Request)
 		httpCtx := r.server.pool.context.Get().(*HttpContext)
 		httpCtx.reset(nil, req, r.server, nil, nil, handler)
@@ -620,7 +614,7 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 			if err := recover(); err != nil {
 				errmsg = exception.CatchError("httpserver::WebsocketHandle", LogTarget_HttpServer, err)
 
-				//记录访问日志
+				// record access log
 				headinfo := fmt.Sprintln(httpCtx.webSocket.Request().Header)
 				logJson := LogJson{
 					RequestUrl: httpCtx.webSocket.Request().RequestURI,
@@ -630,17 +624,17 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 				logString := jsonutil.GetJsonString(logJson)
 				logger.Logger().Error(logString, LogTarget_HttpServer)
 
-				//增加错误计数
+				// increment error count
 				core.GlobalState.AddErrorCount(httpCtx.Request().Path(), fmt.Errorf("%v", err), 1)
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
-			//HttpServer Logging
+			// HttpServer Logging
 			logger.Logger().Debug(httpCtx.Request().Url()+" "+logWebsocketContext(httpCtx, timetaken), LogTarget_HttpRequest)
 
-			//release request
+			// release request
 			req.release()
 			r.server.pool.request.Put(req)
-			//release context
+			// release context
 			httpCtx.release()
 			r.server.pool.context.Put(httpCtx)
 		}()
@@ -662,7 +656,7 @@ func (r *router) existsRouter(method, path string) bool {
 	return exists
 }
 
-//get default log string
+// get default log string
 func logWebsocketContext(ctx Context, timetaken int64) string {
 	var reqbytelen, resbytelen, method, proto, status, userip string
 	if ctx != nil {

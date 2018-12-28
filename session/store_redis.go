@@ -20,12 +20,12 @@ type RedisStore struct {
 	hystrix         hystrix.Hystrix
 	lock            *sync.RWMutex // locker
 	maxlifetime     int64
-	serverIp        string //connection string, like "redis://:password@10.0.1.11:6379/0"
-	backupServerUrl string //backup connection string, like "redis://:password@10.0.1.11:6379/0"
-	storeKeyPre     string //set custom redis key-pre; default is dotweb:session:
+	serverIp        string // connection string, like "redis://:password@10.0.1.11:6379/0"
+	backupServerUrl string // backup connection string, like "redis://:password@10.0.1.11:6379/0"
+	storeKeyPre     string // set custom redis key-pre; default is dotweb:session:
 }
 
-//create new redis store
+// create new redis store
 func NewRedisStore(config *StoreConfig) (*RedisStore, error) {
 	store := &RedisStore{
 		lock:            new(sync.RWMutex),
@@ -36,7 +36,7 @@ func NewRedisStore(config *StoreConfig) (*RedisStore, error) {
 	store.hystrix = hystrix.NewHystrix(store.checkRedisAlive, nil)
 	store.hystrix.SetMaxFailedNumber(HystrixErrorCount)
 	store.hystrix.Do()
-	//init redis key-pre
+	// init redis key-pre
 	if config.StoreKeyPre == "" {
 		store.storeKeyPre = defaultRedisKeyPre
 	} else {
@@ -109,13 +109,13 @@ func (store *RedisStore) sessionReExpire(state *SessionState) error {
 	return err
 }
 
-//SessionUpdate update session state in store
+// SessionUpdate update session state in store
 func (store *RedisStore) SessionUpdate(state *SessionState) error {
 	defer func() {
-		//ignore error
+		// ignore error
 		if err := recover(); err != nil {
 			fmt.Println("SessionUpdate-Redis error", err)
-			//TODO deal panic err
+			// TODO deal panic err
 		}
 	}()
 	redisClient := store.getRedisClient()
@@ -182,7 +182,7 @@ func (store *RedisStore) checkConnErrorAndNeedRetry(err error) bool {
 		strings.Index(err.Error(), "No connection could be made because the target machine actively refused it") >= 0 ||
 		strings.Index(err.Error(), "A connection attempt failed because the connected party did not properly respond after a period of time") >= 0 {
 		store.hystrix.GetCounter().Inc(1)
-		//if is hystrix, not to retry, because in getReadRedisClient already use backUp redis
+		// if is hystrix, not to retry, because in getReadRedisClient already use backUp redis
 		if store.hystrix.IsHystrix() {
 			return false
 		}

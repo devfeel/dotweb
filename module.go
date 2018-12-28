@@ -4,9 +4,9 @@ package dotweb
 // it will be no effect when websocket request or use offline mode
 type HttpModule struct {
 	Name string
-	//响应请求时作为 HTTP 执行管线链中的第一个事件发生
+	// OnBeginRequest is the first event in the execution chain
 	OnBeginRequest func(Context)
-	//响应请求时作为 HTTP 执行管线链中的最后一个事件发生。
+	// OnEndRequest is the last event in the execution chain
 	OnEndRequest func(Context)
 }
 

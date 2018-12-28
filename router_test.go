@@ -25,7 +25,6 @@ func TestRouter_ServeHTTP(t *testing.T) {
 	r.ServeHTTP(context)
 }
 
-//
 func TestWrapRouterHandle(t *testing.T) {
 	param := &InitContextParam{
 		t,
@@ -39,7 +38,7 @@ func TestWrapRouterHandle(t *testing.T) {
 	app := New()
 	server := app.HttpServer
 	router := server.Router().(*router)
-	//use default config
+	// use default config
 	server.SetSessionConfig(session.NewDefaultRuntimeConfig())
 	handle := router.wrapRouterHandle(Index, false)
 
@@ -58,7 +57,7 @@ func TestLogWebsocketContext(t *testing.T) {
 
 	log := logWebsocketContext(context, time.Now().Unix())
 	t.Log("logContext:", log)
-	//test.NotNil(t,log)
+	// test.NotNil(t,log)
 	test.Equal(t, "", "")
 }
 

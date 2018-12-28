@@ -27,15 +27,14 @@ func (server *OfflineServer) SetOffline(offline bool, offlineText string, offlin
 	server.offlineText = offlineText
 }
 
-//ServeHTTP makes the httprouter implement the http.Handler interface.
+// ServeHTTP makes the httprouter implement the http.Handler interface.
 func (server *OfflineServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	//处理维护
+	// maintenance mode
 	if server.offline {
-		//url优先
+		// prefer url
 		if server.offlineUrl != "" {
 			http.Redirect(w, req, server.offlineUrl, http.StatusMovedPermanently)
 		} else {
-			//输出内容
 			if server.offlineText == "" {
 				server.offlineText = DefaultOfflineText
 			}

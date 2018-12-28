@@ -54,7 +54,7 @@ func (r *Response) SetWriter(w http.ResponseWriter) *Response {
 	return r
 }
 
-//HttpCode return http code format int
+// HttpCode return http code format int
 func (r *Response) HttpCode() int {
 	return r.Status
 }
@@ -104,7 +104,7 @@ func (r *Response) Write(code int, b []byte) (n int, err error) {
 	return
 }
 
-//stop current response
+// End stop current response
 func (r *Response) End() {
 	r.isEnd = true
 }
@@ -123,7 +123,7 @@ func (r *Response) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return r.writer.(http.Hijacker).Hijack()
 }
 
-//reset response attr
+// reset response attr
 func (r *Response) reset(w http.ResponseWriter) {
 	r.writer = w
 	r.header = w.Header()
@@ -133,7 +133,7 @@ func (r *Response) reset(w http.ResponseWriter) {
 	r.committed = false
 }
 
-//reset response attr
+// reset response attr
 func (r *Response) release() {
 	r.writer = nil
 	r.header = nil
@@ -143,7 +143,8 @@ func (r *Response) release() {
 	r.committed = false
 }
 
-/*gzipResponseWriter*/
+// WriteHeader sends an HTTP response header with the provided
+// status code.
 func (w *gzipResponseWriter) WriteHeader(code int) {
 	if code == http.StatusNoContent { // Issue #489
 		w.ResponseWriter.Header().Del(HeaderContentEncoding)
@@ -151,6 +152,7 @@ func (w *gzipResponseWriter) WriteHeader(code int) {
 	w.ResponseWriter.WriteHeader(code)
 }
 
+// Write do write data
 func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 	if w.Header().Get(HeaderContentType) == "" {
 		w.Header().Set(HeaderContentType, http.DetectContentType(b))
@@ -158,10 +160,12 @@ func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
 
+// Flush do flush
 func (w *gzipResponseWriter) Flush() {
 	w.Writer.(*gzip.Writer).Flush()
 }
 
+// Hijack do hijack
 func (w *gzipResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return w.ResponseWriter.(http.Hijacker).Hijack()
 }

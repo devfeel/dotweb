@@ -5,12 +5,12 @@ import (
 	"os"
 )
 
-//FileSystem with hide Readdir
+// FileSystem with hide Readdir
 type HideReaddirFS struct {
 	FileSystem http.FileSystem
 }
 
-//File with hide Readdir
+// File with hide Readdir
 type hideReaddirFile struct {
 	http.File
 }

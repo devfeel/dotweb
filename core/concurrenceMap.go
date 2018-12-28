@@ -64,7 +64,7 @@ func NewReadonlyMap() ReadonlyMap {
 	}
 }
 
-// Set 以key、value置入ItemMap
+// Set put key, value into ItemMap
 func (ctx *ItemMap) Set(key string, value interface{}) error {
 	ctx.Lock()
 	ctx.innerMap[key] = value
@@ -72,7 +72,7 @@ func (ctx *ItemMap) Set(key string, value interface{}) error {
 	return nil
 }
 
-// Get 读取指定key在ItemMap中的内容
+// Get returns value of specified key
 func (ctx *ItemMap) Get(key string) (value interface{}, exists bool) {
 	ctx.RLock()
 	value, exists = ctx.innerMap[key]
@@ -100,8 +100,8 @@ func (ctx *ItemMap) Once(key string) (value interface{}, exists bool) {
 	return value, exists
 }
 
-// GetString 读取指定key在ConcurrenceMap中的内容，以string格式输出
-// 如果不存在key，返回空字符串
+// GetString returns value as string specified by key
+// return empty string if key not exists
 func (ctx *ItemMap) GetString(key string) string {
 	value, exists := ctx.Get(key)
 	if !exists {
@@ -110,8 +110,8 @@ func (ctx *ItemMap) GetString(key string) string {
 	return fmt.Sprint(value)
 }
 
-// GetInt 读取指定key在ConcurrenceMap中的内容，以int格式输出
-// 如果不存在key，或者转换失败，返回0
+// GetInt returns value as int specified by key
+// return 0 if key not exists
 func (ctx *ItemMap) GetInt(key string) int {
 	value, exists := ctx.Get(key)
 	if !exists {
@@ -120,8 +120,8 @@ func (ctx *ItemMap) GetInt(key string) int {
 	return value.(int)
 }
 
-// GetUInt64 读取指定key在ConcurrenceMap中的内容，以uint64格式输出
-// 如果不存在key，或者转换失败，返回0
+// GetUInt64 returns value as uint64 specified by key
+// return 0 if key not exists or value cannot be converted to int64
 func (ctx *ItemMap) GetUInt64(key string) uint64 {
 	value, exists := ctx.Get(key)
 	if !exists {
@@ -130,8 +130,8 @@ func (ctx *ItemMap) GetUInt64(key string) uint64 {
 	return value.(uint64)
 }
 
-// GetTimeDuration 读取指定key在ConcurrenceMap中的内容，以time.Duration格式输出
-// 如果不存在key，或者转换失败，返回0
+// GetTimeDuration returns value as time.Duration specified by key
+// return 0 if key not exists or value cannot be converted to time.Duration
 func (ctx *ItemMap) GetTimeDuration(key string) time.Duration {
 	timeDuration, err := time.ParseDuration(ctx.GetString(key))
 	if err != nil {

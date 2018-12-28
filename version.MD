@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+#### Version 1.5.9.3
+* Translate Chinse to English
+* Update by @yangbor
+* 2018-12-28 10:00
+
 #### Version 1.5.9.2
 * Fix typo and translate Chinse to English
 * Reformat code

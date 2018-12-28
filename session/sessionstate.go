@@ -17,11 +17,11 @@ func init() {
 	}
 }
 
-//session state
+// session state
 type SessionState struct {
-	sessionId    string                      //session id
-	timeAccessed time.Time                   //last access time
-	values       map[interface{}]interface{} //session store
+	sessionId    string                      // session id
+	timeAccessed time.Time                   // last access time
+	values       map[interface{}]interface{} // session store
 	lock         *sync.RWMutex
 	store        SessionStore
 }

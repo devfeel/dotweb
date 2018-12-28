@@ -9,14 +9,14 @@ import (
 )
 
 type (
-	// ConfigSet 单元配置组，包含一系列单元配置节点
+	// ConfigSet set of config nodes
 	ConfigSet struct {
 		XMLName        xml.Name         `xml:"config" json:"-" yaml:"-"`
 		Name           string           `xml:"name,attr"`
 		ConfigSetNodes []*ConfigSetNode `xml:"set"`
 	}
 
-	// ConfigSetNode update for issue #16 配置文件
+	// ConfigSetNode update for issue #16 config file
 	ConfigSetNode struct {
 		Key   string `xml:"key,attr"`
 		Value string `xml:"value,attr"`
@@ -54,7 +54,7 @@ func parseConfigSetFile(configFile string, confType string) (core.ConcurrenceMap
 		err = UnmarshalYaml(content, set)
 	}
 	if err != nil {
-		return nil, errors.New("DotWeb:Config:parseConfigSetFile 配置文件[" + configFile + ", " + confType + "]无法解析 - " + err.Error())
+		return nil, errors.New("DotWeb:Config:parseConfigSetFile config file[" + configFile + ", " + confType + "]cannot be parsed - " + err.Error())
 	}
 	item := core.NewConcurrenceMap()
 	for _, s := range set.ConfigSetNodes {

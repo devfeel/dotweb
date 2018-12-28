@@ -66,9 +66,9 @@ func TestItemContext_Current(t *testing.T) {
 
 }
 
-//性能测试
+// 性能测试
 
-//基准测试
+// 基准测试
 func BenchmarkItemContext_Set_1(b *testing.B) {
 	var num uint64 = 1
 	for i := 0; i < b.N; i++ {
@@ -76,7 +76,7 @@ func BenchmarkItemContext_Set_1(b *testing.B) {
 	}
 }
 
-//并发效率
+// 并发效率
 func BenchmarkItemContext_Set_Parallel(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		var num uint64 = 1
@@ -86,7 +86,7 @@ func BenchmarkItemContext_Set_Parallel(b *testing.B) {
 	})
 }
 
-//基准测试
+// 基准测试
 func BenchmarkItemContext_Get_1(b *testing.B) {
 	ic.Set("foo", "bar")
 	for i := 0; i < b.N; i++ {
@@ -94,7 +94,7 @@ func BenchmarkItemContext_Get_1(b *testing.B) {
 	}
 }
 
-//并发效率
+// 并发效率
 func BenchmarkItemContext_Get_Parallel(b *testing.B) {
 	ic.Set("foo", "bar")
 	b.RunParallel(func(pb *testing.PB) {

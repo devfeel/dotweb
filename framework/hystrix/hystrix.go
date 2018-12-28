@@ -8,9 +8,9 @@ import (
 const (
 	status_Hystrix              = 1
 	status_Alive                = 2
-	DefaultCheckHystrixInterval = 10     //unit is Second
-	DefaultCheckAliveInterval   = 60     //unit is Second
-	DefaultCleanHistoryInterval = 60 * 5 //unit is Second
+	DefaultCheckHystrixInterval = 10     // unit is Second
+	DefaultCheckAliveInterval   = 60     // unit is Second
+	DefaultCleanHistoryInterval = 60 * 5 // unit is Second
 	DefaultMaxFailedNumber      = 100
 	DefaultReserveMinutes       = 30
 )
@@ -157,7 +157,7 @@ func (h *StandHystrix) doCleanHistoryCounter() {
 		return true
 	})
 	for _, k := range needRemoveKey {
-		//fmt.Println(time.Now(), "hystrix doCleanHistoryCounter remove key",k)
+		// fmt.Println(time.Now(), "hystrix doCleanHistoryCounter remove key",k)
 		h.counters.Delete(k)
 	}
 	time.AfterFunc(time.Duration(DefaultCleanHistoryInterval)*time.Second, h.doCleanHistoryCounter)
