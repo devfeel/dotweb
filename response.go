@@ -104,7 +104,7 @@ func (r *Response) Write(code int, b []byte) (n int, err error) {
 	return
 }
 
-// stop current response
+// End stop current response
 func (r *Response) End() {
 	r.isEnd = true
 }
@@ -152,6 +152,7 @@ func (w *gzipResponseWriter) WriteHeader(code int) {
 	w.ResponseWriter.WriteHeader(code)
 }
 
+// Write do write data
 func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 	if w.Header().Get(HeaderContentType) == "" {
 		w.Header().Set(HeaderContentType, http.DetectContentType(b))
@@ -159,10 +160,12 @@ func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
 
+// Flush do flush
 func (w *gzipResponseWriter) Flush() {
 	w.Writer.(*gzip.Writer).Flush()
 }
 
+// Hijack do hijack
 func (w *gzipResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return w.ResponseWriter.(http.Hijacker).Hijack()
 }
