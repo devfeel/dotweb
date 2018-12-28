@@ -13,35 +13,41 @@ const (
 
 	TEST_CACHE_KEY   = "joe"
 	TEST_CACHE_VALUE = "zou"
-	//int value
+	// int value
 	TEST_CACHE_INT_VALUE = 1
 
-	//int64 value
-	TEST_CACHE_INT64_VALUE = 1
+	// int64 value
+	TEST_CACHE_INT64_VALUE = int64(1)
 )
 
 func TestRuntimeCache_Get(t *testing.T) {
 	cache := NewRuntimeCache()
-	cache.Set(TEST_CACHE_KEY, TEST_CACHE_VALUE, 5)
-	//check value
+	cache.Set(TEST_CACHE_KEY, TEST_CACHE_VALUE, 2)
+	var wg sync.WaitGroup
+
+	// check value
+	wg.Add(1)
 	go func(cache *RuntimeCache, t *testing.T) {
-		time.Sleep(4 * time.Second)
+		time.Sleep(1 * time.Second)
 		value, err := cache.Get(TEST_CACHE_KEY)
 
 		test.Nil(t, err)
 		test.Equal(t, TEST_CACHE_VALUE, value)
+		wg.Done()
 	}(cache, t)
 
-	//check expired
+	// check expired
+	wg.Add(1)
 	go func(cache *RuntimeCache, t *testing.T) {
-		time.Sleep(5 * time.Second)
+		time.Sleep(2 * time.Second)
 		value, err := cache.Exists(TEST_CACHE_KEY)
 
 		test.Nil(t, err)
-		test.Equal(t, true, value)
+		test.Equal(t, false, value)
+		wg.Done()
 	}(cache, t)
 
-	time.Sleep(5 * time.Second)
+	wg.Wait()
 }
 
 func TestRuntimeCache_GetInt(t *testing.T) {
@@ -64,22 +70,26 @@ func TestRuntimeCache_GetString(t *testing.T) {
 
 func testRuntimeCache(t *testing.T, insertValue interface{}, f func(cache *RuntimeCache, key string) (interface{}, error)) {
 	cache := NewRuntimeCache()
-	cache.Set(TEST_CACHE_KEY, insertValue, 5)
-	//check value
+	cache.Set(TEST_CACHE_KEY, insertValue, 2)
+	var wg sync.WaitGroup
+
+	// check value
+	wg.Add(1)
 	go func(cache *RuntimeCache, t *testing.T) {
-		time.Sleep(4 * time.Second)
+		time.Sleep(1 * time.Second)
 		value, err := f(cache, TEST_CACHE_KEY)
 
 		test.Nil(t, err)
 		test.Equal(t, insertValue, value)
+		wg.Done()
 	}(cache, t)
-
-	time.Sleep(5 * time.Second)
+	time.Sleep(2 * time.Second)
+	wg.Wait()
 }
 
 func TestRuntimeCache_Delete(t *testing.T) {
 	cache := NewRuntimeCache()
-	cache.Set(TEST_CACHE_KEY, TEST_CACHE_VALUE, 5)
+	cache.Set(TEST_CACHE_KEY, TEST_CACHE_VALUE, 2)
 
 	value, e := cache.Get(TEST_CACHE_KEY)
 
@@ -95,9 +105,9 @@ func TestRuntimeCache_Delete(t *testing.T) {
 
 func TestRuntimeCache_ClearAll(t *testing.T) {
 	cache := NewRuntimeCache()
-	cache.Set(TEST_CACHE_KEY, TEST_CACHE_VALUE, 5)
-	cache.Set("2", TEST_CACHE_VALUE, 5)
-	cache.Set("3", TEST_CACHE_VALUE, 5)
+	cache.Set(TEST_CACHE_KEY, TEST_CACHE_VALUE, 2)
+	cache.Set("2", TEST_CACHE_VALUE, 2)
+	cache.Set("3", TEST_CACHE_VALUE, 2)
 
 	val2, err := cache.GetString("2")
 	if err != nil {
