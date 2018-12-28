@@ -111,14 +111,14 @@ func (r *Response) End() {
 
 // Flush implements the http.Flusher interface to allow an HTTP handler to flush
 // buffered data to the client.
-// See [http.Flusher](https:// golang.org/pkg/net/http/#Flusher)
+// See [http.Flusher](https://golang.org/pkg/net/http/#Flusher)
 func (r *Response) Flush() {
 	r.writer.(http.Flusher).Flush()
 }
 
 // Hijack implements the http.Hijacker interface to allow an HTTP handler to
 // take over the connection.
-// See https:// golang.org/pkg/net/http/#Hijacker
+// See https://golang.org/pkg/net/http/#Hijacker
 func (r *Response) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return r.writer.(http.Hijacker).Hijack()
 }
