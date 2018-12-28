@@ -13,7 +13,7 @@ var (
 // RedisCache is redis cache adapter.
 // it contains serverIp for redis conn.
 type RedisCache struct {
-	serverURL string //connection string, like "redis://:password@10.0.1.11:6379/0"
+	serverURL string // connection string, like "redis://:password@10.0.1.11:6379/0"
 }
 
 // NewRedisCache returns a new *RedisCache.

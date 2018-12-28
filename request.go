@@ -19,7 +19,7 @@ type Request struct {
 	requestID  string
 }
 
-//reset response attr
+// reset response attr
 func (req *Request) reset(r *http.Request, ctx *HttpContext) {
 	req.Request = r
 	req.isReadBody = false
@@ -44,17 +44,17 @@ func (req *Request) RequestID() string {
 	return req.requestID
 }
 
-// QueryStrings 返回Get请求方式下查询字符串map表示
+// QueryStrings parses RawQuery and returns the corresponding values.
 func (req *Request) QueryStrings() url.Values {
 	return req.URL.Query()
 }
 
-// RawQuery 获取原始查询字符串
+// RawQuery returns the original query string
 func (req *Request) RawQuery() string {
 	return req.URL.RawQuery
 }
 
-// QueryString 根据指定key获取在Get请求中对应参数值
+// QueryString returns the first value associated with the given key.
 func (req *Request) QueryString(key string) string {
 	return req.URL.Query().Get(key)
 }

@@ -21,7 +21,7 @@ type RuntimeItem struct {
 	ttl        time.Duration
 }
 
-//check item is expire
+// check item is expire
 func (mi *RuntimeItem) isExpire() bool {
 	// 0 means forever
 	if mi.ttl == 0 {
@@ -36,7 +36,7 @@ type RuntimeCache struct {
 	sync.RWMutex
 	gcInterval time.Duration
 	items      *sync.Map
-	//items      map[string]*RuntimeItem
+	// items      map[string]*RuntimeItem
 }
 
 // NewRuntimeCache returns a new *RuntimeCache.
@@ -127,9 +127,9 @@ func (ca *RuntimeCache) Incr(key string) (int64, error) {
 	ca.Lock()
 	itemObj, ok := ca.items.Load(key)
 	if !ok {
-		//if not exists, auto set new with 0
+		// if not exists, auto set new with 0
 		ca.initValue(key, ZeroInt64, 0)
-		//reload
+		// reload
 		itemObj, _ = ca.items.Load(key)
 	}
 
@@ -162,9 +162,9 @@ func (ca *RuntimeCache) Decr(key string) (int64, error) {
 	ca.Lock()
 	itemObj, ok := ca.items.Load(key)
 	if !ok {
-		//if not exists, auto set new with 0
+		// if not exists, auto set new with 0
 		ca.initValue(key, ZeroInt64, 0)
-		//reload
+		// reload
 		itemObj, _ = ca.items.Load(key)
 	}
 
@@ -220,7 +220,7 @@ func (ca *RuntimeCache) Delete(key string) error {
 	ca.Lock()
 	defer ca.Unlock()
 	if _, ok := ca.items.Load(key); !ok {
-		//if not exists, we think it's success
+		// if not exists, we think it's success
 		return nil
 	}
 	ca.items.Delete(key)

@@ -16,7 +16,7 @@ const randFileNameLength = 12
 type UploadFile struct {
 	File           multipart.File
 	Header         *multipart.FileHeader
-	fileExt        string //file extensions
+	fileExt        string // file extensions
 	fileName       string
 	randomFileName string
 	fileSize       int64
@@ -28,7 +28,7 @@ func NewUploadFile(file multipart.File, header *multipart.FileHeader) *UploadFil
 		Header:         header,
 		fileName:       header.Filename,
 		randomFileName: cryptos.GetRandString(randFileNameLength) + filepath.Ext(header.Filename),
-		fileExt:        filepath.Ext(header.Filename), //update for issue #99
+		fileExt:        filepath.Ext(header.Filename), // update for issue #99
 	}
 }
 

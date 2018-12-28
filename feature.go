@@ -18,7 +18,7 @@ func init() {
 	FeatureTools = new(xFeatureTools)
 }
 
-//set CROS config on HttpContext
+// set CROS config on HttpContext
 func (f *xFeatureTools) SetCROSConfig(ctx *HttpContext, c *feature.CROSConfig) {
 	ctx.Response().SetHeader(HeaderAccessControlAllowOrigin, c.AllowedOrigins)
 	ctx.Response().SetHeader(HeaderAccessControlAllowMethods, c.AllowedMethods)
@@ -27,7 +27,7 @@ func (f *xFeatureTools) SetCROSConfig(ctx *HttpContext, c *feature.CROSConfig) {
 	ctx.Response().SetHeader(HeaderP3P, c.AllowedP3P)
 }
 
-//set CROS config on HttpContext
+// set CROS config on HttpContext
 func (f *xFeatureTools) SetSession(httpCtx *HttpContext) {
 	sessionId, err := httpCtx.HttpServer().GetSessionManager().GetClientSessionID(httpCtx.Request().Request)
 	if err == nil && sessionId != "" {
@@ -56,19 +56,19 @@ func (f *xFeatureTools) SetGzip(httpCtx *HttpContext) {
 // doFeatures do features...
 func (f *xFeatureTools) InitFeatures(server *HttpServer, httpCtx *HttpContext) {
 
-	//gzip
+	// gzip
 	if server.ServerConfig().EnabledGzip {
 		FeatureTools.SetGzip(httpCtx)
 	}
 
-	//session
-	//if exists client-sessionid, use it
-	//if not exists client-sessionid, new one
+	// session
+	// if exists client-sessionid, use it
+	// if not exists client-sessionid, new one
 	if server.SessionConfig().EnabledSession {
 		FeatureTools.SetSession(httpCtx)
 	}
 
-	//处理 cros feature
+	// CROS handling
 	if server.Features.CROSConfig != nil {
 		c := server.Features.CROSConfig
 		if c.EnabledCROS {

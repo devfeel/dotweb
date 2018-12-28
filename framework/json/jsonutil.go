@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 )
 
-//将传入对象转换为json字符串
+// GetJsonString marshals the object as string
 func GetJsonString(obj interface{}) string {
 	resByte, err := json.Marshal(obj)
 	if err != nil {
@@ -13,7 +13,7 @@ func GetJsonString(obj interface{}) string {
 	return string(resByte)
 }
 
-//将传入对象转换为json字符串
+// Marshal marshals the value as string
 func Marshal(v interface{}) (string, error) {
 	resByte, err := json.Marshal(v)
 	if err != nil {
@@ -23,7 +23,7 @@ func Marshal(v interface{}) (string, error) {
 	}
 }
 
-//将传入的json字符串转换为对象
+// Unmarshal converts the jsonstring into value
 func Unmarshal(jsonstring string, v interface{}) error {
 	return json.Unmarshal([]byte(jsonstring), v)
 }

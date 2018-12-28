@@ -95,7 +95,7 @@ type (
 
 	HttpContext struct {
 		context context.Context
-		//暂未启用
+		// Reserved
 		cancle         context.CancelFunc
 		middlewareStep string
 		request        *Request
@@ -106,7 +106,7 @@ type (
 		hijackConn     *HijackConn
 		isWebSocket    bool
 		isHijack       bool
-		isEnd          bool //表示当前处理流程是否需要终止
+		isEnd          bool // indicating whether the current process should be terminated
 		httpServer     *HttpServer
 		sessionID      string
 		innerItems     core.ConcurrenceMap
@@ -117,7 +117,7 @@ type (
 	}
 )
 
-//reset response attr
+// reset response attr
 func (ctx *HttpContext) reset(res *Response, r *Request, server *HttpServer, node RouterNode, params Params, handler HttpHandle) {
 	ctx.request = r
 	ctx.response = res
@@ -134,7 +134,7 @@ func (ctx *HttpContext) reset(res *Response, r *Request, server *HttpServer, nod
 	ctx.Items().Set(ItemKeyHandleStartTime, time.Now())
 }
 
-//release all field
+// release all field
 func (ctx *HttpContext) release() {
 	ctx.request = nil
 	ctx.response = nil
@@ -263,7 +263,7 @@ func (ctx *HttpContext) Items() core.ConcurrenceMap {
 }
 
 // AppSetConfig get appset from config file
-// update for issue #16 配置文件
+// update for issue #16 Config file
 func (ctx *HttpContext) ConfigSet() core.ReadonlyMap {
 	return ctx.HttpServer().DotApp.Config.ConfigSet
 }
@@ -280,11 +280,11 @@ func (ctx *HttpContext) ViewData() core.ConcurrenceMap {
 // Session get session state in current context
 func (ctx *HttpContext) Session() (state *session.SessionState) {
 	if ctx.httpServer == nil {
-		//return nil, errors.New("no effective http-server")
+		// return nil, errors.New("no effective http-server")
 		panic("no effective http-server")
 	}
 	if !ctx.httpServer.SessionConfig().EnabledSession {
-		//return nil, errors.New("http-server not enabled session")
+		// return nil, errors.New("http-server not enabled session")
 		panic("http-server not enabled session")
 	}
 	state, _ = ctx.httpServer.sessionManager.GetSessionState(ctx.sessionID)
@@ -322,9 +322,7 @@ func (ctx *HttpContext) Redirect(code int, targetUrl string) error {
 	return ctx.response.Redirect(code, targetUrl)
 }
 
-/*
-* 根据指定key获取在Get请求中对应参数值
- */
+// QueryString returns request parameters according to key
 func (ctx *HttpContext) QueryString(key string) string {
 	return ctx.request.QueryString(key)
 }
@@ -357,16 +355,14 @@ func (ctx *HttpContext) QueryInt64(key string) int64 {
 	return val
 }
 
-/*
-* 根据指定key获取包括在post、put和get内的值
- */
+// FormValue returns the first value for the named component of the query.
+// POST and PUT body parameters take precedence over URL query string values.
 func (ctx *HttpContext) FormValue(key string) string {
 	return ctx.request.FormValue(key)
 }
 
-/*
-* 根据指定key获取包括在post、put内的值
- */
+// PostFormValue returns the first value for the named component of the POST,
+// PATCH, or PUT request body. URL query parameters are ignored.
 func (ctx *HttpContext) PostFormValue(key string) string {
 	return ctx.request.PostFormValue(key)
 }
@@ -451,7 +447,7 @@ func (ctx *HttpContext) RemoteIP() string {
 // SetCookieValue write cookie for name & value & maxAge
 // default path = "/"
 // default domain = current domain
-// default maxAge = 0 //seconds
+// default maxAge = 0 // seconds
 // seconds=0 means no 'Max-Age' attribute specified.
 // seconds<0 means delete cookie now, equivalently 'Max-Age: 0'
 // seconds>0 means Max-Age attribute present and given in seconds
@@ -522,7 +518,7 @@ func (ctx *HttpContext) ViewC(code int, name string) error {
 // Write write code and content content to response
 func (ctx *HttpContext) Write(code int, content []byte) (int, error) {
 	if ctx.IsHijack() {
-		//TODO:hijack mode, status-code set default 200
+		// TODO:hijack mode, status-code set default 200
 		return ctx.hijackConn.WriteBlob(content)
 	} else {
 		return ctx.response.Write(code, content)
@@ -609,7 +605,7 @@ func (ctx *HttpContext) WriteJsonp(callback string, i interface{}) error {
 func (ctx *HttpContext) WriteJsonpBlob(callback string, b []byte) error {
 	var err error
 	ctx.response.SetContentType(MIMEApplicationJavaScriptCharsetUTF8)
-	//特殊处理，如果为hijack，需要先行WriteBlob头部
+	// For jihack context, write header first
 	if ctx.IsHijack() {
 		if _, err = ctx.hijackConn.WriteBlob([]byte(ctx.hijackConn.header + "\r\n")); err != nil {
 			return err

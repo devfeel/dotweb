@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-//hijack conn
+// hijack conn
 type HijackConn struct {
 	ReadWriter *bufio.ReadWriter
 	Conn       net.Conn

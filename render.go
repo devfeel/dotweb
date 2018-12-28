@@ -73,7 +73,7 @@ func (r *innerRenderer) parseFiles(fileNames ...string) (*template.Template, err
 	var t *template.Template
 	var exists bool
 	if r.enabledCache {
-		//check from chach
+		// check from chach
 		t, exists = r.parseFilesFromCache(filesCacheKey)
 	}
 	if !exists {

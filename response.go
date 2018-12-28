@@ -54,7 +54,7 @@ func (r *Response) SetWriter(w http.ResponseWriter) *Response {
 	return r
 }
 
-//HttpCode return http code format int
+// HttpCode return http code format int
 func (r *Response) HttpCode() int {
 	return r.Status
 }
@@ -104,26 +104,26 @@ func (r *Response) Write(code int, b []byte) (n int, err error) {
 	return
 }
 
-//stop current response
+// stop current response
 func (r *Response) End() {
 	r.isEnd = true
 }
 
 // Flush implements the http.Flusher interface to allow an HTTP handler to flush
 // buffered data to the client.
-// See [http.Flusher](https://golang.org/pkg/net/http/#Flusher)
+// See [http.Flusher](https:// golang.org/pkg/net/http/#Flusher)
 func (r *Response) Flush() {
 	r.writer.(http.Flusher).Flush()
 }
 
 // Hijack implements the http.Hijacker interface to allow an HTTP handler to
 // take over the connection.
-// See https://golang.org/pkg/net/http/#Hijacker
+// See https:// golang.org/pkg/net/http/#Hijacker
 func (r *Response) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return r.writer.(http.Hijacker).Hijack()
 }
 
-//reset response attr
+// reset response attr
 func (r *Response) reset(w http.ResponseWriter) {
 	r.writer = w
 	r.header = w.Header()
@@ -133,7 +133,7 @@ func (r *Response) reset(w http.ResponseWriter) {
 	r.committed = false
 }
 
-//reset response attr
+// reset response attr
 func (r *Response) release() {
 	r.writer = nil
 	r.header = nil
@@ -143,7 +143,8 @@ func (r *Response) release() {
 	r.committed = false
 }
 
-/*gzipResponseWriter*/
+// WriteHeader sends an HTTP response header with the provided
+// status code.
 func (w *gzipResponseWriter) WriteHeader(code int) {
 	if code == http.StatusNoContent { // Issue #489
 		w.ResponseWriter.Header().Del(HeaderContentEncoding)

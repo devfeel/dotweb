@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	DefaultSessionGCLifeTime  = 60      //second
-	DefaultSessionMaxLifeTime = 20 * 60 //second
+	DefaultSessionGCLifeTime  = 60      // second
+	DefaultSessionMaxLifeTime = 20 * 60 // second
 	DefaultSessionCookieName  = "dotweb_sessionId"
 	DefaultSessionLength      = 20
 	SessionMode_Runtime       = "runtime"
@@ -28,18 +28,18 @@ type (
 		SessionExist(sessionId string) bool
 		SessionUpdate(state *SessionState) error
 		SessionRemove(sessionId string) error
-		SessionCount() int //get all active session length
-		SessionGC() int    //gc session and return out of date state num
+		SessionCount() int // get all active session length
+		SessionGC() int    // gc session and return out of date state num
 	}
 
-	//session config info
+	// session config info
 	StoreConfig struct {
 		StoreName       string
-		Maxlifetime     int64  //session life time, with second
-		CookieName      string //custom cookie name which sessionid store
-		ServerIP        string //if use redis, connection string, like "redis://:password@10.0.1.11:6379/0"
-		BackupServerUrl string //if use redis, if ServerIP is down, use this server, like "redis://:password@10.0.1.11:6379/0"
-		StoreKeyPre     string //if use redis, set custom redis key-pre; default is dotweb:session:
+		Maxlifetime     int64  // session life time, with second
+		CookieName      string // custom cookie name which sessionid store
+		ServerIP        string // if use redis, connection string, like "redis://:password@10.0.1.11:6379/0"
+		BackupServerUrl string // if use redis, if ServerIP is down, use this server, like "redis://:password@10.0.1.11:6379/0"
+		StoreKeyPre     string // if use redis, set custom redis key-pre; default is dotweb:session:
 	}
 
 	SessionManager struct {
@@ -50,7 +50,7 @@ type (
 	}
 )
 
-//create new session store with store config
+// GetSessionStore create new session store with store config
 func GetSessionStore(config *StoreConfig) SessionStore {
 	switch config.StoreName {
 	case SessionMode_Runtime:
@@ -68,23 +68,23 @@ func GetSessionStore(config *StoreConfig) SessionStore {
 	return nil
 }
 
-//create new store with default config and use runtime store
+// NewDefaultRuntimeConfig create new store with default config and use runtime store
 func NewDefaultRuntimeConfig() *StoreConfig {
 	return NewStoreConfig(SessionMode_Runtime, DefaultSessionMaxLifeTime, "", "")
 }
 
-//create new store with default config and use redis store
+// NewDefaultRedisConfig create new store with default config and use redis store
 func NewDefaultRedisConfig(serverIp string) *StoreConfig {
 	return NewStoreConfig(SessionMode_Redis, DefaultSessionMaxLifeTime, serverIp, "")
 }
 
-//create new store with config and use redis store
-//must set serverIp and storeKeyPre
+// NewRedisConfig create new store with config and use redis store
+// must set serverIp and storeKeyPre
 func NewRedisConfig(serverIp string, storeKeyPre string) *StoreConfig {
 	return NewStoreConfig(SessionMode_Redis, DefaultSessionMaxLifeTime, serverIp, storeKeyPre)
 }
 
-//create new store config
+// NewStoreConfig create new store config
 func NewStoreConfig(storeName string, maxlifetime int64, serverIp string, storeKeyPre string) *StoreConfig {
 	return &StoreConfig{
 		StoreName:   storeName,
@@ -94,12 +94,12 @@ func NewStoreConfig(storeName string, maxlifetime int64, serverIp string, storeK
 	}
 }
 
-//create new session manager with default config info
+// NewDefaultSessionManager create new session manager with default config info
 func NewDefaultSessionManager(config *StoreConfig) (*SessionManager, error) {
 	return NewSessionManager(DefaultSessionGCLifeTime, config)
 }
 
-//create new seesion manager
+// NewSessionManager create new seesion manager
 func NewSessionManager(gcLifetime int64, config *StoreConfig) (*SessionManager, error) {
 	if gcLifetime <= 0 {
 		gcLifetime = DefaultSessionGCLifeTime
@@ -112,7 +112,7 @@ func NewSessionManager(gcLifetime int64, config *StoreConfig) (*SessionManager, 
 		GCLifetime:  gcLifetime,
 		storeConfig: config,
 	}
-	//开启GC
+	// enable GC
 	go func() {
 		time.AfterFunc(time.Duration(manager.GCLifetime)*time.Second, func() { manager.GC() })
 	}()
@@ -130,8 +130,8 @@ func (manager *SessionManager) StoreConfig() *StoreConfig {
 	return manager.storeConfig
 }
 
-//get session id from client
-//default mode is from cookie
+// GetClientSessionID get session id from client
+// default mode is from cookie
 func (manager *SessionManager) GetClientSessionID(req *http.Request) (string, error) {
 	cookie, err := req.Cookie(manager.storeConfig.CookieName)
 	if err != nil {
@@ -140,8 +140,8 @@ func (manager *SessionManager) GetClientSessionID(req *http.Request) (string, er
 	if cookie.Value == "" {
 		return "", nil
 	}
-	//TODO: check client validity
-	//check ip & agent
+	// TODO: check client validity
+	// check ip & agent
 	return url.QueryUnescape(cookie.Value)
 }
 
@@ -153,7 +153,7 @@ func (manager *SessionManager) GetSessionState(sessionId string) (session *Sessi
 	return session, nil
 }
 
-//GC loop gc session data
+// GC loop gc session data
 func (manager *SessionManager) GC() {
 	num := manager.store.SessionGC()
 	if num > 0 {

@@ -8,14 +8,14 @@ import (
 	"io"
 )
 
-//获取MD5值
+// GetMd5String compute the md5 sum as string
 func GetMd5String(s string) string {
 	h := md5.New()
 	h.Write([]byte(s))
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-//创建指定长度的随机字符串
+// GetRandString returns randominzed string with given length
 func GetRandString(len int) string {
 	b := make([]byte, len)
 

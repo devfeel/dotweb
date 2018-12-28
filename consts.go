@@ -1,12 +1,12 @@
 package dotweb
 
-//Global define
+// Global define
 const (
 	// Version current version
 	Version = "1.5.9.1"
 )
 
-//Log define
+// Log define
 const (
 	LogTarget_Default        = "dotweb_default"
 	LogTarget_HttpRequest    = "dotweb_request"
@@ -19,7 +19,7 @@ const (
 	LogLevel_Error = "error"
 )
 
-//Http define
+// Http define
 const (
 	CharsetUTF8       = "charset=utf-8"
 	DefaultServerName = "dotweb"

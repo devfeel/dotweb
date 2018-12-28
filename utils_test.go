@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-//common init context
+// common init context
 func initContext(param *InitContextParam) *HttpContext {
 	httpRequest := &http.Request{}
 	context := &HttpContext{
@@ -26,7 +26,7 @@ func initContext(param *InitContextParam) *HttpContext {
 	header["Accept-Encoding"] = []string{"gzip, deflate"}
 	header["Accept-Language"] = []string{"en-us"}
 	header["Foo"] = []string{"Bar", "two"}
-	//specify json
+	// specify json
 	header["Content-Type"] = []string{param.contentType}
 	context.request.Header = header
 
@@ -37,7 +37,7 @@ func initContext(param *InitContextParam) *HttpContext {
 	return context
 }
 
-//init response context
+// init response context
 func initResponseContext(param *InitContextParam) *HttpContext {
 	context := &HttpContext{
 		response: &Response{},
@@ -56,7 +56,7 @@ func initResponseContext(param *InitContextParam) *HttpContext {
 	return context
 }
 
-//init request and response context
+// init request and response context
 func initAllContext(param *InitContextParam) *HttpContext {
 	context := &HttpContext{
 		response: &Response{},
@@ -73,7 +73,7 @@ func initAllContext(param *InitContextParam) *HttpContext {
 	header["Accept-Encoding"] = []string{"gzip, deflate"}
 	header["Accept-Language"] = []string{"en-us"}
 	header["Foo"] = []string{"Bar", "two"}
-	//specify json
+	// specify json
 	header["Content-Type"] = []string{param.contentType}
 	context.request.Header = header
 
@@ -88,18 +88,7 @@ func initAllContext(param *InitContextParam) *HttpContext {
 	body := format(jsonStr)
 	context.request.Request.Body = body
 
-	//var buf1 bytes.Buffer
-	//w := io.MultiWriter(&buf1)
-
 	w := &httpWriter{}
-	//gzip 开关
-	/*
-		gw, _ := gzip.NewWriterLevel(w, DefaultGzipLevel)
-		writer := &gzipResponseWriter{
-			ResponseWriter: w,
-			Writer:         &gzipResponseWriter{Writer: gw, ResponseWriter: w},
-		}
-	*/
 
 	context.response = NewResponse(w)
 

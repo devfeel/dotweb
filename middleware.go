@@ -15,10 +15,8 @@ const (
 
 type MiddlewareFunc func() Middleware
 
-//middleware执行优先级：
-//优先级1：app级别middleware
-//优先级2：group级别middleware
-//优先级3：router级别middleware
+// middleware execution priority:
+// app > group > router
 
 // Middleware middleware interface
 type Middleware interface {
@@ -30,7 +28,7 @@ type Middleware interface {
 	ExistsExcludeRouter(router string) bool
 }
 
-//middleware 基础类，应用可基于此实现完整Moddleware
+// BaseMiddleware is the base struct, user defined middleware should extend this
 type BaseMiddlware struct {
 	next           Middleware
 	excludeRouters map[string]struct{}
@@ -63,7 +61,7 @@ func (bm *BaseMiddlware) Next(ctx Context) error {
 			return httpCtx.Handler()(ctx)
 		}
 	} else {
-		//check exclude config
+		// check exclude config
 		if ctx.RouterNode().Node().hasExcludeMiddleware && bm.next.HasExclude() {
 			if bm.next.ExistsExcludeRouter(ctx.RouterNode().Node().fullPath) {
 				return bm.next.Next(ctx)
@@ -121,7 +119,6 @@ func (x *xMiddleware) Handle(ctx Context) error {
 	return x.Next(ctx)
 }
 
-//请求日志中间件
 type RequestLogMiddleware struct {
 	BaseMiddlware
 }
@@ -153,7 +150,7 @@ func (m *RequestLogMiddleware) Handle(ctx Context) error {
 	return err
 }
 
-//get default log string
+// get default log string
 func logContext(ctx Context, timetaken uint64) string {
 	var reqbytelen, resbytelen, method, proto, status, userip string
 	if ctx != nil {
@@ -176,7 +173,6 @@ func logContext(ctx Context, timetaken uint64) string {
 	return log
 }
 
-// TimeoutHookMiddleware 超时钩子中间件
 type TimeoutHookMiddleware struct {
 	BaseMiddlware
 	HookHandle      StandardHandle
@@ -193,7 +189,7 @@ func (m *TimeoutHookMiddleware) Handle(ctx Context) error {
 			begin = beginVal.(time.Time)
 		}
 	}
-	//Do next
+	// Do next
 	err := m.Next(ctx)
 	if m.HookHandle != nil {
 		realDuration := time.Now().Sub(begin)

@@ -7,7 +7,7 @@ import (
 	"github.com/devfeel/dotweb/test"
 )
 
-//check httpServer
+// check httpServer
 func TestNewHttpServer(t *testing.T) {
 	server := NewHttpServer()
 
@@ -24,27 +24,25 @@ func TestNewHttpServer(t *testing.T) {
 	test.NotNil(t, server.pool.response)
 	test.Equal(t, false, server.IsOffline())
 
-	//t.Log("is offline:",server.IsOffline())
+	// t.Log("is offline:",server.IsOffline())
 }
 
-//session manager用来设置gc？
-//总感觉和名字不是太匹配
 func TestSesionConfig(t *testing.T) {
 	server := NewHttpServer()
 	server.DotApp = New()
-	//use default config
+	// use default config
 	server.SetSessionConfig(session.NewDefaultRuntimeConfig())
 
-	//init
+	// init
 	server.InitSessionManager()
 
-	//get session
+	// get session
 	sessionManager := server.GetSessionManager()
 
-	//EnabledSession flag is false
+	// EnabledSession flag is false
 	test.Nil(t, sessionManager)
 
-	//switch EnabledSession flag
+	// switch EnabledSession flag
 	server.SessionConfig().EnabledSession = true
 	sessionManager = server.GetSessionManager()
 
