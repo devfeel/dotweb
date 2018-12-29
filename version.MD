@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+#### Version 1.5.9.4
+* Fix UT in cache/runtime
+* Remove invalid lock in cache/runtime
+* 2018-12-29 12:00
+
 #### Version 1.5.9.3
 * Translate Chinse to English
 * Update by @yangbor
