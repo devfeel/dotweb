@@ -33,10 +33,10 @@ func (mi *RuntimeItem) isExpire() bool {
 // RuntimeCache is runtime cache adapter.
 // it contains a RW locker for safe map storage.
 type RuntimeCache struct {
-	sync.RWMutex
+	sync.RWMutex //only used with Incr\Decr
 	gcInterval time.Duration
 	items      *sync.Map
-	// items      map[string]*RuntimeItem
+	//itemsMap      map[string]*RuntimeItem
 }
 
 // NewRuntimeCache returns a new *RuntimeCache.
@@ -49,8 +49,6 @@ func NewRuntimeCache() *RuntimeCache {
 // Get cache from runtime cache.
 // if non-existed or expired, return nil.
 func (ca *RuntimeCache) Get(key string) (interface{}, error) {
-	ca.RLock()
-	defer ca.RUnlock()
 	if itemObj, ok := ca.items.Load(key); ok {
 		item := itemObj.(*RuntimeItem)
 		if item.isExpire() {
@@ -60,6 +58,7 @@ func (ca *RuntimeCache) Get(key string) (interface{}, error) {
 	}
 	return nil, nil
 }
+
 
 // returns value string format by given key
 // if non-existed or expired, return "".
@@ -107,8 +106,6 @@ func (ca *RuntimeCache) GetInt64(key string) (int64, error) {
 // Set cache to runtime.
 // ttl is second, if ttl is 0, it will be forever till restart.
 func (ca *RuntimeCache) Set(key string, value interface{}, ttl int64) error {
-	ca.Lock()
-	defer ca.Unlock()
 	ca.initValue(key, value, ttl)
 	return nil
 }
@@ -205,8 +202,6 @@ func (ca *RuntimeCache) Decr(key string) (int64, error) {
 
 // Exist check item exist in runtime cache.
 func (ca *RuntimeCache) Exists(key string) (bool, error) {
-	ca.RLock()
-	defer ca.RUnlock()
 	if itemObj, ok := ca.items.Load(key); ok {
 		item := itemObj.(*RuntimeItem)
 		return !item.isExpire(), nil
@@ -217,16 +212,7 @@ func (ca *RuntimeCache) Exists(key string) (bool, error) {
 // Delete item in runtime cacha.
 // if not exists, we think it's success
 func (ca *RuntimeCache) Delete(key string) error {
-	ca.Lock()
-	defer ca.Unlock()
-	if _, ok := ca.items.Load(key); !ok {
-		// if not exists, we think it's success
-		return nil
-	}
 	ca.items.Delete(key)
-	if _, ok := ca.items.Load(key); ok {
-		return errors.New("delete key error")
-	}
 	return nil
 }
 
@@ -253,9 +239,6 @@ func (ca *RuntimeCache) gc() {
 
 // itemExpired returns true if an item is expired.
 func (ca *RuntimeCache) itemExpired(name string) bool {
-	ca.Lock()
-	defer ca.Unlock()
-
 	itemObj, ok := ca.items.Load(name)
 	if !ok {
 		return true

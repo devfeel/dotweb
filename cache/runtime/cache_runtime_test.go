@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -180,3 +181,45 @@ func TestRuntimeCache_Decr(t *testing.T) {
 
 	test.Equal(t, -100, value)
 }
+
+func BenchmarkTestRuntimeCache_Get(b *testing.B) {
+	cache := NewRuntimeCache()
+	cache.Set(TEST_CACHE_KEY, TEST_CACHE_VALUE, 200000)
+	for i := 0; i < b.N; i++ {
+		cache.Get(TEST_CACHE_KEY)
+	}
+}
+
+func BenchmarkTestRuntimeCache_Set(b *testing.B) {
+	cache := NewRuntimeCache()
+	for i := 0; i < b.N; i++ {
+		cache.Set(TEST_CACHE_KEY + strconv.Itoa(i), TEST_CACHE_VALUE, 0)
+	}
+}
+
+func TestRuntimeCache_ConcurrentGetSetError(t *testing.T) {
+	cache := NewRuntimeCache()
+	cache.Set(TEST_CACHE_KEY, TEST_CACHE_VALUE, 200000)
+	for i := 0; i < 10000; i++ {
+		go cache.Get(TEST_CACHE_KEY)
+	}
+
+	for i := 0; i < 10000; i++ {
+		go cache.Set(TEST_CACHE_KEY + strconv.Itoa(i), TEST_CACHE_VALUE, 0)
+	}
+	time.Sleep(time.Minute)
+}
+
+func TestRuntimeCache_ConcurrentIncrDecrError(t *testing.T) {
+	cache := NewRuntimeCache()
+	cache.Set(TEST_CACHE_KEY, TEST_CACHE_VALUE, 200000)
+	for i := 0; i < 10000; i++ {
+		go cache.Incr(TEST_CACHE_KEY + strconv.Itoa(i))
+	}
+
+	for i := 0; i < 10000; i++ {
+		go cache.Decr(TEST_CACHE_KEY + strconv.Itoa(i))
+	}
+	time.Sleep(time.Minute)
+}
+
