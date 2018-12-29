@@ -234,7 +234,7 @@ func (ca *RuntimeCache) Delete(key string) error {
 func (ca *RuntimeCache) ClearAll() error {
 	ca.Lock()
 	defer ca.Unlock()
-	ca.items = nil
+	ca.items = new(sync.Map)
 	return nil
 }
 
