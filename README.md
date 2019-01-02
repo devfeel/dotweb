@@ -24,7 +24,7 @@ go get -u github.com/devfeel/dotweb
 
 ## 2. Getting Started
 ```go
-func StartServer() error {
+func main() {
 	//init DotApp
 	app := dotweb.New()
 	//set log path
@@ -35,7 +35,7 @@ func StartServer() error {
 	})
 	//begin server
 	err := app.StartServer(80)
-	return err
+    fmt.Println("dotweb.StartServer error => ", err)
 }
 
 ```

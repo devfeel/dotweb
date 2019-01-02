@@ -20,6 +20,8 @@ func main() {
 	//开启development模式
 	app.SetDevelopmentMode()
 
+	app.UseTimeoutHook(dotweb.DefaultTimeoutHookHandler, time.Second * 10)
+
 	exAccessFmtLog := NewAccessFmtLog("appex")
 	exAccessFmtLog.Exclude("/index")
 	exAccessFmtLog.Exclude("/v1/machines/queryIP/:IP")

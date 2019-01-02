@@ -169,3 +169,9 @@ func (w *gzipResponseWriter) Flush() {
 func (w *gzipResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return w.ResponseWriter.(http.Hijacker).Hijack()
 }
+
+
+// Push support http2 Push
+func (r *Response) Push(target string, opts *http.PushOptions) error {
+	return r.writer.(http.Pusher).Push(target, opts)
+}
