@@ -179,7 +179,7 @@ func (req *Request) Path() string {
 
 // IsAJAX returns if it is a ajax request
 func (req *Request) IsAJAX() bool {
-	return req.Header.Get(HeaderXRequestedWith) == "XMLHttpRequest"
+	return strings.Contains(req.Header.Get(HeaderXRequestedWith), "XMLHttpRequest")
 }
 
 // Url get request url
