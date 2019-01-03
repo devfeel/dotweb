@@ -1,5 +1,35 @@
 ## dotweb版本记录：
 
+#### Version 1.5.9.6
+* New Feature: HttpServer & Router add RegisterServerFile use to register ServerFile router with routeMethod method on http.FileServer
+* Update: ServerFile add support for EnabledAutoHEAD\EnabledAutoOPTIONS
+* Detail:
+    - when use ServerFile, default routeMethod is GET
+    - you can use RegisterServerFile specify other HttpMethod, like "POST"
+* Example:
+``` golang
+	server.RegisterServerFile(dotweb.RouteMethod_POST, "/dst/*", "/home/www/")
+```
+* How To:
+  - how to add support "HEAD" method for all requests in your httpserver?
+  ~~~go
+  func main() {
+  	app := dotweb.Classic("/home/logs/wwwroot/")
+
+    // if use this, all router will auto add "HEAD" method support
+    // default is false
+    app.HttpServer.SetEnabledAutoHEAD(true)
+
+  	app.HttpServer.GET("/index", func(ctx dotweb.Context) error{
+  		return ctx.WriteString("welcome to my first web!")
+  	})
+
+  	err := app.StartServer(80)
+      fmt.Println("dotweb.StartServer error => ", err)
+  }
+  ~~~
+* 2019-01-03 10:00
+
 #### Version 1.5.9.5
 * Fixed Bug: Request.IsAJAX check X-Requested-With Contains XMLHttpRequest
 * New Feature: Response support http2 Push

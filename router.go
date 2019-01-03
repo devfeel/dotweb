@@ -67,6 +67,7 @@ type (
 	Router interface {
 		ServeHTTP(ctx *HttpContext)
 		ServerFile(path string, fileRoot string) RouterNode
+		RegisterServerFile(routeMethod string, path string, fileRoot string) RouterNode
 		GET(path string, handle HttpHandle) RouterNode
 		HEAD(path string, handle HttpHandle) RouterNode
 		OPTIONS(path string, handle HttpHandle) RouterNode
@@ -426,7 +427,7 @@ func (r *router) WebSocket(path string, handle HttpHandle) {
 	r.RegisterRoute(RouteMethod_WebSocket, path, handle)
 }
 
-// shortcut for router.Handle(httpmethod, path, handle)
+// RegisterRoute register router
 // support GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS\HiJack\WebSocket\ANY
 func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandle) RouterNode {
 	realPath := r.server.VirtualPath() + path
@@ -493,12 +494,18 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 	return node
 }
 
-// ServerFile is a shortcut for router.ServeFiles(path, filepath)
-// simple demo:server.ServerFile("/src/*", "/var/www")
-// simple demo:server.ServerFile("/src/*filepath", "/var/www")
-func (r *router) ServerFile(path string, fileroot string) RouterNode {
+// ServerFile register ServerFile router with GET method on http.FileServer
+// simple demo:router.ServerFile("/src/*", "/var/www")
+// simple demo:router.ServerFile("/src/*filepath", "/var/www")
+func (r *router) ServerFile(path string, fileRoot string) RouterNode {
+	return r.RegisterServerFile(RouteMethod_GET, path, fileRoot)
+}
+
+// RegisterServerFile register ServerFile router with routeMethod method on http.FileServer
+// simple demo:server.RegisterServerFile(RouteMethod_GET, "/src/*", "/var/www")
+// simple demo:server.RegisterServerFile(RouteMethod_GET, "/src/*filepath", "/var/www")
+func (r *router) RegisterServerFile(routeMethod string, path string, fileRoot string) RouterNode{
 	realPath := r.server.VirtualPath() + path
-	routeMethod := RouteMethod_GET
 	node := &Node{}
 	if len(realPath) < 2 {
 		panic("path length must be greater than or equal to 2")
@@ -510,13 +517,24 @@ func (r *router) ServerFile(path string, fileroot string) RouterNode {
 		panic("path must end with /*filepath or /* in path '" + realPath + "'")
 	}
 	var root http.FileSystem
-	root = http.Dir(fileroot)
+	root = http.Dir(fileRoot)
 	if !r.server.ServerConfig().EnabledListDir {
 		root = &core.HideReaddirFS{root}
 	}
 	fileServer := http.FileServer(root)
 	r.add(routeMethod, realPath, r.wrapFileHandle(fileServer))
 	node = r.getNode(routeMethod, realPath)
+
+	if r.server.ServerConfig().EnabledAutoHEAD {
+		if !r.existsRouter(RouteMethod_HEAD, realPath){
+			r.add(RouteMethod_HEAD, realPath, r.wrapFileHandle(fileServer))
+		}
+	}
+	if r.server.ServerConfig().EnabledAutoOPTIONS {
+		if !r.existsRouter(RouteMethod_OPTIONS, realPath) {
+			r.add(RouteMethod_OPTIONS, realPath, r.wrapFileHandle(fileServer))
+		}
+	}
 	return node
 }
 
