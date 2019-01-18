@@ -23,11 +23,13 @@ func main() {
 	}()
 
 	//初始化DotServer
-	app := dotweb.New()
+	app := dotweb.Classic("D:/gotmp")
 
 	//设置dotserver日志目录
 	//如果不设置，默认不启用，且默认为当前目录
 	app.SetEnabledLog(true)
+
+	app.HttpServer.SetEnabledRequestID(true)
 
 	//开启development模式
 	app.SetDevelopmentMode()

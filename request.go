@@ -6,8 +6,11 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+)
 
-	"github.com/devfeel/dotweb/framework/crypto/uuid"
+
+const(
+	HeaderRequestId = "x_request_id"
 )
 
 type Request struct {
@@ -24,7 +27,8 @@ func (req *Request) reset(r *http.Request, ctx *HttpContext) {
 	req.Request = r
 	req.isReadBody = false
 	if ctx.HttpServer().ServerConfig().EnabledRequestID {
-		req.requestID = uuid.NewV4().String32()
+		req.requestID = ctx.HttpServer().DotApp.IdGenerater()
+		ctx.response.SetHeader(HeaderRequestId, req.requestID)
 	} else {
 		req.requestID = ""
 	}
