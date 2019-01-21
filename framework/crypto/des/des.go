@@ -50,7 +50,7 @@ func ECBDecrypt(crypted, key []byte) ([]byte, error) {
 	blockMode := cipher.NewCBCDecrypter(block, key)
 	origData := make([]byte, len(crypted))
 	blockMode.CryptBlocks(origData, crypted)
-	origData = PKCS5UnPadding(origData)
+	//	origData = PKCS5UnPadding(origData)
 	return origData, nil
 }
 
