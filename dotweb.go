@@ -2,6 +2,7 @@ package dotweb
 
 import (
 	"fmt"
+	"github.com/devfeel/dotweb/framework/crypto/uuid"
 	"net/http"
 	_ "net/http/pprof"
 	"runtime"
@@ -40,6 +41,8 @@ type (
 		middlewareMap           map[string]MiddlewareFunc
 		middlewareMutex         *sync.RWMutex
 		StartMode               string
+		IDGenerater				IdGenerate
+		globalUniqueID			string
 	}
 
 	// ExceptionHandle supports exception handling
@@ -51,6 +54,10 @@ type (
 	// HttpHandle is a function that can be registered to a route to handle HTTP
 	// requests. Like http.HandlerFunc, but has a special parameter Context contain all request and response data.
 	HttpHandle func(Context) error
+
+	// IdGenerater the handler for create Unique Id
+	// default is use dotweb.
+	IdGenerate func() string
 )
 
 const (
@@ -138,6 +145,12 @@ func (app *DotWeb) GetMiddlewareFunc(name string) (MiddlewareFunc, bool) {
 	v, exists := app.middlewareMap[name]
 	app.middlewareMutex.RUnlock()
 	return v, exists
+}
+
+// GlobalUniqueID return app's GlobalUniqueID
+// it will be Initializationed when StartServer
+func (app *DotWeb) GlobalUniqueID() string{
+	return app.globalUniqueID
 }
 
 // Cache return cache interface
@@ -312,10 +325,12 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 	app.initRegisterConfigMiddleware()
 	app.initRegisterConfigRoute()
 	app.initRegisterConfigGroup()
-
 	app.initServerEnvironment()
-
 	app.initBindMiddleware()
+
+
+	// create unique id for dotweb app
+	app.globalUniqueID = app.IDGenerater()
 
 	if app.StartMode == StartMode_Classic {
 		app.IncludeDotwebGroup()
@@ -522,6 +537,12 @@ func (app *DotWeb) initServerEnvironment() {
 		app.SetMethodNotAllowedHandle(app.DefaultMethodNotAllowedHandler)
 	}
 
+
+	// set default unique id generater
+	if app.IDGenerater == nil{
+		app.IDGenerater = DefaultUniqueIDGenerater
+	}
+
 	// init session manager
 	if app.HttpServer.SessionConfig().EnabledSession {
 		if app.HttpServer.SessionConfig().SessionMode == "" {
@@ -585,6 +606,11 @@ func (app *DotWeb) DefaultMethodNotAllowedHandler(ctx Context) {
 	ctx.WriteStringC(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed))
 }
 
+// DefaultUniqueIDGenerater default generater used to create Unique Id
+func DefaultUniqueIDGenerater() string{
+	return uuid.NewV1().String32()
+}
+
 func DefaultTimeoutHookHandler(ctx Context) {
 	realDration := ctx.Items().GetTimeDuration(ItemKeyHandleDuration)
 	logs := fmt.Sprintf("req %v, cost %v", ctx.Request().Url(), realDration.Seconds())
@@ -640,7 +666,7 @@ func showIntervalData(ctx Context) error {
 
 // snow server status
 func showServerState(ctx Context) error {
-	ctx.WriteHtml(core.GlobalState.ShowHtmlData(Version))
+	ctx.WriteHtml(core.GlobalState.ShowHtmlData(Version, ctx.HttpServer().DotApp.GlobalUniqueID()))
 	return nil
 }
 

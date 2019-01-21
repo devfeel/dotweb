@@ -100,8 +100,10 @@ type ServerStateInfo struct {
 }
 
 // ShowHtmlData show server state data html-string format
-func (state *ServerStateInfo) ShowHtmlData(version string) string {
+func (state *ServerStateInfo) ShowHtmlData(version, globalUniqueId string) string {
 	data := "<html><body><div>"
+	data += "GlobalUniqueId : " + globalUniqueId
+	data += "<br>"
 	data += "HostInfo : " + sysx.GetHostName()
 	data += "<br>"
 	data += "CurrentTime : " + time.Now().Format("2006-01-02 15:04:05")

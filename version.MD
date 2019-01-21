@@ -1,5 +1,15 @@
 ## dotweb版本记录：
 
+
+#### Version 1.5.9.7
+* New Feature: Add IdGenerate define the handler for create Unique Id
+* New Feature: Add dotweb.DefaultUniqueIdGenerater which is default generater used to create Unique Id
+* Update: Add "GlobalUniqueId : XXXXXXXXXXXXXXXXXXX" on state page, you can view "host/dotweb/state"
+* Detail:
+    - default requestId & app.GlobalUniqueId use uuid.V1
+    - if you enabled HttpServer.SetEnabledRequestID, you can read requestId in Response-Header "X_request_id"
+* 2019-01-18 18:00
+
 #### Version 1.5.9.6
 * New Feature: HttpServer & Router add RegisterServerFile use to register ServerFile router with routeMethod method on http.FileServer
 * Update: ServerFile add support for EnabledAutoHEAD\EnabledAutoOPTIONS
