@@ -2,12 +2,12 @@
 
 
 #### Version 1.5.9.7
-* New Feature: Add IdGenerate define the handler for create Unique Id
-* New Feature: Add dotweb.DefaultUniqueIdGenerater which is default generater used to create Unique Id
-* Update: Add "GlobalUniqueId : XXXXXXXXXXXXXXXXXXX" on state page, you can view "host/dotweb/state"
+* New Feature: Add IDGenerate define the handler for create Unique Id
+* New Feature: Add dotweb.DefaultUniqueIDGenerater which is default generater used to create Unique Id
+* Update: Add "GlobalUniqueID : XXXXXXXXXXXXXXXXXXX" on state page, you can view "host/dotweb/state"
 * Detail:
-    - default requestId & app.GlobalUniqueId use uuid.V1
-    - if you enabled HttpServer.SetEnabledRequestID, you can read requestId in Response-Header "X_request_id"
+    - default requestId & app.GlobalUniqueID use uuid.V1
+    - if you enabled HttpServer.SetEnabledRequestID, you can read requestId in Response-Header "d_request_id"
 * 2019-01-18 18:00
 
 #### Version 1.5.9.6
