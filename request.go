@@ -10,7 +10,7 @@ import (
 
 
 const(
-	HeaderRequestId = "x_request_id"
+	HeaderRequestID = "d_request_id"
 )
 
 type Request struct {
@@ -27,8 +27,8 @@ func (req *Request) reset(r *http.Request, ctx *HttpContext) {
 	req.Request = r
 	req.isReadBody = false
 	if ctx.HttpServer().ServerConfig().EnabledRequestID {
-		req.requestID = ctx.HttpServer().DotApp.IdGenerater()
-		ctx.response.SetHeader(HeaderRequestId, req.requestID)
+		req.requestID = ctx.HttpServer().DotApp.IDGenerater()
+		ctx.response.SetHeader(HeaderRequestID, req.requestID)
 	} else {
 		req.requestID = ""
 	}

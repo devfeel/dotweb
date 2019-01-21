@@ -41,8 +41,8 @@ type (
 		middlewareMap           map[string]MiddlewareFunc
 		middlewareMutex         *sync.RWMutex
 		StartMode               string
-		IdGenerater				IdGenerate
-		globalUniqueId			string
+		IDGenerater				IdGenerate
+		globalUniqueID			string
 	}
 
 	// ExceptionHandle supports exception handling
@@ -147,10 +147,10 @@ func (app *DotWeb) GetMiddlewareFunc(name string) (MiddlewareFunc, bool) {
 	return v, exists
 }
 
-// GlobalUniqueId return app's GlobalUniqueId
+// GlobalUniqueID return app's GlobalUniqueID
 // it will be Initializationed when StartServer
-func (app *DotWeb) GlobalUniqueId() string{
-	return app.globalUniqueId
+func (app *DotWeb) GlobalUniqueID() string{
+	return app.globalUniqueID
 }
 
 // Cache return cache interface
@@ -330,7 +330,7 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 
 
 	// create unique id for dotweb app
-	app.globalUniqueId = app.IdGenerater()
+	app.globalUniqueID = app.IDGenerater()
 
 	if app.StartMode == StartMode_Classic {
 		app.IncludeDotwebGroup()
@@ -539,8 +539,8 @@ func (app *DotWeb) initServerEnvironment() {
 
 
 	// set default unique id generater
-	if app.IdGenerater == nil{
-		app.IdGenerater = DefaultUniqueIdGenerater
+	if app.IDGenerater == nil{
+		app.IDGenerater = DefaultUniqueIdGenerater
 	}
 
 	// init session manager
@@ -666,7 +666,7 @@ func showIntervalData(ctx Context) error {
 
 // snow server status
 func showServerState(ctx Context) error {
-	ctx.WriteHtml(core.GlobalState.ShowHtmlData(Version, ctx.HttpServer().DotApp.GlobalUniqueId()))
+	ctx.WriteHtml(core.GlobalState.ShowHtmlData(Version, ctx.HttpServer().DotApp.GlobalUniqueID()))
 	return nil
 }
 
