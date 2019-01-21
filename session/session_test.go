@@ -36,7 +36,7 @@ func TestNewDefaultSessionManager(t *testing.T) {
 
 	test.NotNil(t, manager.store)
 	test.Equal(t, int64(DefaultSessionGCLifeTime), manager.GCLifetime)
-	test.Equal(t, DefaultSessionCookieName, manager.CookieName)
+	test.Equal(t, DefaultSessionCookieName, manager.storeConfig.CookieName)
 	test.Equal(t, defaultRedisConfig, manager.storeConfig)
 
 	sessionId := manager.NewSessionID()

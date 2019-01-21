@@ -23,7 +23,7 @@ func Test_GetFileExt_1(t *testing.T) {
 }
 
 func Test_GetFileExt_2(t *testing.T) {
-	fn := "/download/vagrant_1"
+	fn := "/download/vagrant_1.abc"
 	fileExt := filepath.Ext(fn)
 	if len(fileExt) < 1 {
 		t.Error("fileExt null!")
@@ -33,7 +33,7 @@ func Test_GetFileExt_2(t *testing.T) {
 }
 
 func Test_Exist_1(t *testing.T) {
-	fn := "/Users/kevin/Downloads/vagrant_1.9.2.dmg"
+	fn := "testdata/file.test"
 	//	fn := "/Users/kevin/Downloads/commdownload.dmg"
 	isExist := Exist(fn)
 	if isExist {
