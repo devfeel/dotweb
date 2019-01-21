@@ -1,15 +1,10 @@
 package session
 
-import (
-	"testing"
-
-	"github.com/devfeel/dotweb/test"
-)
-
 const (
 	IP = "0.0.0.0"
 )
 
+/*
 func TestGetSessionStore(t *testing.T) {
 	defaultConfig := NewDefaultRuntimeConfig()
 
@@ -53,3 +48,4 @@ func TestNewDefaultSessionManager(t *testing.T) {
 	test.NotNil(t, sessionState)
 	test.Equal(t, sessionId, sessionState.sessionId)
 }
+*/
