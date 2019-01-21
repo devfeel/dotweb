@@ -540,7 +540,7 @@ func (app *DotWeb) initServerEnvironment() {
 
 	// set default unique id generater
 	if app.IDGenerater == nil{
-		app.IDGenerater = DefaultUniqueIdGenerater
+		app.IDGenerater = DefaultUniqueIDGenerater
 	}
 
 	// init session manager
@@ -606,8 +606,8 @@ func (app *DotWeb) DefaultMethodNotAllowedHandler(ctx Context) {
 	ctx.WriteStringC(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed))
 }
 
-// DefaultUniqueIdGenerater default generater used to create Unique Id
-func DefaultUniqueIdGenerater() string{
+// DefaultUniqueIDGenerater default generater used to create Unique Id
+func DefaultUniqueIDGenerater() string{
 	return uuid.NewV1().String32()
 }
 
