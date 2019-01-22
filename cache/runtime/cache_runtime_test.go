@@ -15,7 +15,7 @@ const (
 	DefaultTestGCInterval = 2
 
 	// cache key
-	TESTCacheKey   = "joe"
+	TESTCacheKey = "joe"
 	// cache value
 	TESTCacheValue = "zou"
 	// int value
@@ -197,33 +197,52 @@ func BenchmarkTestRuntimeCache_Get(b *testing.B) {
 func BenchmarkTestRuntimeCache_Set(b *testing.B) {
 	cache := NewRuntimeCache()
 	for i := 0; i < b.N; i++ {
-		cache.Set(TESTCacheKey + strconv.Itoa(i), TESTCacheValue, 0)
+		cache.Set(TESTCacheKey+strconv.Itoa(i), TESTCacheValue, 0)
 	}
 }
 
 func TestRuntimeCache_ConcurrentGetSetError(t *testing.T) {
 	cache := NewRuntimeCache()
 	cache.Set(TESTCacheKey, TESTCacheValue, 200000)
+
+	var wg sync.WaitGroup
+	wg.Add(2 * 10000)
+
 	for i := 0; i < 10000; i++ {
-		go cache.Get(TESTCacheKey)
+		go func() {
+			cache.Get(TESTCacheKey)
+			wg.Done()
+		}()
 	}
 
 	for i := 0; i < 10000; i++ {
-		go cache.Set(TESTCacheKey + strconv.Itoa(i), TESTCacheValue, 0)
+		go func() {
+			cache.Set(TESTCacheKey+strconv.Itoa(i), TESTCacheValue, 0)
+			wg.Done()
+		}()
 	}
-	time.Sleep(time.Minute)
+	wg.Wait()
 }
 
 func TestRuntimeCache_ConcurrentIncrDecrError(t *testing.T) {
 	cache := NewRuntimeCache()
 	cache.Set(TESTCacheKey, TESTCacheValue, 200000)
+
+	var wg sync.WaitGroup
+	wg.Add(2 * 10000)
+
 	for i := 0; i < 10000; i++ {
-		go cache.Incr(TESTCacheKey + strconv.Itoa(i))
+		go func() {
+			cache.Incr(TESTCacheKey + strconv.Itoa(i))
+			wg.Done()
+		}()
 	}
 
 	for i := 0; i < 10000; i++ {
-		go cache.Decr(TESTCacheKey + strconv.Itoa(i))
+		go func() {
+			cache.Decr(TESTCacheKey + strconv.Itoa(i))
+			wg.Done()
+		}()
 	}
-	time.Sleep(time.Minute)
+	wg.Wait()
 }
-

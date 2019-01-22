@@ -1,0 +1,116 @@
+app:
+  logpath: d:/gotmp/
+  enabledlog: true
+  runmode: development
+  pprofport: 0
+  enabledpprof: false
+appsets:
+- key: set1
+  value: "1"
+- key: set2
+  value: "2"
+- key: set3
+  value: "3"
+- key: set4
+  value: "4"
+offline:
+  offline: false
+  offlinetext: ""
+  offlineurl: ""
+server:
+  enabledlistdir: false
+  enabledrequestid: false
+  enabledgzip: false
+  enabledautohead: true
+  enabledautocors: false
+  enabledignorefavicon: false
+  enabledbindusejsontag: false
+  port: 8080
+  enabledtls: false
+  tlscertfile: ""
+  tlskeyfile: ""
+  indexpage: index.html
+  enableddetailrequestdata: false
+session:
+  enabledsession: true
+  sessionmode: runtime
+  timeout: 20
+  serverip: ""
+  username: ""
+  password: ""
+routers:
+- method: GET
+  path: /index
+  handlername: Index
+  middlewares:
+  - name: urllog
+    isuse: true
+  isuse: true
+- method: GET
+  path: /index2
+  handlername: Index
+  middlewares:
+  - name: urllog
+    isuse: true
+  isuse: true
+- method: GET
+  path: /index3
+  handlername: Index
+  middlewares:
+  - name: urllog
+    isuse: true
+  isuse: true
+- method: GET
+  path: /redirect
+  handlername: Redirect
+  middlewares: []
+  isuse: true
+- method: GET
+  path: /error
+  handlername: Error
+  middlewares: []
+  isuse: true
+- method: GET
+  path: /panic
+  handlername: Panic
+  middlewares: []
+  isuse: true
+- method: GET
+  path: /appset
+  handlername: appset
+  middlewares: []
+  isuse: true
+groups:
+- path: /admin
+  routers:
+  - method: GET
+    path: /login
+    handlername: Login
+    middlewares:
+    - name: urllog
+      isuse: true
+    isuse: true
+  - method: GET
+    path: /login3
+    handlername: Login
+    middlewares: []
+    isuse: true
+  - method: GET
+    path: /logout
+    handlername: Logout
+    middlewares: []
+    isuse: true
+  - method: GET
+    path: /login2
+    handlername: Login
+    middlewares: []
+    isuse: true
+  middlewares:
+  - name: grouplog
+    isuse: true
+  - name: simpleauth
+    isuse: true
+  isuse: true
+middlewares:
+- name: applog
+  isuse: true

@@ -4,11 +4,12 @@ import (
 	"errors"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/devfeel/dotweb/test"
 )
 
-// 以下为功能测试
+// function tests
 
 func Test_AddRequestCount_1(t *testing.T) {
 	var wg sync.WaitGroup
@@ -20,6 +21,8 @@ func Test_AddRequestCount_1(t *testing.T) {
 
 	wg.Wait()
 
+	// wait for the handler to consume all the info
+	time.Sleep(1 * time.Second)
 	test.Equal(t, uint64(110), GlobalState.TotalRequestCount)
 }
 
@@ -75,9 +78,8 @@ func addErrorCount(wg *sync.WaitGroup, count int) {
 	wg.Add(-1)
 }
 
-// 以下是性能测试
+// performance tests
 
-//基准测试
 func Benchmark_AddErrorCount_1(b *testing.B) {
 	var num uint64 = 1
 	for i := 0; i < b.N; i++ {
@@ -85,7 +87,6 @@ func Benchmark_AddErrorCount_1(b *testing.B) {
 	}
 }
 
-// 测试并发效率
 func Benchmark_AddErrorCount_Parallel(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		var num uint64 = 1
@@ -95,7 +96,6 @@ func Benchmark_AddErrorCount_Parallel(b *testing.B) {
 	})
 }
 
-//基准测试
 func Benchmark_AddRequestCount_1(b *testing.B) {
 	var num uint64 = 1
 	for i := 0; i < b.N; i++ {
@@ -103,7 +103,6 @@ func Benchmark_AddRequestCount_1(b *testing.B) {
 	}
 }
 
-//基准测试
 func Benchmark_AddCurrentRequestCount_1(b *testing.B) {
 	var num uint64 = 1
 	for i := 0; i < b.N; i++ {
@@ -111,7 +110,6 @@ func Benchmark_AddCurrentRequestCount_1(b *testing.B) {
 	}
 }
 
-// 测试并发效率
 func Benchmark_AddRequestCount_Parallel(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		var num uint64 = 1

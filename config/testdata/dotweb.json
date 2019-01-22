@@ -1,0 +1,145 @@
+{
+	"App": {
+		"LogPath": "d:/gotmp/",
+		"EnabledLog": true,
+		"RunMode": "development",
+		"PProfPort": 0,
+		"EnabledPProf": false
+	},
+	"AppSets": [{
+		"Key": "set1",
+		"Value": "1"
+	}, {
+		"Key": "set2",
+		"Value": "2"
+	}, {
+		"Key": "set3",
+		"Value": "3"
+	}, {
+		"Key": "set4",
+		"Value": "4"
+	}],
+	"Offline": {
+		"Offline": false,
+		"OfflineText": "",
+		"OfflineUrl": ""
+	},
+	"Server": {
+		"EnabledListDir": false,
+		"EnabledRequestID": false,
+		"EnabledGzip": false,
+		"EnabledAutoHEAD": true,
+		"EnabledAutoCORS": false,
+		"EnabledIgnoreFavicon": false,
+		"EnabledBindUseJsonTag": false,
+		"Port": 8080,
+		"EnabledTLS": false,
+		"TLSCertFile": "",
+		"TLSKeyFile": "",
+		"IndexPage": "index.html",
+		"EnabledDetailRequestData": false
+	},
+	"Session": {
+		"EnabledSession": true,
+		"SessionMode": "runtime",
+		"Timeout": 20,
+		"ServerIP": "",
+		"UserName": "",
+		"Password": ""
+	},
+	"Routers": [{
+		"Method": "GET",
+		"Path": "/index",
+		"HandlerName": "Index",
+		"Middlewares": [{
+			"Name": "urllog",
+			"IsUse": true
+		}],
+		"IsUse": true
+	}, {
+		"Method": "GET",
+		"Path": "/index2",
+		"HandlerName": "Index",
+		"Middlewares": [{
+			"Name": "urllog",
+			"IsUse": true
+		}],
+		"IsUse": true
+	}, {
+		"Method": "GET",
+		"Path": "/index3",
+		"HandlerName": "Index",
+		"Middlewares": [{
+			"Name": "urllog",
+			"IsUse": true
+		}],
+		"IsUse": true
+	}, {
+		"Method": "GET",
+		"Path": "/redirect",
+		"HandlerName": "Redirect",
+		"Middlewares": null,
+		"IsUse": true
+	}, {
+		"Method": "GET",
+		"Path": "/error",
+		"HandlerName": "Error",
+		"Middlewares": null,
+		"IsUse": true
+	}, {
+		"Method": "GET",
+		"Path": "/panic",
+		"HandlerName": "Panic",
+		"Middlewares": null,
+		"IsUse": true
+	}, {
+		"Method": "GET",
+		"Path": "/appset",
+		"HandlerName": "appset",
+		"Middlewares": null,
+		"IsUse": true
+	}],
+	"Groups": [{
+		"Path": "/admin",
+		"Routers": [{
+			"Method": "GET",
+			"Path": "/login",
+			"HandlerName": "Login",
+			"Middlewares": [{
+				"Name": "urllog",
+				"IsUse": true
+			}],
+			"IsUse": true
+		}, {
+			"Method": "GET",
+			"Path": "/login3",
+			"HandlerName": "Login",
+			"Middlewares": null,
+			"IsUse": true
+		}, {
+			"Method": "GET",
+			"Path": "/logout",
+			"HandlerName": "Logout",
+			"Middlewares": null,
+			"IsUse": true
+		}, {
+			"Method": "GET",
+			"Path": "/login2",
+			"HandlerName": "Login",
+			"Middlewares": null,
+			"IsUse": true
+		}],
+		"Middlewares": [{
+			"Name": "grouplog",
+			"IsUse": true
+		}, {
+			"Name": "simpleauth",
+			"IsUse": true
+		}],
+		"IsUse": true
+	}],
+	"Middlewares": [{
+		"Name": "applog",
+		"IsUse": true
+	}]
+}
