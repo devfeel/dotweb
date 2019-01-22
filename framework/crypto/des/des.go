@@ -2,7 +2,6 @@ package des
 
 import (
 	"bytes"
-	"crypto/cipher"
 	"crypto/des"
 	"errors"
 )
@@ -23,19 +22,23 @@ func PKCS5UnPadding(origData []byte) []byte {
 
 // ECB Des encrypt
 func ECBEncrypt(origData, key []byte) ([]byte, error) {
-	if len(origData) < 1 || len(key) < 1 {
-		return nil, errors.New("wrong data or key")
-	}
 	block, err := des.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
-	origData = PKCS5Padding(origData, block.BlockSize())
-	blockMode := cipher.NewCBCEncrypter(block, key)
-	crypted := make([]byte, len(origData))
-	blockMode.CryptBlocks(crypted, origData)
-
-	return crypted, nil
+	bs := block.BlockSize()
+	origData = PKCS5Padding(origData, bs)
+	if len(origData)%bs != 0 {
+		return nil, errors.New("Need a multiple of the blocksize")
+	}
+	out := make([]byte, len(origData))
+	dst := out
+	for len(origData) > 0 {
+		block.Encrypt(dst, origData[:bs])
+		origData = origData[bs:]
+		dst = dst[bs:]
+	}
+	return out, nil
 }
 
 // ECB Des decrypt
@@ -47,11 +50,19 @@ func ECBDecrypt(crypted, key []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	blockMode := cipher.NewCBCDecrypter(block, key)
-	origData := make([]byte, len(crypted))
-	blockMode.CryptBlocks(origData, crypted)
-	origData = PKCS5UnPadding(origData)
-	return origData, nil
+	bs := block.BlockSize()
+	if len(crypted)%bs != 0 {
+		return nil, errors.New("DecryptDES crypto/cipher: input not full blocks")
+	}
+	out := make([]byte, len(crypted))
+	dst := out
+	for len(crypted) > 0 {
+		block.Decrypt(dst, crypted[:bs])
+		crypted = crypted[bs:]
+		dst = dst[bs:]
+	}
+	out = PKCS5UnPadding(out)
+	return out, nil
 }
 
 // [golang ECB 3DES Encrypt]

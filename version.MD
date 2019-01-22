@@ -1,13 +1,24 @@
 ## dotweb版本记录：
 
+#### Version 1.5.9.8
+* New Feature: Fix UT and add scripts for UT
+* Detail:
+    - Put config files under testdata. Removed test for ConfigSet because it does not exist in config files
+    - The MD5Encoding changes the length of the original string so this test has no meaning
+    - Fix UT for core and framework etc.
+    - Add script for UT, This script also generates coverage.out in scripts folder which can be used for coverage analysis
+    - Fix UT for framework/file
+    - Use WG for syncing in testing
+    - Disable test cases related to redis
+* 2019-01-22 12:00
 
 #### Version 1.5.9.7
-* New Feature: Add IdGenerate define the handler for create Unique Id
-* New Feature: Add dotweb.DefaultUniqueIdGenerater which is default generater used to create Unique Id
-* Update: Add "GlobalUniqueId : XXXXXXXXXXXXXXXXXXX" on state page, you can view "host/dotweb/state"
+* New Feature: Add IDGenerate define the handler for create Unique Id
+* New Feature: Add dotweb.DefaultUniqueIDGenerater which is default generater used to create Unique Id
+* Update: Add "GlobalUniqueID : XXXXXXXXXXXXXXXXXXX" on state page, you can view "host/dotweb/state"
 * Detail:
-    - default requestId & app.GlobalUniqueId use uuid.V1
-    - if you enabled HttpServer.SetEnabledRequestID, you can read requestId in Response-Header "X_request_id"
+    - default requestId & app.GlobalUniqueID use uuid.V1
+    - if you enabled HttpServer.SetEnabledRequestID, you can read requestId in Response-Header "d_request_id"
 * 2019-01-18 18:00
 
 #### Version 1.5.9.6
