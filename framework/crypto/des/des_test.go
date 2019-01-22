@@ -11,7 +11,7 @@ import (
 
 func Test_ECBEncrypt_1(t *testing.T) {
 	key := []byte("01234567")
-	origData := []byte("cphpbb@hotmail.com")
+	origData := []byte("dotweb@devfeel")
 	b, e := ECBEncrypt(origData, key)
 	if e != nil {
 		t.Error(e)
@@ -19,22 +19,26 @@ func Test_ECBEncrypt_1(t *testing.T) {
 		t.Logf("%x\n", b)
 	}
 
-	test.Equal(t, "a5296e4c525693a3892bbe31e1ed630121f26338ce9aa280", fmt.Sprintf("%x", b))
+	test.Equal(t, "72f9f187eafe43478f9eb3dd49ef7b43", fmt.Sprintf("%x", b))
 }
 
 //ECBDecrypt方法有bug，这个方法会报空指针
-// func Test_ECBDecrypt_1(t *testing.T) {
-// 	hextext := []byte("a5296e4c525693a3892bbe31e1ed630121f26338ce9aa280")
-// 	key := []byte("01234567")
-// 	b, e := ECBDecrypt(hextext, key)
-// 	if e != nil {
-// 		t.Error(e)
-// 	} else {
-// 		t.Logf("%x\n", b)
-// 	}
+ func Test_ECBDecrypt_1(t *testing.T) {
+ 	key := []byte("01234567")
+	origData := []byte("dotweb@devfeel")
+	b1, e1 := ECBEncrypt(origData, key)
+	if e1 != nil {
+	 t.Error(e1)
+	}
+ 	b, e := ECBDecrypt(b1, key)
+ 	if e != nil {
+ 		t.Error(e)
+ 	} else {
+ 		t.Logf("%x\n", b)
+ 	}
 
-// 	test.Equal(t, "a5296e4c525693a3892bbe31e1ed630121f26338ce9aa280", fmt.Sprintf("%x", b))
-// }
+ 	test.Equal(t, "dotweb@devfeel", string(b))
+ }
 
 func Test_PKCS5Padding_1(t *testing.T) {}
 
