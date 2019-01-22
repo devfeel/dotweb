@@ -22,7 +22,6 @@ func Test_ECBEncrypt_1(t *testing.T) {
 	test.Equal(t, "72f9f187eafe43478f9eb3dd49ef7b43", fmt.Sprintf("%x", b))
 }
 
-//ECBDecrypt方法有bug，这个方法会报空指针
  func Test_ECBDecrypt_1(t *testing.T) {
  	key := []byte("01234567")
 	origData := []byte("dotweb@devfeel")
