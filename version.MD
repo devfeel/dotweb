@@ -1,5 +1,12 @@
 ## dotweb版本记录：
 
+
+#### Version 1.5.9.9
+* Fix Bug for #184 ServerFile不能正确获取SessionID()
+* Remove Init Session & Gzip in feature.go
+* Important: We will remove feature.go in dotweb, so will remove ServerConfig().EnabledAutoCORS on version 1.6.
+* 2019-01-28 12:00
+
 #### Version 1.5.9.8
 * New Feature: Fix UT and add scripts for UT
 * Detail:

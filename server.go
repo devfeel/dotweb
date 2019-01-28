@@ -1,7 +1,10 @@
 package dotweb
 
 import (
+	"compress/gzip"
+	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -160,13 +163,7 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		if server.IsOffline() {
 			server.DotApp.OfflineServer.ServeHTTP(w, req)
 		} else {
-			// get from pool
-			response := server.pool.response.Get().(*Response)
-			request := server.pool.request.Get().(*Request)
-			httpCtx := server.pool.context.Get().(*HttpContext)
-			httpCtx.reset(response, request, server, nil, nil, nil)
-			response.reset(w)
-			request.reset(req, httpCtx)
+			httpCtx := prepareHttpContext(server, w, req)
 
 			// process OnBeginRequest of modules
 			for _, module := range server.Modules {
@@ -185,17 +182,9 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 					module.OnEndRequest(httpCtx)
 				}
 			}
-
 			core.GlobalState.AddRequestCount(httpCtx.Request().Path(), httpCtx.Response().HttpCode(), 1)
-			// release response
-			response.release()
-			server.pool.response.Put(response)
-			// release request
-			request.release()
-			server.pool.request.Put(request)
-			// release context
-			httpCtx.release()
-			server.pool.context.Put(httpCtx)
+
+			releaseHttpContext(server, httpCtx)
 		}
 	}
 }
@@ -483,4 +472,72 @@ func checkIsDebugRequest(req *http.Request) bool {
 		return true
 	}
 	return false
+}
+
+// prepareHttpContext init HttpContext, init session & gzip config on HttpContext
+func prepareHttpContext(server *HttpServer, w http.ResponseWriter, req *http.Request) *HttpContext {
+	// get from pool
+	response := server.pool.response.Get().(*Response)
+	request := server.pool.request.Get().(*Request)
+	httpCtx := server.pool.context.Get().(*HttpContext)
+	httpCtx.reset(response, request, server, nil, nil, nil)
+	response.reset(w)
+	request.reset(req, httpCtx)
+
+	// session
+	// if exists client-sessionid, use it
+	// if not exists client-sessionid, new one
+	if httpCtx.HttpServer().SessionConfig().EnabledSession {
+		sessionId, err := httpCtx.HttpServer().GetSessionManager().GetClientSessionID(httpCtx.Request().Request)
+		if err == nil && sessionId != "" {
+			httpCtx.sessionID = sessionId
+		} else {
+			httpCtx.sessionID = httpCtx.HttpServer().GetSessionManager().NewSessionID()
+			cookie := &http.Cookie{
+				Name:  httpCtx.HttpServer().sessionManager.StoreConfig().CookieName,
+				Value: url.QueryEscape(httpCtx.SessionID()),
+				Path:  "/",
+			}
+			httpCtx.SetCookie(cookie)
+		}
+	}
+	// init gzip
+	if httpCtx.HttpServer().ServerConfig().EnabledGzip {
+		gw, err := gzip.NewWriterLevel(httpCtx.Response().Writer(), DefaultGzipLevel)
+		if err != nil {
+			panic("use gzip error -> " + err.Error())
+		}
+		grw := &gzipResponseWriter{Writer: gw, ResponseWriter: httpCtx.Response().Writer()}
+		httpCtx.Response().reset(grw)
+		httpCtx.Response().SetHeader(HeaderContentEncoding, gzipScheme)
+	}
+
+	// CROS handling
+	if server.Features.CROSConfig != nil {
+		c := server.Features.CROSConfig
+		if c.EnabledCROS {
+			FeatureTools.SetCROSConfig(httpCtx, c)
+		}
+	}
+
+	return httpCtx
+}
+
+// releaseHttpContext release HttpContext, release gzip writer
+func releaseHttpContext(server *HttpServer, httpCtx *HttpContext){
+	// release response
+	httpCtx.Response().release()
+	server.pool.response.Put(httpCtx.Response())
+	// release request
+	httpCtx.Request().release()
+	server.pool.request.Put(httpCtx.Request())
+	// release context
+	httpCtx.release()
+	server.pool.context.Put(httpCtx)
+
+	if server.ServerConfig().EnabledGzip {
+		var w io.Writer
+		w = httpCtx.Response().Writer().(*gzipResponseWriter).Writer
+		w.(*gzip.Writer).Close()
+	}
 }
