@@ -275,9 +275,6 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 	return func(httpCtx *HttpContext) {
 		httpCtx.handler = handler
 
-		// do features
-		FeatureTools.InitFeatures(r.server, httpCtx)
-
 		// hijack handling
 		if isHijack {
 			_, hijack_err := httpCtx.Hijack()
@@ -315,8 +312,6 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 				// Increment error count
 				core.GlobalState.AddErrorCount(httpCtx.Request().Path(), fmt.Errorf("%v", err), 1)
 			}
-
-			FeatureTools.ReleaseFeatures(r.server, httpCtx)
 
 			// cancle Context
 			if httpCtx.cancle != nil {
