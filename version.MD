@@ -2,7 +2,7 @@
 
 #### Version 1.5.9.10
 * Fix Bug for HttpServer.EnabledAutoOPTIONS, use DefaultAutoOPTIONSHandler replace user-handler to bind auto-options router
-* Enabled AutoOPTIONS flag when app is on RunMode_Development mode
+* Enabled AutoOPTIONS\AutoHEAD flag when app is on RunMode_Development mode
 * Important: We will remove feature.go in dotweb, so will remove ServerConfig().EnabledAutoCORS on version 1.6.
 * 2019-01-30 12:00
 

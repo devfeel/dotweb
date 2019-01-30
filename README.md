@@ -245,7 +245,10 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
   设置是否启用目录浏览，仅对Router.ServerFile有效，若设置该项，则可以浏览目录文件，默认不开启
 * HttpServer.EnabledAutoHEAD
 
-  设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，默认不开启
+  设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，非开发模式默认不开启
+* HttpServer.EnabledAutoHEAD
+
+  设置是否自动启用Options路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加OPTIONS路由，非开发模式默认不开启
 * HttpServer.EnabledIgnoreFavicon
 
   设置是否忽略Favicon的请求，一般用于接口项目
@@ -259,7 +262,7 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 #### Run Mode
 * 新增development、production模式
 * 默认development，通过DotWeb.SetDevelopmentMode\DotWeb.SetProductionMode开启相关模式
-* 若设置development模式，未处理异常会输出异常详细信息，同时启用日志开关，同时启用日志console打印
+* 若设置development模式，未处理异常会输出异常详细信息，同时启用日志开关，同时启用日志console打印，同时自动启用AutoHead&AutoOptions
 * 未来会拓展更多运行模式的配置
 
 
