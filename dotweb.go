@@ -336,6 +336,11 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 		app.IncludeDotwebGroup()
 	}
 
+	if app.RunMode() == RunMode_Development{
+		// enabled auto OPTIONS
+		app.HttpServer.SetEnabledAutoOPTIONS(true)
+	}
+
 	// special, if run mode is not develop, auto stop mock
 	if app.RunMode() != RunMode_Development {
 		if app.Mock != nil {
