@@ -181,6 +181,12 @@ func (app *DotWeb) IsDevelopmentMode() bool {
 // 2.SetEnabledConsole(true)
 func (app *DotWeb) SetDevelopmentMode() {
 	app.Config.App.RunMode = RunMode_Development
+
+	// enabled auto OPTIONS
+	app.HttpServer.SetEnabledAutoOPTIONS(true)
+	// enabled auto HEAD
+	app.HttpServer.SetEnabledAutoHEAD(true)
+
 	app.SetEnabledLog(true)
 	app.Use(new(RequestLogMiddleware))
 	logger.SetEnabledConsole(true)
@@ -334,13 +340,6 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 
 	if app.StartMode == StartMode_Classic {
 		app.IncludeDotwebGroup()
-	}
-
-	if app.RunMode() == RunMode_Development{
-		// enabled auto OPTIONS
-		app.HttpServer.SetEnabledAutoOPTIONS(true)
-		// enabled auto HEAD
-		app.HttpServer.SetEnabledAutoHEAD(true)
 	}
 
 	// special, if run mode is not develop, auto stop mock
