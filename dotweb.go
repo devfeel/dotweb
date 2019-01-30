@@ -530,11 +530,11 @@ func (app *DotWeb) initServerEnvironment() {
 	}
 
 	if app.NotFoundHandler == nil {
-		app.SetNotFoundHandle(app.DefaultNotFoundHandler)
+		app.SetNotFoundHandle(DefaultNotFoundHandler)
 	}
 
 	if app.MethodNotAllowedHandler == nil {
-		app.SetMethodNotAllowedHandle(app.DefaultMethodNotAllowedHandler)
+		app.SetMethodNotAllowedHandle(DefaultMethodNotAllowedHandler)
 	}
 
 
@@ -595,15 +595,21 @@ func (app *DotWeb) DefaultHTTPErrorHandler(ctx Context, err error) {
 }
 
 // DefaultNotFoundHandler default exception handler
-func (app *DotWeb) DefaultNotFoundHandler(ctx Context) {
+func DefaultNotFoundHandler(ctx Context) {
 	ctx.Response().Header().Set(HeaderContentType, CharsetUTF8)
 	ctx.WriteStringC(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 }
 
 // DefaultMethodNotAllowedHandler default exception handler
-func (app *DotWeb) DefaultMethodNotAllowedHandler(ctx Context) {
+func DefaultMethodNotAllowedHandler(ctx Context) {
 	ctx.Response().Header().Set(HeaderContentType, CharsetUTF8)
 	ctx.WriteStringC(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed))
+}
+
+// DefaultAutoOPTIONSHandler default handler for options request
+// if set HttpServer.EnabledAutoOPTIONS, auto bind this handler
+func DefaultAutoOPTIONSHandler(ctx Context) error{
+	return ctx.WriteStringC(http.StatusNoContent, "")
 }
 
 // DefaultUniqueIDGenerater default generater used to create Unique Id

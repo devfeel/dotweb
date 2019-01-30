@@ -478,10 +478,10 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 		if routeMethod == RouteMethod_WebSocket {
 			// Nothing to do
 		} else if routeMethod == RouteMethod_HiJack {
-			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(handle, true))
+			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(DefaultAutoOPTIONSHandler, true))
 			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoOPTIONS success ["+RouteMethod_OPTIONS+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 		} else if !r.existsRouter(RouteMethod_OPTIONS, realPath) {
-			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(handle, false))
+			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(DefaultAutoOPTIONSHandler, false))
 			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoOPTIONS success ["+RouteMethod_OPTIONS+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 		}
 	}
@@ -527,7 +527,7 @@ func (r *router) RegisterServerFile(routeMethod string, path string, fileRoot st
 	}
 	if r.server.ServerConfig().EnabledAutoOPTIONS {
 		if !r.existsRouter(RouteMethod_OPTIONS, realPath) {
-			r.add(RouteMethod_OPTIONS, realPath, r.wrapFileHandle(fileServer))
+			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(DefaultAutoOPTIONSHandler, false))
 		}
 	}
 	return node

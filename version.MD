@@ -1,5 +1,9 @@
 ## dotweb版本记录：
 
+#### Version 1.5.9.10
+* Fix Bug for HttpServer.EnabledAutoOPTIONS, use DefaultAutoOPTIONSHandler replace user-handler to bind auto-options router
+* Important: We will remove feature.go in dotweb, so will remove ServerConfig().EnabledAutoCORS on version 1.6.
+* 2019-01-30 12:00
 
 #### Version 1.5.9.9
 * Fix Bug for #184 ServerFile不能正确获取SessionID()
