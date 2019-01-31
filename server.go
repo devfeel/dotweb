@@ -222,6 +222,12 @@ func (server *HttpServer) IndexPage() string {
 	}
 }
 
+// SetIndexPage set default index page name
+func (server *HttpServer) SetIndexPage(indexPage string){
+	server.ServerConfig().IndexPage = indexPage
+	logger.Logger().Debug("DotWeb:HttpServer SetIndexPage ["+indexPage+"]", LogTarget_HttpServer)
+}
+
 // SetSessionConfig set session store config
 func (server *HttpServer) SetSessionConfig(storeConfig *session.StoreConfig) {
 	// sync session config
@@ -365,6 +371,7 @@ func (server *HttpServer) Renderer() Renderer {
 // SetRenderer set custom renderer in server
 func (server *HttpServer) SetRenderer(r Renderer) {
 	server.render = r
+	logger.Logger().Debug("DotWeb:HttpServer SetRenderer", LogTarget_HttpServer)
 }
 
 // SetEnabledAutoHEAD set route use auto head

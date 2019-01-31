@@ -246,7 +246,7 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 * HttpServer.EnabledAutoHEAD
 
   设置是否自动启用Head路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加HEAD路由，非开发模式默认不开启
-* HttpServer.EnabledAutoHEAD
+* HttpServer.EnabledAutoOPTIONS
 
   设置是否自动启用Options路由，若设置该项，则会为除Websocket\HEAD外所有路由方式默认添加OPTIONS路由，非开发模式默认不开启
 * HttpServer.EnabledIgnoreFavicon
@@ -258,6 +258,12 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 * HttpServer.EnabledTLS
 
   设置是否启用TLS加密处理
+* HttpServer.EnabledIgnoreFavicon
+
+  设置是否忽略favicon响应，默认为false，若设置该项，将会默认注册内集成的IgnoreFaviconModule，在路由生效前执行
+* HttpServer.EnabledBindUseJsonTag
+
+  设置是否启用json tag生效于Bind接口，默认为false，若设置该项，将会在Bind执行时检查json tag
 
 #### Run Mode
 * 新增development、production模式
