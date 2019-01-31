@@ -4,6 +4,7 @@
 * New Feature: HttpServer add SetIndexPage used to config default index-page name, default is "index.html"
 * Remove: remove example/basemiddleware demo, more examples you can see "https://github.com/devfeel/dotweb-example"
 * About: if you set IgnoreFavicon Enabled, app will auto register IgnoreFaviconModule, more info you can see "module.go"
+* Update: update README.md
 * Important: We will remove feature.go in dotweb, so will remove ServerConfig().EnabledAutoCORS on version 1.6.
 * 2019-01-31 12:00
 
