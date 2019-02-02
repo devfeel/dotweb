@@ -14,7 +14,6 @@ import (
 	"strconv"
 
 	"github.com/devfeel/dotweb/config"
-	"github.com/devfeel/dotweb/feature"
 	"github.com/devfeel/dotweb/framework/file"
 	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/logger"
@@ -40,7 +39,6 @@ type (
 		binder         Binder
 		render         Renderer
 		offline        bool
-		Features       *feature.Feature
 		virtualPath    string // virtual path when deploy on no root path
 	}
 
@@ -73,7 +71,6 @@ func NewHttpServer() *HttpServer {
 		Modules:      make([]*HttpModule, 0),
 		lock_session: new(sync.RWMutex),
 		binder:       newBinder(),
-		Features:     &feature.Feature{},
 	}
 	// setup router
 	server.router = NewRouter(server)
@@ -83,10 +80,6 @@ func NewHttpServer() *HttpServer {
 
 // initConfig init config from app config
 func (server *HttpServer) initConfig() {
-	// CROS Config
-	if server.ServerConfig().EnabledAutoCORS {
-		server.Features.SetEnabledCROS()
-	}
 	server.SetEnabledGzip(server.ServerConfig().EnabledGzip)
 
 	// VirtualPath config
@@ -517,14 +510,6 @@ func prepareHttpContext(server *HttpServer, w http.ResponseWriter, req *http.Req
 		grw := &gzipResponseWriter{Writer: gw, ResponseWriter: httpCtx.Response().Writer()}
 		httpCtx.Response().reset(grw)
 		httpCtx.Response().SetHeader(HeaderContentEncoding, gzipScheme)
-	}
-
-	// CROS handling
-	if server.Features.CROSConfig != nil {
-		c := server.Features.CROSConfig
-		if c.EnabledCROS {
-			FeatureTools.SetCROSConfig(httpCtx, c)
-		}
 	}
 
 	return httpCtx

@@ -1,5 +1,30 @@
 ## dotweb版本记录：
 
+#### Version 1.6
+* Remove: remove all features in dotweb!
+* Remove: remove ServerConfig().EnabledAutoCORS.
+* Add: add example/README.md
+* Demo for how to use ConfigSet tools?
+    - first define config file named 'user-conf.xml'
+    ```
+    <?xml version="1.0" encoding="UTF-8"?>
+    <config>
+        <set key="set1" value="1" />
+        <set key="set2" value="2" />
+        <set key="set3" value="3" />
+        <set key="set4" value="4" />
+    </config>
+    ```
+    - include config file
+    ```
+    err := app.Config.IncludeConfigSet("/home/your/user-conf.xml", config.ConfigType_XML)
+    ```
+    - use it in your HttpContext
+    ```
+    value := ctx.ConfigSet().GetString("set1")
+    ```
+* 2019-02-02 12:00
+
 #### Version 1.5.9.11
 * New Feature: HttpServer add SetIndexPage used to config default index-page name, default is "index.html"
 * Remove: remove example/basemiddleware demo, more examples you can see "https://github.com/devfeel/dotweb-example"

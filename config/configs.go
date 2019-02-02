@@ -48,7 +48,6 @@ type (
 		EnabledGzip                 bool   `xml:"enabledgzip,attr"`      // enable gzip
 		EnabledAutoHEAD             bool   `xml:"enabledautohead,attr"`  // ehanble HEAD routing, default is false, will add HEAD routing for all routes except for websocket and HEAD
 		EnabledAutoOPTIONS          bool   // enable OPTIONS routing, default is false, will add OPTIONS routing for all routes except for websocket and OPTIONS
-		EnabledAutoCORS             bool   `xml:"enabledautocors,attr"`       // enable automatic CORS, if set, all [GET, POST, PUT, DELETE, OPTIONS] requests will allow CORS
 		EnabledIgnoreFavicon        bool   `xml:"enabledignorefavicon,attr"`  // ignore favicon.ico request, return empty reponse if set
 		EnabledBindUseJsonTag       bool   `xml:"enabledbindusejsontag,attr"` // allow Bind to use JSON tag, default is false, Bind will use json tag automatically and ignore form tag
 		EnabledStaticFileMiddleware bool   // The flag which enabled or disabled middleware for static-file route

@@ -112,7 +112,6 @@ type (
 		innerItems     core.ConcurrenceMap
 		items          core.ConcurrenceMap
 		viewData       core.ConcurrenceMap
-		features       *xFeatureTools
 		handler        HttpHandle
 	}
 )
@@ -129,7 +128,6 @@ func (ctx *HttpContext) reset(res *Response, r *Request, server *HttpServer, nod
 	ctx.innerItems = nil
 	ctx.items = nil
 	ctx.isEnd = false
-	ctx.features = FeatureTools
 	ctx.handler = handler
 	ctx.Items().Set(ItemKeyHandleStartTime, time.Now())
 }
@@ -147,7 +145,6 @@ func (ctx *HttpContext) release() {
 	ctx.isWebSocket = false
 	ctx.httpServer = nil
 	ctx.isEnd = false
-	ctx.features = nil
 	ctx.innerItems = nil
 	ctx.items = nil
 	ctx.viewData = nil
@@ -223,10 +220,6 @@ func (ctx *HttpContext) Handler() HttpHandle {
 
 func (ctx *HttpContext) SessionID() string {
 	return ctx.sessionID
-}
-
-func (ctx *HttpContext) Features() *xFeatureTools {
-	return ctx.features
 }
 
 // AppContext get application's global appcontext
