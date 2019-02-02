@@ -17,7 +17,6 @@ func TestNewHttpServer(t *testing.T) {
 	test.NotNil(t, server.SessionConfig)
 	test.NotNil(t, server.lock_session)
 	test.NotNil(t, server.binder)
-	test.NotNil(t, server.Features)
 	test.NotNil(t, server.pool)
 	test.NotNil(t, server.pool.context)
 	test.NotNil(t, server.pool.request)
