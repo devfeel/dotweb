@@ -89,6 +89,7 @@ type (
 		AppMiddlewares() []Middleware
 		GroupMiddlewares() []Middleware
 		Middlewares() []Middleware
+		Path() string
 		Node() *Node
 	}
 

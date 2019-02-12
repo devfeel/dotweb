@@ -86,6 +86,10 @@ func (n *Node) Middlewares() []Middleware {
 	return n.middlewares
 }
 
+func (n *Node) Path() string{
+	return n.fullPath
+}
+
 func (n *Node) Node() *Node {
 	return n
 }
