@@ -33,7 +33,7 @@ func main() {
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
 	flag := ctx.HttpServer().Router().MatchPath(ctx, "/d/:x/y")
-	return ctx.WriteString("index - " + ctx.Request().Method + " - " + fmt.Sprint(flag))
+	return ctx.WriteString("index - " + ctx.Request().Method + " - " + ctx.RouterNode().Path() + " - " + fmt.Sprint(flag))
 }
 
 func Any(ctx dotweb.Context) error {

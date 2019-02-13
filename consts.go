@@ -87,3 +87,9 @@ const (
 	HeaderContentSecurityPolicy   = "Content-Security-Policy"
 	HeaderXCSRFToken              = "X-CSRF-Token"
 )
+
+
+const(
+	HeaderRequestID = "d_request_id"
+	HeaderResponseTime = "d_response_time"
+)

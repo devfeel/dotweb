@@ -9,10 +9,6 @@ import (
 )
 
 
-const(
-	HeaderRequestID = "d_request_id"
-)
-
 type Request struct {
 	*http.Request
 	httpCtx    *HttpContext

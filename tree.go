@@ -74,16 +74,24 @@ func (n *Node) Use(m ...Middleware) *Node {
 	return n
 }
 
+// AppMiddlewares return AppMiddlewares
 func (n *Node) AppMiddlewares() []Middleware {
 	return n.appMiddlewares
 }
 
+// GroupMiddlewares return GroupMiddlewares
 func (n *Node) GroupMiddlewares() []Middleware {
 	return n.groupMiddlewares
 }
 
+// Middlewares return middlewares
 func (n *Node) Middlewares() []Middleware {
 	return n.middlewares
+}
+
+// Path return full path in node
+func (n *Node) Path() string{
+	return n.fullPath
 }
 
 func (n *Node) Node() *Node {

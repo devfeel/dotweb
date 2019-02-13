@@ -1,5 +1,31 @@
 ## dotweb版本记录：
 
+#### Version 1.6.1
+* New Feature: RouterNode add RouterNode.Path() to get routing path for the request
+* Detail:
+    - you can use ctx.RouterNode().Path() to get routing path for the request
+    - you can use ctx.HttpServer().Router().MatchPath to match request and routing path
+* Demo:
+  ~~~go
+  func main() {
+  	app := dotweb.Classic("/home/logs/wwwroot/")
+
+    // if use this, all router will auto add "HEAD" method support
+    // default is false
+    app.HttpServer.SetEnabledAutoHEAD(true)
+
+  	app.HttpServer.GET("/index", func(ctx dotweb.Context) error{
+  	    flag := ctx.HttpServer().Router().MatchPath(ctx, "/index")
+  		return ctx.WriteString("welcome to my first web!" + ctx.RouterNode().Path() + " - " + fmt.Sprint(flag))
+  	})
+
+  	err := app.StartServer(80)
+      fmt.Println("dotweb.StartServer error => ", err)
+  }
+  ~~~
+* 2019-02-12 16:00
+
+
 #### Version 1.6
 * Remove: remove all features in dotweb!
 * Remove: remove ServerConfig().EnabledAutoCORS.
