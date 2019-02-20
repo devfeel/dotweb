@@ -1,5 +1,17 @@
 ## dotweb版本记录：
 
+#### Version 1.6.2
+* Bug fixed: cryptos.GetRandString used to returns randominzed string with given length
+* Detail:
+    - default character set is "0123456789abcdefghijklmnopqrstuvwxyz"
+* Demo:
+  ~~~go
+  func main() {
+      fmt.Println(cryptos.GetRandString(10))
+  }
+  ~~~
+* 2019-02-20 14:00
+
 #### Version 1.6.1
 * New Feature: RouterNode add RouterNode.Path() to get routing path for the request
 * Detail:
