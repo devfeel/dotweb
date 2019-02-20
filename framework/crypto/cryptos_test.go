@@ -14,3 +14,9 @@ func Test_GetMd5String_1(t *testing.T) {
 	t.Log("GetMd5String:", md5str)
 	test.Equal(t, "25f9e794323b453885f5181f1b624d0b", md5str)
 }
+
+func Test_GetRandString(t *testing.T) {
+	randStr := GetRandString(12)
+	t.Log("GetRandString:", randStr)
+	test.Equal(t, 12, len(randStr))
+}
