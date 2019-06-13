@@ -115,6 +115,7 @@ func Time(ctx dotweb.Context) error {
 }
 
 func IndexReg(ctx dotweb.Context) error {
+	ctx.HttpServer().Logger().Info(dotweb.LogTarget_Default, "test log")
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
 	return ctx.WriteString("welcome to dotweb")
 }

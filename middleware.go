@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/devfeel/dotweb/framework/convert"
-	"github.com/devfeel/dotweb/logger"
 )
 
 const (
@@ -146,7 +145,7 @@ func (m *RequestLogMiddleware) Handle(ctx Context) error {
 		timeTaken = uint64(time.Now().Sub(begin) / time.Millisecond)
 	}
 	log := ctx.Request().Url() + " " + logContext(ctx, timeTaken)
-	logger.Logger().Debug(log, LogTarget_HttpRequest)
+	ctx.HttpServer().Logger().Debug(log, LogTarget_HttpRequest)
 	return err
 }
 

@@ -28,7 +28,7 @@ type (
 		Exists(key string) bool
 		GetCurrentMap() map[string]interface{}
 		Len() int
-		Set(key string, value interface{}) error
+		Set(key string, value interface{})
 		Remove(key string)
 		Once(key string) (value interface{}, exists bool)
 	}
@@ -65,11 +65,10 @@ func NewReadonlyMap() ReadonlyMap {
 }
 
 // Set put key, value into ItemMap
-func (ctx *ItemMap) Set(key string, value interface{}) error {
+func (ctx *ItemMap) Set(key string, value interface{}) {
 	ctx.Lock()
 	ctx.innerMap[key] = value
 	ctx.Unlock()
-	return nil
 }
 
 // Get returns value of specified key

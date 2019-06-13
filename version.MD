@@ -1,5 +1,18 @@
 ## dotweb版本记录：
 
+#### Version 1.6.3
+* Architecture: move logger.Logger() to DotWeb.Logger()
+* Architecture: add HttpServer.Logger who is a shortcut for DotWeb.Logger()
+* Architecture: remove logger.Logger()
+* How to use dotweb.Logger in your app:
+  ~~~go
+  func TestLog(ctx dotweb.Context) error {
+  	ctx.HttpServer().Logger().Info(dotweb.LogTarget_Default, "test log")
+  	return ctx.WriteString("log page")
+  }
+  ~~~
+* 2019-06-13 12:00
+
 #### Version 1.6.2
 * Bug fixed: cryptos.GetRandString used to returns randominzed string with given length
 * Detail:

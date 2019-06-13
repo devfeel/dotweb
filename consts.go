@@ -3,7 +3,7 @@ package dotweb
 // Global define
 const (
 	// Version current version
-	Version = "1.5.9.1"
+	Version = "1.6.3"
 )
 
 // Log define
@@ -88,8 +88,7 @@ const (
 	HeaderXCSRFToken              = "X-CSRF-Token"
 )
 
-
-const(
-	HeaderRequestID = "d_request_id"
+const (
+	HeaderRequestID    = "d_request_id"
 	HeaderResponseTime = "d_response_time"
 )

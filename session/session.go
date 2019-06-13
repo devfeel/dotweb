@@ -2,13 +2,13 @@ package session
 
 import (
 	"fmt"
+	"github.com/devfeel/dotweb/logger"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
 
 	"github.com/devfeel/dotweb/framework/crypto"
-	"github.com/devfeel/dotweb/logger"
 )
 
 const (
@@ -45,6 +45,7 @@ type (
 	SessionManager struct {
 		GCLifetime int64 `json:"gclifetime"`
 
+		appLog      logger.AppLog
 		store       SessionStore
 		storeConfig *StoreConfig
 	}
@@ -95,12 +96,12 @@ func NewStoreConfig(storeName string, maxlifetime int64, serverIp string, storeK
 }
 
 // NewDefaultSessionManager create new session manager with default config info
-func NewDefaultSessionManager(config *StoreConfig) (*SessionManager, error) {
-	return NewSessionManager(DefaultSessionGCLifeTime, config)
+func NewDefaultSessionManager(appLog logger.AppLog, config *StoreConfig) (*SessionManager, error) {
+	return NewSessionManager(DefaultSessionGCLifeTime, appLog, config)
 }
 
 // NewSessionManager create new seesion manager
-func NewSessionManager(gcLifetime int64, config *StoreConfig) (*SessionManager, error) {
+func NewSessionManager(gcLifetime int64, appLog logger.AppLog, config *StoreConfig) (*SessionManager, error) {
 	if gcLifetime <= 0 {
 		gcLifetime = DefaultSessionGCLifeTime
 	}
@@ -109,6 +110,7 @@ func NewSessionManager(gcLifetime int64, config *StoreConfig) (*SessionManager, 
 	}
 	manager := &SessionManager{
 		store:       GetSessionStore(config),
+		appLog:      appLog,
 		GCLifetime:  gcLifetime,
 		storeConfig: config,
 	}
@@ -157,7 +159,7 @@ func (manager *SessionManager) GetSessionState(sessionId string) (session *Sessi
 func (manager *SessionManager) GC() {
 	num := manager.store.SessionGC()
 	if num > 0 {
-		logger.Logger().Debug("SessionManger.GC => "+strconv.Itoa(num), LogTarget_Session)
+		manager.appLog.Debug("SessionManger.GC => "+strconv.Itoa(num), LogTarget_Session)
 	}
 	time.AfterFunc(time.Duration(manager.GCLifetime)*time.Second, func() { manager.GC() })
 }

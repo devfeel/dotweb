@@ -15,7 +15,6 @@ import (
 	"github.com/devfeel/dotweb/framework/exception"
 	_ "github.com/devfeel/dotweb/framework/file"
 	"github.com/devfeel/dotweb/framework/json"
-	"github.com/devfeel/dotweb/logger"
 	"golang.org/x/net/websocket"
 )
 
@@ -298,7 +297,7 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 				}
 
 				// if set enabledLog, take the error log
-				if logger.EnabledLog {
+				if r.server.Logger().IsEnabledLog() {
 					// record access log
 					headinfo := fmt.Sprintln(httpCtx.Response().Header())
 					logJson := LogJson{
@@ -307,7 +306,7 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 						HttpBody:   errmsg,
 					}
 					logString := jsonutil.GetJsonString(logJson)
-					logger.Logger().Error(logString, LogTarget_HttpServer)
+					r.server.Logger().Error(logString, LogTarget_HttpServer)
 				}
 
 				// Increment error count
@@ -367,9 +366,9 @@ func (r *router) wrapFileHandle(fileHandler http.Handler) RouterHandle {
 		} else {
 			httpCtx.Handler()(httpCtx)
 		}
-		if logger.EnabledLog {
+		if r.server.Logger().IsEnabledLog() {
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
-			logger.Logger().Debug(httpCtx.Request().Url()+" "+logRequest(httpCtx.Request().Request, timetaken), LogTarget_HttpRequest)
+			r.server.Logger().Debug(httpCtx.Request().Url()+" "+logRequest(httpCtx.Request().Request, timetaken), LogTarget_HttpRequest)
 		}
 	}
 }
@@ -431,7 +430,7 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 	handleName := handlerName(handle)
 	routeMethod = strings.ToUpper(routeMethod)
 	if _, exists := HttpMethodMap[routeMethod]; !exists {
-		logger.Logger().Warn("DotWeb:Router:RegisterRoute failed [illegal method] ["+routeMethod+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
+		r.server.Logger().Warn("DotWeb:Router:RegisterRoute failed [illegal method] ["+routeMethod+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 		return nil
 	}
 
@@ -457,7 +456,7 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 			node = r.getNode(routeMethod, realPath)
 		}
 	}
-	logger.Logger().Debug("DotWeb:Router:RegisterRoute success ["+routeMethod+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
+	r.server.Logger().Debug("DotWeb:Router:RegisterRoute success ["+routeMethod+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 
 	// if set auto-head, add head router
 	// only enabled in hijack\GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS
@@ -466,10 +465,10 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 			// Nothing to do
 		} else if routeMethod == RouteMethod_HiJack {
 			r.add(RouteMethod_HEAD, realPath, r.wrapRouterHandle(handle, true))
-			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoHead success ["+RouteMethod_HEAD+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
+			r.server.Logger().Debug("DotWeb:Router:RegisterRoute AutoHead success ["+RouteMethod_HEAD+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 		} else if !r.existsRouter(RouteMethod_HEAD, realPath) {
 			r.add(RouteMethod_HEAD, realPath, r.wrapRouterHandle(handle, false))
-			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoHead success ["+RouteMethod_HEAD+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
+			r.server.Logger().Debug("DotWeb:Router:RegisterRoute AutoHead success ["+RouteMethod_HEAD+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 		}
 	}
 
@@ -480,10 +479,10 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 			// Nothing to do
 		} else if routeMethod == RouteMethod_HiJack {
 			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(DefaultAutoOPTIONSHandler, true))
-			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoOPTIONS success ["+RouteMethod_OPTIONS+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
+			r.server.Logger().Debug("DotWeb:Router:RegisterRoute AutoOPTIONS success ["+RouteMethod_OPTIONS+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 		} else if !r.existsRouter(RouteMethod_OPTIONS, realPath) {
 			r.add(RouteMethod_OPTIONS, realPath, r.wrapRouterHandle(DefaultAutoOPTIONSHandler, false))
-			logger.Logger().Debug("DotWeb:Router:RegisterRoute AutoOPTIONS success ["+RouteMethod_OPTIONS+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
+			r.server.Logger().Debug("DotWeb:Router:RegisterRoute AutoOPTIONS success ["+RouteMethod_OPTIONS+"] ["+realPath+"] ["+handleName+"]", LogTarget_HttpServer)
 		}
 	}
 
@@ -500,7 +499,7 @@ func (r *router) ServerFile(path string, fileRoot string) RouterNode {
 // RegisterServerFile register ServerFile router with routeMethod method on http.FileServer
 // simple demo:server.RegisterServerFile(RouteMethod_GET, "/src/*", "/var/www")
 // simple demo:server.RegisterServerFile(RouteMethod_GET, "/src/*filepath", "/var/www")
-func (r *router) RegisterServerFile(routeMethod string, path string, fileRoot string) RouterNode{
+func (r *router) RegisterServerFile(routeMethod string, path string, fileRoot string) RouterNode {
 	realPath := r.server.VirtualPath() + path
 	node := &Node{}
 	if len(realPath) < 2 {
@@ -522,7 +521,7 @@ func (r *router) RegisterServerFile(routeMethod string, path string, fileRoot st
 	node = r.getNode(routeMethod, realPath)
 
 	if r.server.ServerConfig().EnabledAutoHEAD {
-		if !r.existsRouter(RouteMethod_HEAD, realPath){
+		if !r.existsRouter(RouteMethod_HEAD, realPath) {
 			r.add(RouteMethod_HEAD, realPath, r.wrapFileHandle(fileServer))
 		}
 	}
@@ -636,14 +635,14 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 					HttpBody:   errmsg,
 				}
 				logString := jsonutil.GetJsonString(logJson)
-				logger.Logger().Error(logString, LogTarget_HttpServer)
+				r.server.Logger().Error(logString, LogTarget_HttpServer)
 
 				// increment error count
 				core.GlobalState.AddErrorCount(httpCtx.Request().Path(), fmt.Errorf("%v", err), 1)
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 			// HttpServer Logging
-			logger.Logger().Debug(httpCtx.Request().Url()+" "+logWebsocketContext(httpCtx, timetaken), LogTarget_HttpRequest)
+			r.server.Logger().Debug(httpCtx.Request().Url()+" "+logWebsocketContext(httpCtx, timetaken), LogTarget_HttpRequest)
 
 			// release request
 			req.release()
