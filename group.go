@@ -1,9 +1,5 @@
 package dotweb
 
-import (
-	"github.com/devfeel/dotweb/logger"
-)
-
 type (
 	Group interface {
 		Use(m ...Middleware) Group
@@ -29,7 +25,7 @@ type (
 func NewGroup(prefix string, server *HttpServer) Group {
 	g := &xGroup{prefix: prefix, server: server, allRouterExpress: make(map[string]struct{})}
 	server.groups = append(server.groups, g)
-	logger.Logger().Debug("DotWeb:Group NewGroup ["+prefix+"]", LogTarget_HttpServer)
+	server.Logger().Debug("DotWeb:Group NewGroup ["+prefix+"]", LogTarget_HttpServer)
 	return g
 }
 

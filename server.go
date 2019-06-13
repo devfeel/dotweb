@@ -2,6 +2,7 @@ package dotweb
 
 import (
 	"compress/gzip"
+	"github.com/devfeel/dotweb/logger"
 	"io"
 	"net/http"
 	"net/url"
@@ -16,7 +17,6 @@ import (
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/framework/file"
 	"github.com/devfeel/dotweb/framework/json"
-	"github.com/devfeel/dotweb/logger"
 )
 
 const (
@@ -107,7 +107,7 @@ func (server *HttpServer) SetBinder(binder Binder) {
 // calls Serve to handle requests on incoming connections.
 func (server *HttpServer) ListenAndServe(addr string) error {
 	server.stdServer.Addr = addr
-	logger.Logger().Debug("DotWeb:HttpServer ListenAndServe ["+addr+"]", LogTarget_HttpServer)
+	server.DotApp.Logger().Debug("DotWeb:HttpServer ListenAndServe ["+addr+"]", LogTarget_HttpServer)
 	return server.stdServer.ListenAndServe()
 }
 
@@ -129,14 +129,14 @@ func (server *HttpServer) ListenAndServeTLS(addr string, certFile, keyFile strin
 	server.stdServer.Addr = addr
 	// check tls config
 	if !file.Exist(certFile) {
-		logger.Logger().Error("DotWeb:HttpServer ListenAndServeTLS ["+addr+","+certFile+","+keyFile+"] error => Server EnabledTLS is true, but TLSCertFile not exists", LogTarget_HttpServer)
+		server.DotApp.Logger().Error("DotWeb:HttpServer ListenAndServeTLS ["+addr+","+certFile+","+keyFile+"] error => Server EnabledTLS is true, but TLSCertFile not exists", LogTarget_HttpServer)
 		panic("Server EnabledTLS is true, but TLSCertFile not exists")
 	}
 	if !file.Exist(keyFile) {
-		logger.Logger().Error("DotWeb:HttpServer ListenAndServeTLS ["+addr+","+certFile+","+keyFile+"] error => Server EnabledTLS is true, but TLSKeyFile not exists", LogTarget_HttpServer)
+		server.DotApp.Logger().Error("DotWeb:HttpServer ListenAndServeTLS ["+addr+","+certFile+","+keyFile+"] error => Server EnabledTLS is true, but TLSKeyFile not exists", LogTarget_HttpServer)
 		panic("Server EnabledTLS is true, but TLSKeyFile not exists")
 	}
-	logger.Logger().Debug("DotWeb:HttpServer ListenAndServeTLS ["+addr+","+certFile+","+keyFile+"]", LogTarget_HttpServer)
+	server.DotApp.Logger().Debug("DotWeb:HttpServer ListenAndServeTLS ["+addr+","+certFile+","+keyFile+"]", LogTarget_HttpServer)
 	return server.stdServer.ListenAndServeTLS(certFile, keyFile)
 }
 
@@ -190,7 +190,7 @@ func (server *HttpServer) IsOffline() bool {
 // SetVirtualPath set current server's VirtualPath
 func (server *HttpServer) SetVirtualPath(path string) {
 	server.virtualPath = path
-	logger.Logger().Debug("DotWeb:HttpServer SetVirtualPath ["+path+"]", LogTarget_HttpServer)
+	server.DotApp.Logger().Debug("DotWeb:HttpServer SetVirtualPath ["+path+"]", LogTarget_HttpServer)
 
 }
 
@@ -202,7 +202,7 @@ func (server *HttpServer) VirtualPath() string {
 // SetOffline set server offline config
 func (server *HttpServer) SetOffline(offline bool, offlineText string, offlineUrl string) {
 	server.offline = offline
-	logger.Logger().Debug("DotWeb:HttpServer SetOffline ["+strconv.FormatBool(offline)+", "+offlineText+", "+offlineUrl+"]", LogTarget_HttpServer)
+	server.DotApp.Logger().Debug("DotWeb:HttpServer SetOffline ["+strconv.FormatBool(offline)+", "+offlineText+", "+offlineUrl+"]", LogTarget_HttpServer)
 
 }
 
@@ -216,9 +216,9 @@ func (server *HttpServer) IndexPage() string {
 }
 
 // SetIndexPage set default index page name
-func (server *HttpServer) SetIndexPage(indexPage string){
+func (server *HttpServer) SetIndexPage(indexPage string) {
 	server.ServerConfig().IndexPage = indexPage
-	logger.Logger().Debug("DotWeb:HttpServer SetIndexPage ["+indexPage+"]", LogTarget_HttpServer)
+	server.DotApp.Logger().Debug("DotWeb:HttpServer SetIndexPage ["+indexPage+"]", LogTarget_HttpServer)
 }
 
 // SetSessionConfig set session store config
@@ -230,7 +230,7 @@ func (server *HttpServer) SetSessionConfig(storeConfig *session.StoreConfig) {
 	server.SessionConfig().BackupServerUrl = storeConfig.BackupServerUrl
 	server.SessionConfig().StoreKeyPre = storeConfig.StoreKeyPre
 	server.SessionConfig().CookieName = storeConfig.CookieName
-	logger.Logger().Debug("DotWeb:HttpServer SetSessionConfig ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
+	server.DotApp.Logger().Debug("DotWeb:HttpServer SetSessionConfig ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
 }
 
 // InitSessionManager init session manager
@@ -246,7 +246,7 @@ func (server *HttpServer) InitSessionManager() {
 	if server.sessionManager == nil {
 		// setup session
 		server.lock_session.Lock()
-		if manager, err := session.NewDefaultSessionManager(storeConfig); err != nil {
+		if manager, err := session.NewDefaultSessionManager(server.Logger(), storeConfig); err != nil {
 			// panic error with create session manager
 			panic(err.Error())
 		} else {
@@ -254,7 +254,7 @@ func (server *HttpServer) InitSessionManager() {
 		}
 		server.lock_session.Unlock()
 	}
-	logger.Logger().Debug("DotWeb:HttpServer InitSessionManager ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
+	server.Logger().Debug("DotWeb:HttpServer InitSessionManager ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
 }
 
 // setDotApp associates the dotApp to the current HttpServer
@@ -268,6 +268,10 @@ func (server *HttpServer) GetSessionManager() *session.SessionManager {
 		return nil
 	}
 	return server.sessionManager
+}
+
+func (server *HttpServer) Logger() logger.AppLog {
+	return server.DotApp.Logger()
 }
 
 // Router get router interface in server
@@ -364,7 +368,7 @@ func (server *HttpServer) Renderer() Renderer {
 // SetRenderer set custom renderer in server
 func (server *HttpServer) SetRenderer(r Renderer) {
 	server.render = r
-	logger.Logger().Debug("DotWeb:HttpServer SetRenderer", LogTarget_HttpServer)
+	server.Logger().Debug("DotWeb:HttpServer SetRenderer", LogTarget_HttpServer)
 }
 
 // SetEnabledAutoHEAD set route use auto head
@@ -372,7 +376,7 @@ func (server *HttpServer) SetRenderer(r Renderer) {
 // default is false
 func (server *HttpServer) SetEnabledAutoHEAD(isEnabled bool) {
 	server.ServerConfig().EnabledAutoHEAD = isEnabled
-	logger.Logger().Debug("DotWeb:HttpServer SetEnabledAutoHEAD ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	server.Logger().Debug("DotWeb:HttpServer SetEnabledAutoHEAD ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledAutoOPTIONS set route use auto options
@@ -380,7 +384,7 @@ func (server *HttpServer) SetEnabledAutoHEAD(isEnabled bool) {
 // default is false
 func (server *HttpServer) SetEnabledAutoOPTIONS(isEnabled bool) {
 	server.ServerConfig().EnabledAutoOPTIONS = isEnabled
-	logger.Logger().Debug("DotWeb:HttpServer SetEnabledAutoOPTIONS ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	server.Logger().Debug("DotWeb:HttpServer SetEnabledAutoOPTIONS ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledRequestID set create unique request id per request
@@ -388,38 +392,38 @@ func (server *HttpServer) SetEnabledAutoOPTIONS(isEnabled bool) {
 // default is false
 func (server *HttpServer) SetEnabledRequestID(isEnabled bool) {
 	server.ServerConfig().EnabledRequestID = isEnabled
-	logger.Logger().Debug("DotWeb:HttpServer SetEnabledRequestID ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	server.Logger().Debug("DotWeb:HttpServer SetEnabledRequestID ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledListDir set whether to allow listing of directories, default is false
 func (server *HttpServer) SetEnabledListDir(isEnabled bool) {
 	server.ServerConfig().EnabledListDir = isEnabled
-	logger.Logger().Debug("DotWeb:HttpServer SetEnabledListDir ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	server.DotApp.Logger().Debug("DotWeb:HttpServer SetEnabledListDir ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledSession set whether to enable session, default is false
 func (server *HttpServer) SetEnabledSession(isEnabled bool) {
 	server.SessionConfig().EnabledSession = isEnabled
-	logger.Logger().Debug("DotWeb:HttpServer SetEnabledSession ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	server.Logger().Debug("DotWeb:HttpServer SetEnabledSession ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledGzip set whether to enable gzip, default is false
 func (server *HttpServer) SetEnabledGzip(isEnabled bool) {
 	server.ServerConfig().EnabledGzip = isEnabled
-	logger.Logger().Debug("DotWeb:HttpServer SetEnabledGzip ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	server.Logger().Debug("DotWeb:HttpServer SetEnabledGzip ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledBindUseJsonTag set whethr to enable json tab on Bind, default is false
 func (server *HttpServer) SetEnabledBindUseJsonTag(isEnabled bool) {
 	server.ServerConfig().EnabledBindUseJsonTag = isEnabled
-	logger.Logger().Debug("DotWeb:HttpServer SetEnabledBindUseJsonTag ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	server.Logger().Debug("DotWeb:HttpServer SetEnabledBindUseJsonTag ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledIgnoreFavicon set IgnoreFavicon Enabled
 // default is false
 func (server *HttpServer) SetEnabledIgnoreFavicon(isEnabled bool) {
 	server.ServerConfig().EnabledIgnoreFavicon = isEnabled
-	logger.Logger().Debug("DotWeb:HttpServer SetEnabledIgnoreFavicon ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	server.Logger().Debug("DotWeb:HttpServer SetEnabledIgnoreFavicon ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 	server.RegisterModule(getIgnoreFaviconModule())
 }
 
@@ -430,25 +434,25 @@ func (server *HttpServer) SetEnabledTLS(isEnabled bool, certFile, keyFile string
 	server.ServerConfig().EnabledTLS = isEnabled
 	server.ServerConfig().TLSCertFile = certFile
 	server.ServerConfig().TLSKeyFile = keyFile
-	logger.Logger().Debug("DotWeb:HttpServer SetEnabledTLS ["+strconv.FormatBool(isEnabled)+","+certFile+","+keyFile+"]", LogTarget_HttpServer)
+	server.Logger().Debug("DotWeb:HttpServer SetEnabledTLS ["+strconv.FormatBool(isEnabled)+","+certFile+","+keyFile+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledDetailRequestData 设置是否启用详细请求数据统计,默认为false
 func (server *HttpServer) SetEnabledDetailRequestData(isEnabled bool) {
 	server.ServerConfig().EnabledDetailRequestData = isEnabled
-	logger.Logger().Debug("DotWeb:HttpServer SetEnabledDetailRequestData ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	server.Logger().Debug("DotWeb:HttpServer SetEnabledDetailRequestData ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // SetEnabledStaticFileMiddleware set flag which enabled or disabled middleware for static-file route
 func (server *HttpServer) SetEnabledStaticFileMiddleware(isEnabled bool) {
 	server.ServerConfig().EnabledStaticFileMiddleware = isEnabled
-	logger.Logger().Debug("DotWeb:HttpServer SetEnabledStaticFileMiddleware ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+	server.Logger().Debug("DotWeb:HttpServer SetEnabledStaticFileMiddleware ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
 }
 
 // RegisterModule add HttpModule
 func (server *HttpServer) RegisterModule(module *HttpModule) {
 	server.Modules = append(server.Modules, module)
-	logger.Logger().Debug("DotWeb:HttpServer RegisterModule ["+module.Name+"]", LogTarget_HttpServer)
+	server.Logger().Debug("DotWeb:HttpServer RegisterModule ["+module.Name+"]", LogTarget_HttpServer)
 }
 
 type LogJson struct {
@@ -516,7 +520,7 @@ func prepareHttpContext(server *HttpServer, w http.ResponseWriter, req *http.Req
 }
 
 // releaseHttpContext release HttpContext, release gzip writer
-func releaseHttpContext(server *HttpServer, httpCtx *HttpContext){
+func releaseHttpContext(server *HttpServer, httpCtx *HttpContext) {
 	// release response
 	httpCtx.Response().release()
 	server.pool.response.Put(httpCtx.Response())

@@ -41,8 +41,9 @@ type (
 		middlewareMap           map[string]MiddlewareFunc
 		middlewareMutex         *sync.RWMutex
 		StartMode               string
-		IDGenerater				IdGenerate
-		globalUniqueID			string
+		IDGenerater             IdGenerate
+		globalUniqueID          string
+		appLog                  logger.AppLog
 	}
 
 	// ExceptionHandle supports exception handling
@@ -98,7 +99,7 @@ func New() *DotWeb {
 	app.Use(&xMiddleware{})
 
 	// init logger
-	logger.InitLog()
+	app.appLog = logger.NewAppLog()
 
 	return app
 }
@@ -118,9 +119,9 @@ func Classic(logPath string) *DotWeb {
 	app.SetEnabledLog(true)
 
 	// print logo
-	printDotLogo()
+	app.printDotLogo()
 
-	logger.Logger().Debug("DotWeb Start New AppServer", LogTarget_HttpServer)
+	app.Logger().Debug("DotWeb Start New AppServer", LogTarget_HttpServer)
 	return app
 }
 
@@ -130,6 +131,11 @@ func ClassicWithConf(config *config.Config) *DotWeb {
 	app := Classic(config.App.LogPath)
 	app.SetConfig(config)
 	return app
+}
+
+// Logger return app's logger
+func (app *DotWeb) Logger() logger.AppLog {
+	return app.appLog
 }
 
 // RegisterMiddlewareFunc register middleware with given name & middleware
@@ -149,7 +155,7 @@ func (app *DotWeb) GetMiddlewareFunc(name string) (MiddlewareFunc, bool) {
 
 // GlobalUniqueID return app's GlobalUniqueID
 // it will be Initializationed when StartServer
-func (app *DotWeb) GlobalUniqueID() string{
+func (app *DotWeb) GlobalUniqueID() string {
 	return app.globalUniqueID
 }
 
@@ -189,13 +195,13 @@ func (app *DotWeb) SetDevelopmentMode() {
 
 	app.SetEnabledLog(true)
 	app.Use(new(RequestLogMiddleware))
-	logger.SetEnabledConsole(true)
+	app.Logger().SetEnabledConsole(true)
 }
 
 // SetProductionMode set run mode on production mode
 func (app *DotWeb) SetProductionMode() {
 	app.Config.App.RunMode = RunMode_Production
-	logger.SetEnabledConsole(true)
+	app.appLog.SetEnabledConsole(true)
 }
 
 // ExcludeUse registers a middleware exclude routers
@@ -241,7 +247,7 @@ func (app *DotWeb) UseTimeoutHook(handler StandardHandle, timeout time.Duration)
 // SetMock set mock logic
 func (app *DotWeb) SetMock(mock Mock) {
 	app.Mock = mock
-	logger.Logger().Debug("DotWeb Mock SetMock", LogTarget_HttpServer)
+	app.Logger().Debug("DotWeb Mock SetMock", LogTarget_HttpServer)
 }
 
 // SetExceptionHandle set custom error handler
@@ -264,32 +270,31 @@ func (app *DotWeb) SetMethodNotAllowedHandle(handler StandardHandle) {
 func (app *DotWeb) SetPProfConfig(enabledPProf bool, httpport int) {
 	app.Config.App.EnabledPProf = enabledPProf
 	app.Config.App.PProfPort = httpport
-	logger.Logger().Debug("DotWeb SetPProfConfig ["+strconv.FormatBool(enabledPProf)+", "+strconv.Itoa(httpport)+"]", LogTarget_HttpServer)
+	app.Logger().Debug("DotWeb SetPProfConfig ["+strconv.FormatBool(enabledPProf)+", "+strconv.Itoa(httpport)+"]", LogTarget_HttpServer)
 }
 
 // SetLogger set user logger, the logger must implement logger.AppLog interface
 func (app *DotWeb) SetLogger(log logger.AppLog) {
-	logger.SetLogger(log)
+	app.appLog = log
 }
 
 // SetLogPath set log root path
 func (app *DotWeb) SetLogPath(path string) {
-	logger.SetLogPath(path)
+	app.Logger().SetLogPath(path)
 	// fixed #74 dotweb.SetEnabledLog 无效
 	app.Config.App.LogPath = path
 }
 
 // SetEnabledLog set enabled log flag
 func (app *DotWeb) SetEnabledLog(enabledLog bool) {
-	logger.SetEnabledLog(enabledLog)
+	app.Logger().SetEnabledLog(enabledLog)
 	// fixed #74 dotweb.SetEnabledLog 无效
 	app.Config.App.EnabledLog = enabledLog
 }
 
 // SetConfig set config for app
-func (app *DotWeb) SetConfig(config *config.Config) error {
+func (app *DotWeb) SetConfig(config *config.Config) {
 	app.Config = config
-	return nil
 }
 
 // StartServer start server with http port
@@ -334,7 +339,6 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 	app.initServerEnvironment()
 	app.initBindMiddleware()
 
-
 	// create unique id for dotweb app
 	app.globalUniqueID = app.IDGenerater()
 
@@ -345,12 +349,12 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 	// special, if run mode is not develop, auto stop mock
 	if app.RunMode() != RunMode_Development {
 		if app.Mock != nil {
-			logger.Logger().Debug("DotWeb Mock RunMode is not DevelopMode, Auto stop mock", LogTarget_HttpServer)
+			app.Logger().Debug("DotWeb Mock RunMode is not DevelopMode, Auto stop mock", LogTarget_HttpServer)
 		}
 		app.Mock = nil
 	}
 	// output run mode
-	logger.Logger().Debug("DotWeb RunMode is "+app.RunMode(), LogTarget_HttpServer)
+	app.Logger().Debug("DotWeb RunMode is "+app.RunMode(), LogTarget_HttpServer)
 
 	if app.HttpServer.ServerConfig().EnabledTLS {
 		err := app.HttpServer.ListenAndServeTLS(addr, app.HttpServer.ServerConfig().TLSCertFile, app.HttpServer.ServerConfig().TLSKeyFile)
@@ -366,9 +370,9 @@ func (app *DotWeb) initAppConfig() {
 	config := app.Config
 	// log config
 	if config.App.LogPath != "" {
-		logger.SetLogPath(config.App.LogPath)
+		app.SetLogPath(config.App.LogPath)
 	}
-	logger.SetEnabledLog(config.App.EnabledLog)
+	app.SetEnabledLog(config.App.EnabledLog)
 
 	// run mode config
 	if app.Config.App.RunMode != RunMode_Development && app.Config.App.RunMode != RunMode_Production {
@@ -477,10 +481,10 @@ func (app *DotWeb) initBindMiddleware() {
 		node.appMiddlewares = app.Middlewares
 		for _, m := range node.appMiddlewares {
 			if m.HasExclude() && m.ExistsExcludeRouter(node.fullPath) {
-				logger.Logger().Debug("DotWeb initBindMiddleware [app] "+fullExpress+" "+reflect.TypeOf(m).String()+" exclude", LogTarget_HttpServer)
+				app.Logger().Debug("DotWeb initBindMiddleware [app] "+fullExpress+" "+reflect.TypeOf(m).String()+" exclude", LogTarget_HttpServer)
 				node.hasExcludeMiddleware = true
 			} else {
-				logger.Logger().Debug("DotWeb initBindMiddleware [app] "+fullExpress+" "+reflect.TypeOf(m).String()+" match", LogTarget_HttpServer)
+				app.Logger().Debug("DotWeb initBindMiddleware [app] "+fullExpress+" "+reflect.TypeOf(m).String()+" match", LogTarget_HttpServer)
 			}
 		}
 		if len(node.middlewares) > 0 {
@@ -508,10 +512,10 @@ func (app *DotWeb) initBindMiddleware() {
 			node.groupMiddlewares = xg.middlewares
 			for _, m := range node.groupMiddlewares {
 				if m.HasExclude() && m.ExistsExcludeRouter(node.fullPath) {
-					logger.Logger().Debug("DotWeb initBindMiddleware [group] "+fullExpress+" "+reflect.TypeOf(m).String()+" exclude", LogTarget_HttpServer)
+					app.Logger().Debug("DotWeb initBindMiddleware [group] "+fullExpress+" "+reflect.TypeOf(m).String()+" exclude", LogTarget_HttpServer)
 					node.hasExcludeMiddleware = true
 				} else {
-					logger.Logger().Debug("DotWeb initBindMiddleware [group] "+fullExpress+" "+reflect.TypeOf(m).String()+" match", LogTarget_HttpServer)
+					app.Logger().Debug("DotWeb initBindMiddleware [group] "+fullExpress+" "+reflect.TypeOf(m).String()+" match", LogTarget_HttpServer)
 				}
 			}
 		}
@@ -543,9 +547,8 @@ func (app *DotWeb) initServerEnvironment() {
 		app.SetMethodNotAllowedHandle(DefaultMethodNotAllowedHandler)
 	}
 
-
 	// set default unique id generater
-	if app.IDGenerater == nil{
+	if app.IDGenerater == nil {
 		app.IDGenerater = DefaultUniqueIDGenerater
 	}
 
@@ -553,7 +556,7 @@ func (app *DotWeb) initServerEnvironment() {
 	if app.HttpServer.SessionConfig().EnabledSession {
 		if app.HttpServer.SessionConfig().SessionMode == "" {
 			// panic("no set SessionConfig, but set enabledsession true")
-			logger.Logger().Warn("not set SessionMode, but set enabledsession true, now will use default runtime session", LogTarget_HttpServer)
+			app.Logger().Warn("not set SessionMode, but set enabledsession true, now will use default runtime session", LogTarget_HttpServer)
 			app.HttpServer.SetSessionConfig(session.NewDefaultRuntimeConfig())
 		}
 		app.HttpServer.InitSessionManager()
@@ -576,11 +579,11 @@ func (app *DotWeb) initServerEnvironment() {
 
 	// start pprof server
 	if app.Config.App.EnabledPProf {
-		logger.Logger().Debug("DotWeb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] Begin", LogTarget_HttpServer)
+		app.Logger().Debug("DotWeb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] Begin", LogTarget_HttpServer)
 		go func() {
 			err := http.ListenAndServe(":"+strconv.Itoa(app.Config.App.PProfPort), nil)
 			if err != nil {
-				logger.Logger().Error("DotWeb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] error: "+err.Error(), LogTarget_HttpServer)
+				app.Logger().Error("DotWeb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] error: "+err.Error(), LogTarget_HttpServer)
 				// panic the error
 				panic(err)
 			}
@@ -600,33 +603,12 @@ func (app *DotWeb) DefaultHTTPErrorHandler(ctx Context, err error) {
 	}
 }
 
-// DefaultNotFoundHandler default exception handler
-func DefaultNotFoundHandler(ctx Context) {
-	ctx.Response().Header().Set(HeaderContentType, CharsetUTF8)
-	ctx.WriteStringC(http.StatusNotFound, http.StatusText(http.StatusNotFound))
-}
-
-// DefaultMethodNotAllowedHandler default exception handler
-func DefaultMethodNotAllowedHandler(ctx Context) {
-	ctx.Response().Header().Set(HeaderContentType, CharsetUTF8)
-	ctx.WriteStringC(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed))
-}
-
-// DefaultAutoOPTIONSHandler default handler for options request
-// if set HttpServer.EnabledAutoOPTIONS, auto bind this handler
-func DefaultAutoOPTIONSHandler(ctx Context) error{
-	return ctx.WriteStringC(http.StatusNoContent, "")
-}
-
-// DefaultUniqueIDGenerater default generater used to create Unique Id
-func DefaultUniqueIDGenerater() string{
-	return uuid.NewV1().String32()
-}
-
-func DefaultTimeoutHookHandler(ctx Context) {
-	realDration := ctx.Items().GetTimeDuration(ItemKeyHandleDuration)
-	logs := fmt.Sprintf("req %v, cost %v", ctx.Request().Url(), realDration.Seconds())
-	logger.Logger().Warn(logs, LogTarget_RequestTimeout)
+func (app *DotWeb) printDotLogo() {
+	app.Logger().Print(`    ____           __                     __`, LogTarget_HttpServer)
+	app.Logger().Print(`   / __ \  ____   / /_ _      __  ___    / /_`, LogTarget_HttpServer)
+	app.Logger().Print(`  / / / / / __ \ / __/| | /| / / / _ \  / __ \`, LogTarget_HttpServer)
+	app.Logger().Print(` / /_/ / / /_/ // /_  | |/ |/ / /  __/ / /_/ /`, LogTarget_HttpServer)
+	app.Logger().Print(`/_____/  \____/ \__/  |__/|__/  \___/ /_.___/`, LogTarget_HttpServer)
 }
 
 // Close immediately stops the server.
@@ -644,6 +626,35 @@ func (app *DotWeb) Shutdown(ctx context.Context) error {
 // HTTPNotFound simple notfound function for Context
 func HTTPNotFound(ctx Context) {
 	http.NotFound(ctx.Response().Writer(), ctx.Request().Request)
+}
+
+// DefaultNotFoundHandler default exception handler
+func DefaultNotFoundHandler(ctx Context) {
+	ctx.Response().Header().Set(HeaderContentType, CharsetUTF8)
+	ctx.WriteStringC(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+}
+
+// DefaultMethodNotAllowedHandler default exception handler
+func DefaultMethodNotAllowedHandler(ctx Context) {
+	ctx.Response().Header().Set(HeaderContentType, CharsetUTF8)
+	ctx.WriteStringC(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed))
+}
+
+// DefaultAutoOPTIONSHandler default handler for options request
+// if set HttpServer.EnabledAutoOPTIONS, auto bind this handler
+func DefaultAutoOPTIONSHandler(ctx Context) error {
+	return ctx.WriteStringC(http.StatusNoContent, "")
+}
+
+// DefaultUniqueIDGenerater default generater used to create Unique Id
+func DefaultUniqueIDGenerater() string {
+	return uuid.NewV1().String32()
+}
+
+func DefaultTimeoutHookHandler(ctx Context) {
+	realDration := ctx.Items().GetTimeDuration(ItemKeyHandleDuration)
+	logs := fmt.Sprintf("req %v, cost %v", ctx.Request().Url(), realDration.Seconds())
+	ctx.HttpServer().DotApp.Logger().Warn(logs, LogTarget_RequestTimeout)
 }
 
 // query pprof debug info
@@ -694,12 +705,4 @@ func showQuery(ctx Context) error {
 		ctx.WriteString("not support key => " + querykey)
 	}
 	return nil
-}
-
-func printDotLogo() {
-	logger.Logger().Print(`    ____           __                     __`, LogTarget_HttpServer)
-	logger.Logger().Print(`   / __ \  ____   / /_ _      __  ___    / /_`, LogTarget_HttpServer)
-	logger.Logger().Print(`  / / / / / __ \ / __/| | /| / / / _ \  / __ \`, LogTarget_HttpServer)
-	logger.Logger().Print(` / /_/ / / /_/ // /_  | |/ |/ / /  __/ / /_/ /`, LogTarget_HttpServer)
-	logger.Logger().Print(`/_____/  \____/ \__/  |__/|__/  \___/ /_.___/`, LogTarget_HttpServer)
 }

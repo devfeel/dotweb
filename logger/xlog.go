@@ -99,6 +99,11 @@ func (l *xLog) SetEnabledLog(enabledLog bool) {
 	l.enabledLog = enabledLog
 }
 
+// IsEnabledLog return enabled log flag
+func (l *xLog) IsEnabledLog() bool {
+	return l.enabledLog
+}
+
 // SetEnabledConsole set enabled Console output
 func (l *xLog) SetEnabledConsole(enabled bool) {
 	l.enabledConsole = enabled

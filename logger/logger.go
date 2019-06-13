@@ -24,6 +24,7 @@ type AppLog interface {
 	SetLogPath(logPath string)
 	SetEnabledConsole(enabled bool)
 	SetEnabledLog(enabledLog bool)
+	IsEnabledLog() bool
 	Debug(log string, logTarget string)
 	Print(log string, logTarget string)
 	Info(log string, logTarget string)
@@ -32,57 +33,20 @@ type AppLog interface {
 }
 
 var (
-	appLog         AppLog
-	DefaultLogPath string
-	EnabledLog     bool = false
-	EnabledConsole bool = false
+	DefaultLogPath        string
+	DefaultEnabledLog     bool = true
+	DefaultEnabledConsole bool = false
 )
 
-func Logger() AppLog {
-	return appLog
-}
-
-// SetLogPath set log path
-func SetLogger(logger AppLog) {
-	appLog = logger
-	logger.SetLogPath(DefaultLogPath)
-	logger.SetEnabledLog(EnabledLog)
-}
-
-func SetLogPath(path string) {
-	DefaultLogPath = path
-	if appLog != nil {
-		appLog.SetLogPath(path)
-	}
-}
-
-// SetEnabledLog set enabled log
-func SetEnabledLog(isLog bool) {
-	EnabledLog = isLog
-	if appLog != nil {
-		appLog.SetEnabledLog(isLog)
-	}
-}
-
-// SetEnabledConsole set enabled Console output
-func SetEnabledConsole(enabled bool) {
-	EnabledConsole = enabled
-	if appLog != nil {
-		appLog.SetEnabledConsole(enabled)
-	}
-}
-
-func InitLog() {
+func NewAppLog() AppLog {
 	if DefaultLogPath == "" {
 		DefaultLogPath = file.GetCurrentDirectory() + "/logs"
 	}
-	if appLog == nil {
-		appLog = NewXLog()
-	}
-
-	SetLogPath(DefaultLogPath)        // set default log path
-	SetEnabledLog(EnabledLog)         // set default enabled log
-	SetEnabledConsole(EnabledConsole) // set default enabled console output
+	appLog := NewXLog()
+	appLog.SetLogPath(DefaultLogPath)               // set default log path
+	appLog.SetEnabledLog(DefaultEnabledLog)         // set default enabled log
+	appLog.SetEnabledConsole(DefaultEnabledConsole) // set default enabled console output
+	return appLog
 }
 
 // Log content
