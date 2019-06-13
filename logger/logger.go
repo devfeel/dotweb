@@ -34,7 +34,7 @@ type AppLog interface {
 
 var (
 	DefaultLogPath        string
-	DefaultEnabledLog     bool = true
+	DefaultEnabledLog     bool = false
 	DefaultEnabledConsole bool = false
 )
 
