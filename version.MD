@@ -1,11 +1,20 @@
 ## dotweb版本记录：
 
+#### Version 1.6.4
+* Architecture: add dotweb_sysgroup.go to implement IncludeDotwebGroup
+* New Feature: add /virtualPath/dotweb/routers to list all router express
+* New Feature: add Router.GetAllRouterExpress to return router.allRouterExpress
+* About dotweb.IncludeDotwebGroup:
+    - if use dotweb.New(), in default it will not call IncludeDotwebGroup
+    - if use dotweb.Classic(), in default it will call IncludeDotwebGroup
+* 2019-06-22 16:00
+
 #### Version 1.6.3
 * Architecture: move logger.Logger() to DotWeb.Logger()
 * Architecture: add HttpServer.Logger who is a shortcut for DotWeb.Logger()
 * Architecture: remove logger.Logger()
 * How to use dotweb.Logger in your app:
-  ~~~go
+  ~~~ go
   func TestLog(ctx dotweb.Context) error {
   	ctx.HttpServer().Logger().Info(dotweb.LogTarget_Default, "test log")
   	return ctx.WriteString("log page")
@@ -18,7 +27,7 @@
 * Detail:
     - default character set is "0123456789abcdefghijklmnopqrstuvwxyz"
 * Demo:
-  ~~~go
+  ~~~ go
   func main() {
       fmt.Println(cryptos.GetRandString(10))
   }
@@ -31,7 +40,7 @@
     - you can use ctx.RouterNode().Path() to get routing path for the request
     - you can use ctx.HttpServer().Router().MatchPath to match request and routing path
 * Demo:
-  ~~~go
+  ~~~ go
   func main() {
   	app := dotweb.Classic("/home/logs/wwwroot/")
 
@@ -129,7 +138,7 @@
 ```
 * How To:
   - how to add support "HEAD" method for all requests in your httpserver?
-  ~~~go
+  ~~~ go
   func main() {
   	app := dotweb.Classic("/home/logs/wwwroot/")
 
@@ -152,7 +161,7 @@
 * New Feature: Response support http2 Push
 * How To:
   - how to query slow response in your app?
-  ~~~go
+  ~~~ go
   func main() {
   	app := dotweb.Classic("/home/logs/wwwroot/")
 
@@ -739,7 +748,7 @@ app.HttpServer.SetEnabledStaticFileMiddleware(true)
     <set key="limit-per-ip" value="10" />
 </appset>
 ```
-```go
+``` go
 //查询方式
 ctx.AppSetConfig().GetString("email-host"))
 ctx.AppSetConfig().GetInt("limit-per-ip"))
@@ -793,7 +802,7 @@ ctx.AppSetConfig().GetInt("limit-per-ip"))
 * 优化Router实现，移除router目录，整合xRouter和router.Router
 * 废弃：移除RouterNode级别的Feature支持，原RouterNode.Features.SetEnabledCROS 可通过自实现Middleware实现
 * 更新 example/middleware 目录
-```go
+``` go
 func InitRoute(server *dotweb.HttpServer) {
 	server.Router().GET("/", Index)
 	server.Router().GET("/use", Index).Use(NewAccessFmtLog("Router-use"))
