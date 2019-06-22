@@ -81,6 +81,7 @@ type (
 		RegisterHandler(name string, handler HttpHandle)
 		GetHandler(name string) (HttpHandle, bool)
 		MatchPath(ctx Context, routePath string) bool
+		GetAllRouterExpress() map[string]struct{}
 	}
 
 	RouterNode interface {
@@ -183,6 +184,11 @@ func (r *router) GetHandler(name string) (HttpHandle, bool) {
 	v, exists := r.handlerMap[name]
 	r.handlerMutex.RUnlock()
 	return v, exists
+}
+
+// GetAllRouterExpress return router.allRouterExpress
+func (r *router) GetAllRouterExpress() map[string]struct{} {
+	return r.allRouterExpress
 }
 
 func (r *router) MatchPath(ctx Context, routePath string) bool {

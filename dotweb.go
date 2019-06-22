@@ -5,9 +5,7 @@ import (
 	"github.com/devfeel/dotweb/framework/crypto/uuid"
 	"net/http"
 	_ "net/http/pprof"
-	"runtime"
 	"runtime/debug"
-	"runtime/pprof"
 	"strconv"
 	"strings"
 
@@ -20,7 +18,6 @@ import (
 	"github.com/devfeel/dotweb/cache"
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/core"
-	"github.com/devfeel/dotweb/framework/json"
 	"github.com/devfeel/dotweb/logger"
 	"github.com/devfeel/dotweb/servers"
 	"github.com/devfeel/dotweb/session"
@@ -522,15 +519,9 @@ func (app *DotWeb) initBindMiddleware() {
 	}
 }
 
-// IncludeDotwebGroup init inner routers
+// IncludeDotwebGroup init inner routers which start with /dotweb/
 func (app *DotWeb) IncludeDotwebGroup() {
-	// supports pprof by default
-	gInner := app.HttpServer.Group("/dotweb")
-	gInner.GET("/debug/pprof/:key", initPProf)
-	gInner.GET("/debug/freemem", freeMemory)
-	gInner.GET("/state", showServerState)
-	gInner.GET("/state/interval", showIntervalData)
-	gInner.GET("/query/:key", showQuery)
+	initDotwebGroup(app.HttpServer)
 }
 
 // init Server Environment
@@ -655,54 +646,4 @@ func DefaultTimeoutHookHandler(ctx Context) {
 	realDration := ctx.Items().GetTimeDuration(ItemKeyHandleDuration)
 	logs := fmt.Sprintf("req %v, cost %v", ctx.Request().Url(), realDration.Seconds())
 	ctx.HttpServer().DotApp.Logger().Warn(logs, LogTarget_RequestTimeout)
-}
-
-// query pprof debug info
-// key:heap goroutine threadcreate block
-func initPProf(ctx Context) error {
-	querykey := ctx.GetRouterName("key")
-	runtime.GC()
-	pprof.Lookup(querykey).WriteTo(ctx.Response().Writer(), 1)
-	return nil
-}
-
-func freeMemory(ctx Context) error {
-	debug.FreeOSMemory()
-	return nil
-}
-
-func showIntervalData(ctx Context) error {
-	type data struct {
-		Time         string
-		RequestCount uint64
-		ErrorCount   uint64
-	}
-	queryKey := ctx.QueryString("querykey")
-
-	d := new(data)
-	d.Time = queryKey
-	d.RequestCount = core.GlobalState.QueryIntervalRequestData(queryKey)
-	d.ErrorCount = core.GlobalState.QueryIntervalErrorData(queryKey)
-	ctx.WriteJson(d)
-	return nil
-}
-
-// snow server status
-func showServerState(ctx Context) error {
-	ctx.WriteHtml(core.GlobalState.ShowHtmlData(Version, ctx.HttpServer().DotApp.GlobalUniqueID()))
-	return nil
-}
-
-// query server information
-func showQuery(ctx Context) error {
-	querykey := ctx.GetRouterName("key")
-	switch querykey {
-	case "state":
-		ctx.WriteString(jsonutil.GetJsonString(core.GlobalState))
-	case "":
-		ctx.WriteString("please input key")
-	default:
-		ctx.WriteString("not support key => " + querykey)
-	}
-	return nil
 }
