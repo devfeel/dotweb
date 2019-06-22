@@ -4,6 +4,7 @@
 * Architecture: add dotweb_sysgroup.go to implement IncludeDotwebGroup
 * New Feature: add /virtualPath/dotweb/routers to list all router express
 * New Feature: add Router.GetAllRouterExpress to return router.allRouterExpress
+* Bug Fixed: update example on dotweb version 1.6.4
 * About dotweb.IncludeDotwebGroup:
     - if use dotweb.New(), in default it will not call IncludeDotwebGroup
     - if use dotweb.Classic(), in default it will call IncludeDotwebGroup

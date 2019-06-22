@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/devfeel/dotweb"
-	"github.com/devfeel/dotweb/logger"
 )
 
 const loggerFileName = "develop-mode"
@@ -31,9 +30,8 @@ func main() {
 // Index index action
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	ctx.WriteString(ctx.Request().URL.Path)
-	logger.Logger().Debug("Index:WriteString "+ctx.Request().URL.Path, loggerFileName)
-	return nil
+	ctx.HttpServer().Logger().Debug("Index:WriteString "+ctx.Request().URL.Path, loggerFileName)
+	return ctx.WriteString(ctx.Request().URL.Path)
 }
 
 // InitRoute init routes

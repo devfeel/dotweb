@@ -1,11 +1,7 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"net/http"
-	"time"
-
 	"github.com/devfeel/dotweb"
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/framework/json"
@@ -30,13 +26,14 @@ func main() {
 	}
 	fmt.Println(jsonutil.GetJsonString(appConfig))
 
-	RegisterMiddlewares(app)
-
-	err = app.SetConfig(appConfig)
+	//引入自定义ConfigSet
+	err = app.Config.IncludeConfigSet("d:/gotmp/userconf.xml", config.ConfigType_XML)
 	if err != nil {
-		fmt.Println("dotweb.SetConfig error => " + fmt.Sprint(err))
+		fmt.Println(err.Error())
 		return
 	}
+
+	app.SetConfig(appConfig)
 
 	fmt.Println("dotweb.StartServer => " + fmt.Sprint(appConfig))
 	err = app.Start()
@@ -53,87 +50,15 @@ func GetAppSet(ctx dotweb.Context) error {
 	return ctx.WriteString(ctx.Request().Url(), " => key = ", ctx.ConfigSet().GetString(key))
 }
 
-func DefaultPanic(ctx dotweb.Context) error {
-	panic("my panic error!")
-	return nil
-}
-
-func DefaultError(ctx dotweb.Context) error {
-	err := errors.New("my return error")
-	return err
-}
-
-func Redirect(ctx dotweb.Context) error {
-	return ctx.Redirect(200, "http://www.baidu.com")
-}
-
-func Login(ctx dotweb.Context) error {
-	return ctx.WriteString("login => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
-}
-
-func Logout(ctx dotweb.Context) error {
-	return ctx.WriteString("logout => ", fmt.Sprint(ctx.RouterNode().Middlewares()))
+// ConfigSet
+func ConfigSet(ctx dotweb.Context) error {
+	vkey1 := ctx.ConfigSet().GetString("set1")
+	vkey2 := ctx.ConfigSet().GetString("set2")
+	return ctx.WriteString(ctx.Request().Path(), "key1=", vkey1, "key2=", vkey2)
 }
 
 func RegisterHandler(server *dotweb.HttpServer) {
 	server.Router().RegisterHandler("Index", Index)
-	server.Router().RegisterHandler("Error", DefaultError)
-	server.Router().RegisterHandler("Panic", DefaultPanic)
-	server.Router().RegisterHandler("Redirect", Redirect)
-	server.Router().RegisterHandler("Login", Login)
-	server.Router().RegisterHandler("Logout", Logout)
 	server.Router().RegisterHandler("appset", GetAppSet)
-}
-
-func RegisterMiddlewares(app *dotweb.DotWeb) {
-	//集中注册middleware
-	app.RegisterMiddlewareFunc("applog", NewAppAccessFmtLog)
-	app.RegisterMiddlewareFunc("grouplog", NewGroupAccessFmtLog)
-	app.RegisterMiddlewareFunc("urllog", NewUrlAccessFmtLog)
-	app.RegisterMiddlewareFunc("simpleauth", NewSimpleAuth)
-}
-
-type AccessFmtLog struct {
-	dotweb.BaseMiddlware
-	Index string
-}
-
-func (m *AccessFmtLog) Handle(ctx dotweb.Context) error {
-	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] begin request -> ", ctx.Request().RequestURI)
-	err := m.Next(ctx)
-	fmt.Println(time.Now(), "[AccessFmtLog ", m.Index, "] finish request ", err, " -> ", ctx.Request().RequestURI)
-	return err
-}
-
-func NewAppAccessFmtLog() dotweb.Middleware {
-	return &AccessFmtLog{Index: "app"}
-}
-
-func NewGroupAccessFmtLog() dotweb.Middleware {
-	return &AccessFmtLog{Index: "group"}
-}
-
-func NewUrlAccessFmtLog() dotweb.Middleware {
-	return &AccessFmtLog{Index: "url"}
-}
-
-type SimpleAuth struct {
-	dotweb.BaseMiddlware
-	exactToken string
-}
-
-func (m *SimpleAuth) Handle(ctx dotweb.Context) error {
-	fmt.Println(time.Now(), "[SimpleAuth] begin request -> ", ctx.Request().RequestURI)
-	var err error
-	if ctx.QueryString("token") != m.exactToken {
-		ctx.Write(http.StatusUnauthorized, []byte("sorry, Unauthorized"))
-	} else {
-		err = m.Next(ctx)
-	}
-	fmt.Println(time.Now(), "[SimpleAuth] finish request ", err, " -> ", ctx.Request().RequestURI)
-	return err
-}
-
-func NewSimpleAuth() dotweb.Middleware {
-	return &SimpleAuth{exactToken: "admin"}
+	server.GET("/configser", ConfigSet)
 }
