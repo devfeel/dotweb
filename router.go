@@ -37,7 +37,6 @@ const (
 
 var (
 	HttpMethodMap map[string]string
-	valueNodePool sync.Pool
 )
 
 func init() {
@@ -52,12 +51,6 @@ func init() {
 	HttpMethodMap["DELETE"] = RouteMethod_DELETE
 	HttpMethodMap["HIJACK"] = RouteMethod_HiJack
 	HttpMethodMap["WEBSOCKET"] = RouteMethod_WebSocket
-
-	valueNodePool = sync.Pool{
-		New: func() interface{} {
-			return &ValueNode{}
-		},
-	}
 
 }
 
