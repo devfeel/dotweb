@@ -37,7 +37,6 @@ const (
 
 var (
 	HttpMethodMap map[string]string
-	valueNodePool sync.Pool
 )
 
 func init() {
@@ -52,12 +51,6 @@ func init() {
 	HttpMethodMap["DELETE"] = RouteMethod_DELETE
 	HttpMethodMap["HIJACK"] = RouteMethod_HiJack
 	HttpMethodMap["WEBSOCKET"] = RouteMethod_WebSocket
-
-	valueNodePool = sync.Pool{
-		New: func() interface{} {
-			return &ValueNode{}
-		},
-	}
 
 }
 
@@ -316,7 +309,7 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 				}
 
 				// Increment error count
-				core.GlobalState.AddErrorCount(httpCtx.Request().Path(), fmt.Errorf("%v", err), 1)
+				r.server.StateInfo().AddErrorCount(httpCtx.Request().Path(), fmt.Errorf("%v", err), 1)
 			}
 
 			// cancle Context
@@ -347,7 +340,7 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 			if r.server.DotApp.ExceptionHandler != nil {
 				r.server.DotApp.ExceptionHandler(httpCtx, ctxErr)
 				// increment error count
-				core.GlobalState.AddErrorCount(httpCtx.Request().Path(), ctxErr, 1)
+				r.server.StateInfo().AddErrorCount(httpCtx.Request().Path(), ctxErr, 1)
 			}
 		}
 
@@ -366,7 +359,7 @@ func (r *router) wrapFileHandle(fileHandler http.Handler) RouterHandle {
 			if ctxErr != nil {
 				if r.server.DotApp.ExceptionHandler != nil {
 					r.server.DotApp.ExceptionHandler(httpCtx, ctxErr)
-					core.GlobalState.AddErrorCount(httpCtx.Request().Path(), ctxErr, 1)
+					r.server.StateInfo().AddErrorCount(httpCtx.Request().Path(), ctxErr, 1)
 				}
 			}
 		} else {
@@ -644,7 +637,7 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 				r.server.Logger().Error(logString, LogTarget_HttpServer)
 
 				// increment error count
-				core.GlobalState.AddErrorCount(httpCtx.Request().Path(), fmt.Errorf("%v", err), 1)
+				r.server.StateInfo().AddErrorCount(httpCtx.Request().Path(), fmt.Errorf("%v", err), 1)
 			}
 			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
 			// HttpServer Logging

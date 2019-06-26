@@ -1,5 +1,14 @@
 ## dotweb版本记录：
 
+#### Version 1.6.5
+* Architecture: move core.GlobalState to dotweb.StateInfo()
+* Architecture: add HttpServer.StateInfo() who is a shortcut for DotWeb.StateInfo()
+* Remove: remove unused property valueNodePool in router
+* About dotweb.StateInfo:
+    - you can use ctx.HttpServer().StateInfo() to get this object
+    - you can visit /virtualPath/dotweb/state to list all state info
+* 2019-06-26 08:00
+
 #### Version 1.6.4
 * Architecture: add dotweb_sysgroup.go to implement IncludeDotwebGroup
 * New Feature: add /virtualPath/dotweb/routers to list all router express

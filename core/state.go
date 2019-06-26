@@ -12,8 +12,6 @@ import (
 	"github.com/devfeel/dotweb/framework/sysx"
 )
 
-var GlobalState *ServerStateInfo
-
 const (
 	minuteTimeLayout        = "200601021504"
 	dateTimeLayout          = "2006-01-02 15:04:05"
@@ -21,8 +19,9 @@ const (
 	defaultCheckTimeMinutes = 10
 )
 
-func init() {
-	GlobalState = &ServerStateInfo{
+// NewServerStateInfo return ServerStateInfo which is init
+func NewServerStateInfo() *ServerStateInfo {
+	state := &ServerStateInfo{
 		ServerStartTime:      time.Now(),
 		TotalRequestCount:    0,
 		TotalErrorCount:      0,
@@ -48,8 +47,9 @@ func init() {
 			},
 		},
 	}
-	go GlobalState.handleInfo()
-	go time.AfterFunc(time.Duration(defaultCheckTimeMinutes)*time.Minute, GlobalState.checkAndRemoveIntervalData)
+	go state.handleInfo()
+	go time.AfterFunc(time.Duration(defaultCheckTimeMinutes)*time.Minute, state.checkAndRemoveIntervalData)
+	return state
 }
 
 type pool struct {
