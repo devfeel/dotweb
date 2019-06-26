@@ -142,13 +142,13 @@ func (server *HttpServer) ListenAndServeTLS(addr string, certFile, keyFile strin
 
 // ServeHTTP make sure request can be handled correctly
 func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	core.GlobalState.AddCurrentRequest(1)
-	defer core.GlobalState.SubCurrentRequest(1)
+	server.StateInfo().AddCurrentRequest(1)
+	defer server.StateInfo().SubCurrentRequest(1)
 
 	// special handling for websocket and debugging
 	if checkIsWebSocketRequest(req) {
 		http.DefaultServeMux.ServeHTTP(w, req)
-		core.GlobalState.AddRequestCount(req.URL.Path, defaultHttpCode, 1)
+		server.StateInfo().AddRequestCount(req.URL.Path, defaultHttpCode, 1)
 	} else {
 		// setup header
 		w.Header().Set(HeaderServer, DefaultServerName)
@@ -175,7 +175,7 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 					module.OnEndRequest(httpCtx)
 				}
 			}
-			core.GlobalState.AddRequestCount(httpCtx.Request().Path(), httpCtx.Response().HttpCode(), 1)
+			server.StateInfo().AddRequestCount(httpCtx.Request().Path(), httpCtx.Response().HttpCode(), 1)
 
 			releaseHttpContext(server, httpCtx)
 		}
@@ -270,8 +270,14 @@ func (server *HttpServer) GetSessionManager() *session.SessionManager {
 	return server.sessionManager
 }
 
+// Logger is a shortcut for dotweb.Logger
 func (server *HttpServer) Logger() logger.AppLog {
 	return server.DotApp.Logger()
+}
+
+// StateInfo is a shortcut for dotweb.StateInfo
+func (server *HttpServer) StateInfo() *core.ServerStateInfo {
+	return server.DotApp.serverStateInfo
 }
 
 // Router get router interface in server

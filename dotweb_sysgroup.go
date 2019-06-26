@@ -1,7 +1,6 @@
 package dotweb
 
 import (
-	"github.com/devfeel/dotweb/core"
 	jsonutil "github.com/devfeel/dotweb/framework/json"
 	"runtime"
 	"runtime/debug"
@@ -43,14 +42,14 @@ func showIntervalData(ctx Context) error {
 
 	d := new(data)
 	d.Time = queryKey
-	d.RequestCount = core.GlobalState.QueryIntervalRequestData(queryKey)
-	d.ErrorCount = core.GlobalState.QueryIntervalErrorData(queryKey)
+	d.RequestCount = ctx.HttpServer().StateInfo().QueryIntervalRequestData(queryKey)
+	d.ErrorCount = ctx.HttpServer().StateInfo().QueryIntervalErrorData(queryKey)
 	return ctx.WriteJson(d)
 }
 
 // snow server status
 func showServerState(ctx Context) error {
-	return ctx.WriteHtml(core.GlobalState.ShowHtmlData(Version, ctx.HttpServer().DotApp.GlobalUniqueID()))
+	return ctx.WriteHtml(ctx.HttpServer().StateInfo().ShowHtmlData(Version, ctx.HttpServer().DotApp.GlobalUniqueID()))
 }
 
 // query server information
@@ -58,7 +57,7 @@ func showQuery(ctx Context) error {
 	querykey := ctx.GetRouterName("key")
 	switch querykey {
 	case "state":
-		return ctx.WriteString(jsonutil.GetJsonString(core.GlobalState))
+		return ctx.WriteString(jsonutil.GetJsonString(ctx.HttpServer().StateInfo()))
 	case "":
 		return ctx.WriteString("please input key")
 	default:

@@ -41,6 +41,7 @@ type (
 		IDGenerater             IdGenerate
 		globalUniqueID          string
 		appLog                  logger.AppLog
+		serverStateInfo         *core.ServerStateInfo
 	}
 
 	// ExceptionHandle supports exception handling
@@ -87,6 +88,7 @@ func New() *DotWeb {
 		middlewareMap:   make(map[string]MiddlewareFunc),
 		middlewareMutex: new(sync.RWMutex),
 		StartMode:       StartMode_New,
+		serverStateInfo: core.NewServerStateInfo(),
 	}
 	// set default run mode = RunMode_Production
 	app.Config.App.RunMode = RunMode_Production
@@ -133,6 +135,11 @@ func ClassicWithConf(config *config.Config) *DotWeb {
 // Logger return app's logger
 func (app *DotWeb) Logger() logger.AppLog {
 	return app.appLog
+}
+
+// StateInfo return app's ServerStateInfo
+func (app *DotWeb) StateInfo() *core.ServerStateInfo {
+	return app.serverStateInfo
 }
 
 // RegisterMiddlewareFunc register middleware with given name & middleware
@@ -386,7 +393,7 @@ func (app *DotWeb) initAppConfig() {
 
 	// detailed request metrics
 	if config.Server.EnabledDetailRequestData {
-		core.GlobalState.EnabledDetailRequestData = config.Server.EnabledDetailRequestData
+		app.StateInfo().EnabledDetailRequestData = config.Server.EnabledDetailRequestData
 	}
 }
 
