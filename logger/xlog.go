@@ -40,14 +40,18 @@ const (
 	defaultTimeLayout            = "2006-01-02 15:04:05"
 )
 
-// Debug debug log with default format
-func (l *xLog) Debug(log string, logTarget string) {
-	l.log(log, logTarget, LogLevelDebug, false)
-}
-
 // Print debug log with no format
 func (l *xLog) Print(log string, logTarget string) {
 	l.log(log, logTarget, LogLevelDebug, true)
+}
+
+func (l *xLog) Raw(log string, logTarget string) {
+	l.log(log, logTarget, LogLevelRaw, true)
+}
+
+// Debug debug log with default format
+func (l *xLog) Debug(log string, logTarget string) {
+	l.log(log, logTarget, LogLevelDebug, false)
 }
 
 // Info info log with default format
@@ -74,8 +78,11 @@ func (l *xLog) log(log string, logTarget string, logLevel string, isRaw bool) {
 			fmt.Println("log println err! " + time.Now().Format("2006-01-02 15:04:05") + " Error: " + err.Error())
 			logCtx = &logContext{}
 		}
+		if logLevel != LogLevelRaw {
+			logTarget = logTarget + "_" + logLevel
+		}
 		chanLog := chanLog{
-			LogTarget: logTarget + "_" + logLevel,
+			LogTarget: logTarget,
 			Content:   log,
 			LogLevel:  logLevel,
 			isRaw:     isRaw,

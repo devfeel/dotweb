@@ -10,6 +10,8 @@ import (
 )
 
 const (
+	// LogLevelDebug raw log level
+	LogLevelRaw = "RAW"
 	// LogLevelDebug debug log level
 	LogLevelDebug = "DEBUG"
 	// LogLevelInfo info log level
@@ -25,8 +27,9 @@ type AppLog interface {
 	SetEnabledConsole(enabled bool)
 	SetEnabledLog(enabledLog bool)
 	IsEnabledLog() bool
-	Debug(log string, logTarget string)
 	Print(log string, logTarget string)
+	Raw(log string, logTarget string)
+	Debug(log string, logTarget string)
 	Info(log string, logTarget string)
 	Warn(log string, logTarget string)
 	Error(log string, logTarget string)

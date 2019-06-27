@@ -1,5 +1,19 @@
 ## dotweb版本记录：
 
+#### Version 1.6.6
+* New Feature: Add AccessLog middleware for logging HTTP requests in the Apache Common Log Format.
+* New Feature: Add Raw() in dotweb.Logger
+* About AccessLog:
+    - implement the Apache Common Log Format
+    - log file name like "dotweb_accesslog_2017_06_09.log"
+    - log-example: 127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326
+* How to use AccessLog middleware:
+~~~ go
+    app.Use(accesslog.Middleware())
+    server.GET("/", Index).Use(accesslog.Middleware())
+~~~
+* 2019-06-27 23:00 at 深圳华安大酒店
+
 #### Version 1.6.5
 * Architecture: move core.GlobalState to dotweb.StateInfo()
 * Architecture: add HttpServer.StateInfo() who is a shortcut for DotWeb.StateInfo()
