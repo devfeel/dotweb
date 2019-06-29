@@ -1,5 +1,14 @@
 ## dotweb版本记录：
 
+
+#### Version 1.6.8
+* Architecture: Remove OfflineServer
+* Example: Remove render\developmode\start examples
+* Bug fix: update latest tag to v1.6.8 for go modules
+* About examples:
+    - You can visit https://github.com/devfeel/dotweb-example to know more examples for dotweb.
+* 2019-06-29 21:00 at ShangHai.Home
+
 #### Version 1.6.7
 * New Feature: Add Go Module Support
 * Architecture: Remove vendor
