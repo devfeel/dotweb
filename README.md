@@ -208,7 +208,8 @@ func TestBind(ctx dotweb.HttpContext) error{
 * [CORS](https://github.com/devfeel/middleware/tree/master/cors)   -  [example](https://github.com/devfeel/middleware/tree/master/example/cors)
 * [Gzip](https://github.com/devfeel/middleware/tree/master/gzip)   -  [example](https://github.com/devfeel/middleware/tree/master/example/gzip)
 * [authorization based on Casbin](https://github.com/devfeel/middleware/tree/master/authz) - [example](https://github.com/devfeel/middleware/tree/master/example/authz) - [what's Casbin?](https://github.com/casbin/casbin)
-* BasicAuth
+* [BasicAuth](https://github.com/devfeel/middleware/tree/master/basicauth) - [example](https://github.com/devfeel/middleware/tree/master/example/basicauth)
+* [Domain](https://github.com/devfeel/middleware/tree/master/domain) - [example](https://github.com/devfeel/middleware/tree/master/example/domain)
 * Recover
 * HeaderOverride
 
@@ -322,9 +323,6 @@ dependency now managed by go mod.
 
 #### <a href="https://github.com/devfeel/dotweb-start" target="_blank">dotweb-start</a>
 项目简介：基于dotweb、dotlog、mapper、dottask、cache、database的综合项目模板。
-
-## 贡献名单
-目前已经有几位朋友在为框架一起做努力，我们将在合适的时间向大家展现，谢谢他们的支持！
 
 ## Contact Us
 #### QQ-Group：193409346 - <a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=836e11667837ad674462a4a97fb21fba487cd3dff5b2e1ca0d7ea4c2324b4574"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="Golang-Devfeel" title="Golang-Devfeel"></a>

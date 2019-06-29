@@ -16,20 +16,12 @@ type (
 		XMLName        xml.Name          `xml:"config" json:"-" yaml:"-"`
 		App            *AppNode          `xml:"app"`
 		ConfigSetNodes []*ConfigSetNode  `xml:"configset>set"`
-		Offline        *OfflineNode      `xml:"offline"`
 		Server         *ServerNode       `xml:"server"`
 		Session        *SessionNode      `xml:"session"`
 		Routers        []*RouterNode     `xml:"routers>router"`
 		Groups         []*GroupNode      `xml:"groups>group"`
 		Middlewares    []*MiddlewareNode `xml:"middlewares>middleware"`
 		ConfigSet      core.ReadonlyMap  `json:"-" yaml:"-"`
-	}
-
-	// OfflineNode dotweb app offline config
-	OfflineNode struct {
-		Offline     bool   `xml:"offline,attr"`     // maintenance mode, default false
-		OfflineText string `xml:"offlinetext,attr"` // text to display when Offline is true, OfflineUrl is used if set
-		OfflineUrl  string `xml:"offlineurl,attr"`  // maintenance page url
 	}
 
 	// AppNode dotweb app global config
@@ -108,7 +100,6 @@ const (
 func NewConfig() *Config {
 	return &Config{
 		App:       NewAppNode(),
-		Offline:   NewOfflineNode(),
 		Server:    NewServerNode(),
 		Session:   NewSessionNode(),
 		ConfigSet: core.NewReadonlyMap(),
@@ -145,11 +136,6 @@ func (conf *Config) IncludeConfigSet(configFile string, confType string) error {
 
 func NewAppNode() *AppNode {
 	config := &AppNode{}
-	return config
-}
-
-func NewOfflineNode() *OfflineNode {
-	config := &OfflineNode{}
 	return config
 }
 
@@ -222,10 +208,6 @@ func InitConfig(configFile string, confType ...interface{}) (config *Config, err
 
 	if config.Session == nil {
 		config.Session = NewSessionNode()
-	}
-
-	if config.Offline == nil {
-		config.Offline = NewOfflineNode()
 	}
 
 	tmpConfigSetMap := core.NewConcurrenceMap()

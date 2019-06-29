@@ -19,7 +19,6 @@ import (
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/logger"
-	"github.com/devfeel/dotweb/servers"
 	"github.com/devfeel/dotweb/session"
 )
 
@@ -27,7 +26,6 @@ type (
 	DotWeb struct {
 		HttpServer              *HttpServer
 		cache                   cache.Cache
-		OfflineServer           servers.Server
 		Config                  *config.Config
 		Mock                    Mock
 		Middlewares             []Middleware
@@ -81,7 +79,6 @@ const (
 func New() *DotWeb {
 	app := &DotWeb{
 		HttpServer:      NewHttpServer(),
-		OfflineServer:   servers.NewOfflineServer(),
 		Middlewares:     make([]Middleware, 0),
 		Items:           core.NewConcurrenceMap(),
 		Config:          config.NewConfig(),
@@ -384,12 +381,6 @@ func (app *DotWeb) initAppConfig() {
 	}
 
 	app.HttpServer.initConfig()
-
-	// maintenance mode
-	if config.Offline.Offline {
-		app.HttpServer.SetOffline(config.Offline.Offline, config.Offline.OfflineText, config.Offline.OfflineUrl)
-		app.OfflineServer.SetOffline(config.Offline.Offline, config.Offline.OfflineText, config.Offline.OfflineUrl)
-	}
 
 	// detailed request metrics
 	if config.Server.EnabledDetailRequestData {

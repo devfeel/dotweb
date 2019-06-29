@@ -152,33 +152,27 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	} else {
 		// setup header
 		w.Header().Set(HeaderServer, DefaultServerName)
-		// maintenance mode
-		if server.IsOffline() {
-			server.DotApp.OfflineServer.ServeHTTP(w, req)
-		} else {
-			httpCtx := prepareHttpContext(server, w, req)
-
-			// process OnBeginRequest of modules
-			for _, module := range server.Modules {
-				if module.OnBeginRequest != nil {
-					module.OnBeginRequest(httpCtx)
-				}
+		httpCtx := prepareHttpContext(server, w, req)
+		// process OnBeginRequest of modules
+		for _, module := range server.Modules {
+			if module.OnBeginRequest != nil {
+				module.OnBeginRequest(httpCtx)
 			}
-
-			if !httpCtx.IsEnd() {
-				server.Router().ServeHTTP(httpCtx)
-			}
-
-			// process OnEndRequest of modules
-			for _, module := range server.Modules {
-				if module.OnEndRequest != nil {
-					module.OnEndRequest(httpCtx)
-				}
-			}
-			server.StateInfo().AddRequestCount(httpCtx.Request().Path(), httpCtx.Response().HttpCode(), 1)
-
-			releaseHttpContext(server, httpCtx)
 		}
+
+		if !httpCtx.IsEnd() {
+			server.Router().ServeHTTP(httpCtx)
+		}
+
+		// process OnEndRequest of modules
+		for _, module := range server.Modules {
+			if module.OnEndRequest != nil {
+				module.OnEndRequest(httpCtx)
+			}
+		}
+		server.StateInfo().AddRequestCount(httpCtx.Request().Path(), httpCtx.Response().HttpCode(), 1)
+
+		releaseHttpContext(server, httpCtx)
 	}
 }
 
