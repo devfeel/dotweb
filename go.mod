@@ -7,5 +7,3 @@ require (
 	golang.org/x/net v0.0.0-20190606173856-1492cefac77f
 	gopkg.in/yaml.v2 v2.2.2
 )
-
-replace golang.org/x/net => github.com/golang/net v0.0.0-20190606173856-1492cefac77f
