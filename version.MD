@@ -2,6 +2,7 @@
 
 #### Version 1.6.7
 * New Feature: Add Go Module Support
+* Architecture: Remove vendor
 * 2019-06-29 15:00 at ShangHai.Home
 
 #### Version 1.6.6
