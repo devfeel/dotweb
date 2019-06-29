@@ -296,11 +296,13 @@ type NotFoundHandle  func(http.ResponseWriter, *http.Request)
 ```
 
 ## Dependency
-websocket - golang.org/x/net/websocket - 内置vendor
+websocket - golang.org/x/net/websocket
 <br>
-redis - github.com/garyburd/redigo - go get自动下载
+redis - github.com/garyburd/redigo
 <br>
-yaml - gopkg.in/yaml.v2  - go get自动下载
+yaml - gopkg.in/yaml.v2
+
+dependency now managed by go mod.
 
 ## 相关项目
 #### <a href="https://github.com/devfeel/longweb" target="_blank">LongWeb</a>
