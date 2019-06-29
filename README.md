@@ -5,7 +5,7 @@
 # DotWeb
 Simple and easy go web micro framework
 
-Important: Now need go1.9+ version support.
+Important: Now need go1.9+ version support, and support go mod.
 
 Document: https://www.kancloud.cn/devfeel/dotweb/346608
 
@@ -19,11 +19,18 @@ Guide: https://github.com/devfeel/dotweb/blob/master/docs/GUIDE.md
 ## 1. Install
 
 ```
-go get -u github.com/devfeel/dotweb
+go get github.com/devfeel/dotweb
 ```
 
 ## 2. Getting Started
 ```go
+package main
+
+import (
+	"fmt"
+	"github.com/devfeel/dotweb"
+)
+
 func main() {
 	//init DotApp
 	app := dotweb.New()
@@ -34,6 +41,7 @@ func main() {
 		return ctx.WriteString("welcome to my first web!")
 	})
 	//begin server
+	fmt.Println("dotweb.StartServer begin")
 	err := app.StartServer(80)
 	fmt.Println("dotweb.StartServer error => ", err)
 }
@@ -42,6 +50,7 @@ func main() {
 #### examples: https://github.com/devfeel/dotweb-example
 
 ## 3. Features
+* 支持go mod
 * 支持静态路由、参数路由、组路由
 * 路由支持文件/目录服务，支持设置是否允许目录浏览
 * HttpModule支持，支持路由之前全局级别的自定义代码能力
