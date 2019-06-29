@@ -1,5 +1,9 @@
 ## dotweb版本记录：
 
+#### Version 1.6.7
+* New Feature: Add Go Module Support
+* 2019-06-29 15:00 at ShangHai.Home
+
 #### Version 1.6.6
 * New Feature: Add AccessLog middleware for logging HTTP requests in the Apache Common Log Format.
 * New Feature: Add Raw() in dotweb.Logger
