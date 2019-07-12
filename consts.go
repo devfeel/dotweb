@@ -3,7 +3,7 @@ package dotweb
 // Global define
 const (
 	// Version current version
-	Version = "1.6.8"
+	Version = "1.6.9"
 )
 
 // Log define
@@ -23,6 +23,11 @@ const (
 const (
 	CharsetUTF8       = "charset=utf-8"
 	DefaultServerName = "dotweb"
+)
+
+const (
+	Windows = "windows"
+	Linux   = "linux"
 )
 
 // MIME types

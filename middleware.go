@@ -27,17 +27,23 @@ type Middleware interface {
 	ExistsExcludeRouter(router string) bool
 }
 
-// BaseMiddleware is the base struct, user defined middleware should extend this
+// BaseMiddlware is a shortcut for BaseMiddleware
+// Deprecated: 由于该struct命名有误，将在2.0版本弃用，请大家尽快修改自己的middleware
 type BaseMiddlware struct {
+	BaseMiddleware
+}
+
+// BaseMiddleware is the base struct, user defined middleware should extend this
+type BaseMiddleware struct {
 	next           Middleware
 	excludeRouters map[string]struct{}
 }
 
-func (bm *BaseMiddlware) SetNext(m Middleware) {
+func (bm *BaseMiddleware) SetNext(m Middleware) {
 	bm.next = m
 }
 
-func (bm *BaseMiddlware) Next(ctx Context) error {
+func (bm *BaseMiddleware) Next(ctx Context) error {
 	httpCtx := ctx.(*HttpContext)
 	if httpCtx.middlewareStep == "" {
 		httpCtx.middlewareStep = middleware_App
@@ -72,7 +78,7 @@ func (bm *BaseMiddlware) Next(ctx Context) error {
 }
 
 // Exclude Exclude this middleware with router
-func (bm *BaseMiddlware) Exclude(routers ...string) {
+func (bm *BaseMiddleware) Exclude(routers ...string) {
 	if bm.excludeRouters == nil {
 		bm.excludeRouters = make(map[string]struct{})
 	}
@@ -82,7 +88,7 @@ func (bm *BaseMiddlware) Exclude(routers ...string) {
 }
 
 // HasExclude check has set exclude router
-func (bm *BaseMiddlware) HasExclude() bool {
+func (bm *BaseMiddleware) HasExclude() bool {
 	if bm.excludeRouters == nil {
 		return false
 	}
@@ -94,7 +100,7 @@ func (bm *BaseMiddlware) HasExclude() bool {
 }
 
 // ExistsExcludeRouter check is exists router in exclude map
-func (bm *BaseMiddlware) ExistsExcludeRouter(router string) bool {
+func (bm *BaseMiddleware) ExistsExcludeRouter(router string) bool {
 	if bm.excludeRouters == nil {
 		return false
 	}
@@ -103,7 +109,7 @@ func (bm *BaseMiddlware) ExistsExcludeRouter(router string) bool {
 }
 
 type xMiddleware struct {
-	BaseMiddlware
+	BaseMiddleware
 	IsEnd bool
 }
 
@@ -119,7 +125,7 @@ func (x *xMiddleware) Handle(ctx Context) error {
 }
 
 type RequestLogMiddleware struct {
-	BaseMiddlware
+	BaseMiddleware
 }
 
 func (m *RequestLogMiddleware) Handle(ctx Context) error {
@@ -173,7 +179,7 @@ func logContext(ctx Context, timetaken uint64) string {
 }
 
 type TimeoutHookMiddleware struct {
-	BaseMiddlware
+	BaseMiddleware
 	HookHandle      StandardHandle
 	TimeoutDuration time.Duration
 }

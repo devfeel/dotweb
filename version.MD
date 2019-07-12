@@ -1,6 +1,15 @@
 ## dotweb版本记录：
 
 
+#### Version 1.6.9
+* New Feature: 增加插件机制-Plugin，随App启动一起执行，不会阻塞App启动过程，如需持续运行，在Plugin的Run中自行处理即可。
+* Architecture: 修正BaseMiddlware命名错误，增加BaseMiddleware，保留BaseMiddlware至2.0版本前
+* About Plugin:
+    - 通过dotweb.UsePlugin注册插件
+    - 自定义插件需事先Plugin接口
+    - 即将发布集成插件 - 监控配置文件变化热重启插件
+* 2019-07-12 12:00 at ShangHai
+
 #### Version 1.6.8
 * Architecture: Remove OfflineServer
 * Example: Remove render\developmode\start examples
