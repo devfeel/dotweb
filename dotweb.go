@@ -3,6 +3,7 @@ package dotweb
 import (
 	"fmt"
 	"github.com/devfeel/dotweb/framework/crypto/uuid"
+	"github.com/devfeel/dotweb/framework/exception"
 	"net/http"
 	_ "net/http/pprof"
 	"runtime/debug"
@@ -35,6 +36,8 @@ type (
 		Items                   core.ConcurrenceMap
 		middlewareMap           map[string]MiddlewareFunc
 		middlewareMutex         *sync.RWMutex
+		pluginMap               map[string]Plugin
+		pluginMutex             *sync.RWMutex
 		StartMode               string
 		IDGenerater             IdGenerate
 		globalUniqueID          string
@@ -84,6 +87,8 @@ func New() *DotWeb {
 		Config:          config.NewConfig(),
 		middlewareMap:   make(map[string]MiddlewareFunc),
 		middlewareMutex: new(sync.RWMutex),
+		pluginMap:       make(map[string]Plugin),
+		pluginMutex:     new(sync.RWMutex),
 		StartMode:       StartMode_New,
 		serverStateInfo: core.NewServerStateInfo(),
 	}
@@ -218,7 +223,16 @@ func (app *DotWeb) ExcludeUse(m Middleware, routers ...string) {
 	}
 }
 
-// Use registers a middleware
+// UsePlugin registers plugins
+func (app *DotWeb) UsePlugin(plugins ...Plugin) {
+	app.pluginMutex.Lock()
+	defer app.pluginMutex.Unlock()
+	for _, p := range plugins {
+		app.pluginMap[p.Name()] = p
+	}
+}
+
+// Use registers middlewares
 func (app *DotWeb) Use(m ...Middleware) {
 	step := len(app.Middlewares) - 1
 	for i := range m {
@@ -357,6 +371,9 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 	// output run mode
 	app.Logger().Debug("DotWeb RunMode is "+app.RunMode(), LogTarget_HttpServer)
 
+	// start plugins
+	app.initPlugins()
+
 	if app.HttpServer.ServerConfig().EnabledTLS {
 		err := app.HttpServer.ListenAndServeTLS(addr, app.HttpServer.ServerConfig().TLSCertFile, app.HttpServer.ServerConfig().TLSKeyFile)
 		return err
@@ -455,6 +472,25 @@ func (app *DotWeb) initRegisterConfigGroup() {
 					}
 				}
 			}
+		}
+	}
+}
+
+// initPlugins init and run plugins
+func (app *DotWeb) initPlugins() {
+	for _, p := range app.pluginMap {
+		if p.IsValidate() {
+			go func() {
+				defer func() {
+					if err := recover(); err != nil {
+						app.Logger().Error(exception.CatchError("DotWeb::initPlugins run error plugin - "+p.Name(), "", err), LogTarget_HttpServer)
+					}
+				}()
+				p.Run()
+			}()
+			app.Logger().Debug("DotWeb initPlugins start run plugin - "+p.Name(), LogTarget_HttpServer)
+		} else {
+			app.Logger().Debug("DotWeb initPlugins not validate plugin - "+p.Name(), LogTarget_HttpServer)
 		}
 	}
 }

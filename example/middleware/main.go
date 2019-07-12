@@ -20,7 +20,7 @@ func main() {
 	//开启development模式
 	app.SetDevelopmentMode()
 
-	app.UseTimeoutHook(dotweb.DefaultTimeoutHookHandler, time.Second * 10)
+	app.UseTimeoutHook(dotweb.DefaultTimeoutHookHandler, time.Second*10)
 
 	exAccessFmtLog := NewAccessFmtLog("appex")
 	exAccessFmtLog.Exclude("/index")
@@ -87,7 +87,7 @@ func InitModule(dotserver *dotweb.HttpServer) {
 }
 
 type AccessFmtLog struct {
-	dotweb.BaseMiddlware
+	dotweb.BaseMiddleware
 	Index string
 }
 
@@ -103,7 +103,7 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 }
 
 type SimpleAuth struct {
-	dotweb.BaseMiddlware
+	dotweb.BaseMiddleware
 	exactToken string
 }
 

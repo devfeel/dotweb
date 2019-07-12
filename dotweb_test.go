@@ -1,6 +1,8 @@
 package dotweb
 
 import (
+	"github.com/devfeel/dotweb/framework/file"
+	"github.com/devfeel/dotweb/test"
 	"testing"
 )
 
@@ -30,6 +32,7 @@ func Test_IsDevelopmentMode_1(t *testing.T) {
 	app := New()
 	app.Config.App.RunMode = "development"
 	b := app.IsDevelopmentMode()
+	test.Equal(t, true, b)
 	t.Log("Run IsDevelopmentMode :", b)
 }
 
@@ -38,4 +41,11 @@ func Test_IsDevelopmentMode_2(t *testing.T) {
 	app.Config.App.RunMode = "production"
 	b := app.IsDevelopmentMode()
 	t.Log("Run IsDevelopmentMode :", b)
+}
+
+func TestDotWeb_UsePlugin(t *testing.T) {
+	app := New()
+	app.UsePlugin(new(testPlugin))
+	app.UsePlugin(NewNotifyPlugin("test-notify", file.GetCurrentDirectory(), 500))
+	app.StartServer(8081)
 }
