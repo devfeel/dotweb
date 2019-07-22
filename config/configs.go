@@ -22,6 +22,8 @@ type (
 		Groups         []*GroupNode      `xml:"groups>group"`
 		Middlewares    []*MiddlewareNode `xml:"middlewares>middleware"`
 		ConfigSet      core.ReadonlyMap  `json:"-" yaml:"-"`
+		ConfigFilePath string
+		ConfigType     string
 	}
 
 	// AppNode dotweb app global config
@@ -218,6 +220,10 @@ func InitConfig(configFile string, confType ...interface{}) (config *Config, err
 
 	// deal config default value
 	dealConfigDefaultSet(config)
+
+	// set config file path
+	config.ConfigFilePath = realFile
+	config.ConfigType = cType
 
 	return config, nil
 }
