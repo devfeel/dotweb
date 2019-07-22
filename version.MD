@@ -1,5 +1,14 @@
 ## dotweb版本记录：
 
+#### Version 1.7.0
+* New Feature: 新增NotifyPlugin插件，默认集成监控配置文件变化热重启
+* New Feature: 新增DotWeb.ReSetConfig用于运行时重载配置
+* About NotifyPlugin：
+    - 通过NewDefaultNotifyPlugin创建默认集成的NotifyPlugin
+    - 仅当Dotweb通过配置文件启动方式下有效，监测默认的配置文件
+    - 当热重启配置文件时，Dotweb本身监听端口以及pprod设置不会重载
+    - 感谢@地蛋对该插件的支持
+* 2019-07-22 14:00 at ShangHai
 
 #### Version 1.6.9
 * New Feature: 增加插件机制-Plugin，随App启动一起执行，不会阻塞App启动过程，如需持续运行，在Plugin的Run中自行处理即可。

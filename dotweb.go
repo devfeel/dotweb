@@ -43,6 +43,7 @@ type (
 		globalUniqueID          string
 		appLog                  logger.AppLog
 		serverStateInfo         *core.ServerStateInfo
+		isRun                   bool
 	}
 
 	// ExceptionHandle supports exception handling
@@ -312,6 +313,27 @@ func (app *DotWeb) SetConfig(config *config.Config) {
 	app.Config = config
 }
 
+// ReSetConfig reset config for app
+// only apply when app is running
+// Port can not be modify
+// if EnabledPProf, EnabledPProf flag and PProfPort can not be modify
+func (app *DotWeb) ReSetConfig(config *config.Config) {
+	if !app.isRun {
+		app.Logger().Debug("DotWeb is not running, ReSetConfig can not be call", LogTarget_HttpServer)
+		return
+	}
+
+	config.Server.Port = app.Config.Server.Port
+	if app.Config.App.EnabledPProf {
+		config.App.PProfPort = app.Config.App.PProfPort
+		config.App.EnabledPProf = app.Config.App.EnabledPProf
+	}
+	app.Config = config
+	app.appLog = logger.NewAppLog()
+	app.initAppConfig()
+	app.Logger().Debug("DotWeb ReSetConfig is done.", LogTarget_HttpServer)
+}
+
 // StartServer start server with http port
 // if config the pprof, will be start pprof server
 func (app *DotWeb) StartServer(httpPort int) error {
@@ -378,6 +400,7 @@ func (app *DotWeb) ListenAndServe(addr string) error {
 		err := app.HttpServer.ListenAndServeTLS(addr, app.HttpServer.ServerConfig().TLSCertFile, app.HttpServer.ServerConfig().TLSKeyFile)
 		return err
 	}
+	app.isRun = true
 	err := app.HttpServer.ListenAndServe(addr)
 	return err
 
@@ -480,14 +503,14 @@ func (app *DotWeb) initRegisterConfigGroup() {
 func (app *DotWeb) initPlugins() {
 	for _, p := range app.pluginMap {
 		if p.IsValidate() {
-			go func() {
+			go func(p Plugin) {
 				defer func() {
 					if err := recover(); err != nil {
 						app.Logger().Error(exception.CatchError("DotWeb::initPlugins run error plugin - "+p.Name(), "", err), LogTarget_HttpServer)
 					}
 				}()
 				p.Run()
-			}()
+			}(p)
 			app.Logger().Debug("DotWeb initPlugins start run plugin - "+p.Name(), LogTarget_HttpServer)
 		} else {
 			app.Logger().Debug("DotWeb initPlugins not validate plugin - "+p.Name(), LogTarget_HttpServer)

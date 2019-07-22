@@ -1,7 +1,8 @@
 package dotweb
 
 import (
-	"github.com/devfeel/dotweb/framework/file"
+	"fmt"
+	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/test"
 	"testing"
 )
@@ -44,8 +45,21 @@ func Test_IsDevelopmentMode_2(t *testing.T) {
 }
 
 func TestDotWeb_UsePlugin(t *testing.T) {
-	app := New()
+	app := newConfigDotWeb()
 	app.UsePlugin(new(testPlugin))
-	app.UsePlugin(NewNotifyPlugin("test-notify", file.GetCurrentDirectory(), 500))
+	app.UsePlugin(NewDefaultNotifyPlugin(app))
+	fmt.Println(app.pluginMap)
 	app.StartServer(8081)
+}
+
+func newConfigDotWeb() *DotWeb {
+	app := New()
+	appConfig, err := config.InitConfig("d:/gotmp/dotweb.conf", "xml")
+	if err != nil {
+		fmt.Println("dotweb.InitConfig error => " + fmt.Sprint(err))
+		return nil
+	}
+	app.Logger().SetEnabledConsole(true)
+	app.SetConfig(appConfig)
+	return app
 }
