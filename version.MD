@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+#### Version 1.7.1
+* New Feature: 新增stringx.CompletionRight\CompletionLeft，用于指定长度两侧补齐字符串
+* Update: 完善dotweb/routers系统页，输出method+router格式，类似："GET         /dotweb/routers"
+* 2019-07-27 08:00 at ShangHai
+
 #### Version 1.7.0
 * New Feature: 新增NotifyPlugin插件，默认集成监控配置文件变化热重启
 * New Feature: 新增DotWeb.ReSetConfig用于运行时重载配置
