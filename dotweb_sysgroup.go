@@ -2,6 +2,7 @@ package dotweb
 
 import (
 	jsonutil "github.com/devfeel/dotweb/framework/json"
+	"github.com/devfeel/dotweb/framework/stringx"
 	"runtime"
 	"runtime/debug"
 	"runtime/pprof"
@@ -69,7 +70,9 @@ func showRouters(ctx Context) error {
 
 	result := ""
 	for k, _ := range ctx.HttpServer().router.GetAllRouterExpress() {
-		result += strings.Split(k, routerExpressSplit)[1] + "\r\n"
+		method := strings.Split(k, routerExpressSplit)[0]
+		router := strings.Split(k, routerExpressSplit)[1]
+		result += stringx.CompletionRight(method, " ", 12) + router + "\r\n"
 	}
 	return ctx.WriteString(result)
 }
