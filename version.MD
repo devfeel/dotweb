@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+
+#### Version 1.7.2
+* Bug Fixed: Request.Release()增加对realUrl的处理
+* 2019-10-23 12:00 at ShangHai
+
 #### Version 1.7.1
 * New Feature: 新增stringx.CompletionRight\CompletionLeft，用于指定长度两侧补齐字符串
 * Update: 完善dotweb/routers系统页，输出method+router格式，类似："GET         /dotweb/routers"

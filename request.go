@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-
 type Request struct {
 	*http.Request
 	httpCtx    *HttpContext
@@ -35,6 +34,7 @@ func (req *Request) release() {
 	req.isReadBody = false
 	req.postBody = nil
 	req.requestID = ""
+	req.realUrl = ""
 }
 
 // RequestID get unique ID with current request
