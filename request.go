@@ -143,7 +143,7 @@ func (req *Request) PostBody() []byte {
 				req.Body = http.MaxBytesReader(req.httpCtx.response.Writer(), req.Body, maxBodySize)
 				break
 			default:
-				req.Body = http.MaxBytesReader(req.httpCtx.response.Writer(), req.Body, req.httpCtx.maxBodySize)
+				req.Body = http.MaxBytesReader(req.httpCtx.response.Writer(), req.Body, req.httpCtx.httpServer.DotApp.Config.Server.MaxBodySize)
 				break
 			}
 		}

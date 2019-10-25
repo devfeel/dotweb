@@ -113,7 +113,6 @@ type (
 		items          core.ConcurrenceMap
 		viewData       core.ConcurrenceMap
 		handler        HttpHandle
-		maxBodySize    int64
 	}
 )
 

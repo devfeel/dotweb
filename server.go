@@ -82,7 +82,7 @@ func NewHttpServer() *HttpServer {
 // initConfig init config from app config
 func (server *HttpServer) initConfig() {
 	server.SetEnabledGzip(server.ServerConfig().EnabledGzip)
-
+	server.SetMaxBodySize(server.ServerConfig().MaxBodySize)
 	// VirtualPath config
 	if server.virtualPath == "" {
 		server.virtualPath = server.ServerConfig().VirtualPath
