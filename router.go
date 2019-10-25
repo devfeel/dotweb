@@ -14,7 +14,7 @@ import (
 	"github.com/devfeel/dotweb/framework/convert"
 	"github.com/devfeel/dotweb/framework/exception"
 	_ "github.com/devfeel/dotweb/framework/file"
-	"github.com/devfeel/dotweb/framework/json"
+	jsonutil "github.com/devfeel/dotweb/framework/json"
 	"golang.org/x/net/websocket"
 )
 
@@ -122,6 +122,12 @@ type (
 		// If enabled, the router automatically replies to OPTIONS requests.
 		// Custom OPTIONS handlers take priority over automatic replies.
 		HandleOPTIONS bool
+		// To limit the request's body size to be read
+		// which can avoid unexpected or malicious request to cause the service's OOM
+		// default is 32 << 20 (32 mb)
+		// -1 : unlimted
+		// 0 : use default value
+		MaxBodySize int64
 	}
 
 	// Handle is a function that can be registered to a route to handle HTTP
@@ -163,6 +169,7 @@ func NewRouter(server *HttpServer) *router {
 		server:                server,
 		handlerMap:            make(map[string]HttpHandle),
 		handlerMutex:          new(sync.RWMutex),
+		MaxBodySize:           0,
 	}
 }
 
@@ -209,6 +216,7 @@ func (r *router) ServeHTTP(ctx *HttpContext) {
 		if handle, ps, node, tsr := root.getValue(path); handle != nil {
 			ctx.routerParams = ps
 			ctx.routerNode = node
+			ctx.maxBodySize = r.MaxBodySize
 			handle(ctx)
 			return
 		} else if req.Method != "CONNECT" && path != "/" {
