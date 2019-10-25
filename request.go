@@ -136,7 +136,7 @@ func (req *Request) PostString(key string) string {
 func (req *Request) PostBody() []byte {
 	if !req.isReadBody {
 		if req.httpCtx != nil {
-			switch req.httpCtx.maxBodySize {
+			switch req.httpCtx.httpServer.DotApp.Config.Server.MaxBodySize {
 			case -1:
 				break
 			case 0:
