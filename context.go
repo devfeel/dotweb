@@ -118,7 +118,6 @@ type (
 
 // reset response attr
 func (ctx *HttpContext) reset(res *Response, r *Request, server *HttpServer, node RouterNode, params Params, handler HttpHandle) {
-	r.httpCtx = ctx
 	ctx.request = r
 	ctx.response = res
 	ctx.routerNode = node
