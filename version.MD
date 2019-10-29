@@ -1,6 +1,17 @@
 ## dotweb版本记录：
 
 
+#### Version 1.7.3
+* New Feature: Request.PostBody增加Post内容大小限制,默认为32mb
+* About MaxBodySize:
+    - 通过app.HttpServer.SetMaxBodySize设置
+    - 默认为 32 << 20 (32 mb)
+    - -1 : unlimted
+    - 0 : use default value
+    - other： use other value
+* 感谢 @wziww 提供 PR
+* 2019-10-29 12:00 at ShangHai
+
 #### Version 1.7.2
 * Bug Fixed: Request.Release()增加对realUrl的处理
 * 2019-10-23 12:00 at ShangHai

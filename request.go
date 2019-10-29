@@ -40,6 +40,14 @@ func (req *Request) release() {
 	req.realUrl = ""
 }
 
+func (req *Request) httpServer() *HttpServer {
+	return req.httpCtx.HttpServer()
+}
+
+func (req *Request) httpApp() *DotWeb {
+	return req.httpCtx.HttpServer().DotApp
+}
+
 // RequestID get unique ID with current request
 // must HttpServer.SetEnabledRequestID(true)
 // default is empty string
@@ -144,13 +152,14 @@ func (req *Request) PostBody() []byte {
 				req.Body = http.MaxBytesReader(req.httpCtx.response.Writer(), req.Body, maxBodySize)
 				break
 			default:
-				req.Body = http.MaxBytesReader(req.httpCtx.response.Writer(), req.Body, req.httpCtx.httpServer.DotApp.Config.Server.MaxBodySize)
+				req.Body = http.MaxBytesReader(req.httpCtx.response.Writer(), req.Body, req.httpApp().Config.Server.MaxBodySize)
 				break
 			}
 		}
 		bts, err := ioutil.ReadAll(req.Body)
 		if err != nil {
-			return []byte{}
+			//if err, panic it
+			panic(err)
 		} else {
 			req.isReadBody = true
 			req.postBody = bts

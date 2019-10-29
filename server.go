@@ -40,7 +40,6 @@ type (
 		binder         Binder
 		render         Renderer
 		offline        bool
-		virtualPath    string // virtual path when deploy on no root path
 	}
 
 	pool struct {
@@ -81,12 +80,6 @@ func NewHttpServer() *HttpServer {
 
 // initConfig init config from app config
 func (server *HttpServer) initConfig() {
-	server.SetEnabledGzip(server.ServerConfig().EnabledGzip)
-	server.SetMaxBodySize(server.ServerConfig().MaxBodySize)
-	// VirtualPath config
-	if server.virtualPath == "" {
-		server.virtualPath = server.ServerConfig().VirtualPath
-	}
 }
 
 // ServerConfig a shortcut for App.Config.ServerConfig
@@ -184,14 +177,14 @@ func (server *HttpServer) IsOffline() bool {
 
 // SetVirtualPath set current server's VirtualPath
 func (server *HttpServer) SetVirtualPath(path string) {
-	server.virtualPath = path
+	server.ServerConfig().VirtualPath = path
 	server.DotApp.Logger().Debug("DotWeb:HttpServer SetVirtualPath ["+path+"]", LogTarget_HttpServer)
 
 }
 
 // VirtualPath return current server's VirtualPath
 func (server *HttpServer) VirtualPath() string {
-	return server.virtualPath
+	return server.ServerConfig().VirtualPath
 }
 
 // SetOffline set server offline config
