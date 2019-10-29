@@ -2,12 +2,13 @@ package dotweb
 
 import (
 	"compress/gzip"
-	"github.com/devfeel/dotweb/logger"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 	"sync"
+
+	"github.com/devfeel/dotweb/logger"
 
 	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/session"
@@ -16,7 +17,7 @@ import (
 
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/framework/file"
-	"github.com/devfeel/dotweb/framework/json"
+	jsonutil "github.com/devfeel/dotweb/framework/json"
 )
 
 const (
@@ -39,7 +40,6 @@ type (
 		binder         Binder
 		render         Renderer
 		offline        bool
-		virtualPath    string // virtual path when deploy on no root path
 	}
 
 	pool struct {
@@ -80,12 +80,6 @@ func NewHttpServer() *HttpServer {
 
 // initConfig init config from app config
 func (server *HttpServer) initConfig() {
-	server.SetEnabledGzip(server.ServerConfig().EnabledGzip)
-
-	// VirtualPath config
-	if server.virtualPath == "" {
-		server.virtualPath = server.ServerConfig().VirtualPath
-	}
 }
 
 // ServerConfig a shortcut for App.Config.ServerConfig
@@ -183,14 +177,14 @@ func (server *HttpServer) IsOffline() bool {
 
 // SetVirtualPath set current server's VirtualPath
 func (server *HttpServer) SetVirtualPath(path string) {
-	server.virtualPath = path
+	server.ServerConfig().VirtualPath = path
 	server.DotApp.Logger().Debug("DotWeb:HttpServer SetVirtualPath ["+path+"]", LogTarget_HttpServer)
 
 }
 
 // VirtualPath return current server's VirtualPath
 func (server *HttpServer) VirtualPath() string {
-	return server.virtualPath
+	return server.ServerConfig().VirtualPath
 }
 
 // SetOffline set server offline config
@@ -447,6 +441,12 @@ func (server *HttpServer) SetEnabledDetailRequestData(isEnabled bool) {
 func (server *HttpServer) SetEnabledStaticFileMiddleware(isEnabled bool) {
 	server.ServerConfig().EnabledStaticFileMiddleware = isEnabled
 	server.Logger().Debug("DotWeb:HttpServer SetEnabledStaticFileMiddleware ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+}
+
+// SetMaxBodySize set body size to limit read
+func (server *HttpServer) SetMaxBodySize(maxBodySize int64) {
+	server.ServerConfig().MaxBodySize = maxBodySize
+	server.Logger().Debug("DotWeb:HttpServer SetMaxBodySize ["+strconv.FormatInt(maxBodySize, 10)+"]", LogTarget_HttpServer)
 }
 
 // RegisterModule add HttpModule

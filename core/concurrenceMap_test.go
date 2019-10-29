@@ -22,7 +22,7 @@ func init() {
 
 func TestItemContext_Get_Set(t *testing.T) {
 
-	t.Log(ic.Set("foo", "bar"))
+	ic.Set("foo", "bar")
 	t.Log(ic.Get("foo"))
 	t.Log(ic.Exists("foo"))
 

@@ -49,9 +49,15 @@ type (
 		EnabledTLS                  bool   `xml:"enabledtls,attr"`               // enable TLS
 		TLSCertFile                 string `xml:"tlscertfile,attr"`              // certifications file for TLS
 		TLSKeyFile                  string `xml:"tlskeyfile,attr"`               // keys file for TLS
-		IndexPage                   string `xml:"indexpage,attr"`                // default index page
-		EnabledDetailRequestData    bool   `xml:"enableddetailrequestdata,attr"` // enable detailed statics for requests, default is false. Please use with care, it will have performance issues if the site have lots of URLs
-		VirtualPath                 string // virtual path when deploy on no root path
+		IndexPage                   string `xml:"IndexPage,attr"`                // default index page
+		EnabledDetailRequestData    bool   `xml:"EnabledDetailRequestData,attr"` // enable detailed statics for requests, default is false. Please use with care, it will have performance issues if the site have lots of URLs
+		VirtualPath                 string `xml:"VirtualPath,attr"`              // virtual path when deploy on no root path
+		// To limit the request's body size to be read
+		// which can avoid unexpected or malicious request to cause the service's OOM
+		// default is 32 << 20 (32 mb), MaxBodySize use go runtime default zero value
+		// -1 : unlimted
+		// 0 : use default value
+		MaxBodySize int64 `xml:"MaxBodySize,attr"` // To limit the request's body size to be read
 	}
 
 	// SessionNode dotweb app's session config

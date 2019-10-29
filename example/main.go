@@ -23,13 +23,15 @@ func main() {
 	}()
 
 	//初始化DotServer
-	app := dotweb.Classic("D:/gotmp")
+	app := dotweb.Classic("c:/gotmp")
 
 	//设置dotserver日志目录
 	//如果不设置，默认不启用，且默认为当前目录
 	app.SetEnabledLog(true)
 
 	app.HttpServer.SetEnabledRequestID(true)
+	// 设置解析请求体大小为 10MB
+	app.HttpServer.SetMaxBodySize(-1)
 
 	//开启development模式
 	app.SetDevelopmentMode()
@@ -120,6 +122,10 @@ func IndexReg(ctx dotweb.Context) error {
 	return ctx.WriteString("welcome to dotweb")
 }
 
+func ReadPost(ctx dotweb.Context) error {
+	return ctx.WriteString(ctx.Request().PostBody())
+}
+
 func IndexParam(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
 	return ctx.WriteString("IndexParam", ctx.GetRouterName("id"))
@@ -165,5 +171,6 @@ func InitRoute(server *dotweb.HttpServer) {
 	server.GET("/error", DefaultError)
 	server.GET("/returnerr", ReturnError)
 	server.GET("/redirect", Redirect)
+	server.POST("/readpost", ReadPost)
 	//server.Router().RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
 }
