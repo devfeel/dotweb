@@ -52,6 +52,12 @@ type (
 		IndexPage                   string `xml:"indexpage,attr"`                // default index page
 		EnabledDetailRequestData    bool   `xml:"enableddetailrequestdata,attr"` // enable detailed statics for requests, default is false. Please use with care, it will have performance issues if the site have lots of URLs
 		VirtualPath                 string // virtual path when deploy on no root path
+		// To limit the request's body size to be read
+		// which can avoid unexpected or malicious request to cause the service's OOM
+		// default is 32 << 20 (32 mb)
+		// -1 : unlimted
+		// 0 : use default value
+		MaxBodySize int64
 	}
 
 	// SessionNode dotweb app's session config

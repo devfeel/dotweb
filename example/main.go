@@ -30,6 +30,8 @@ func main() {
 	app.SetEnabledLog(true)
 
 	app.HttpServer.SetEnabledRequestID(true)
+	// 设置解析请求体大小为 10MB
+	app.HttpServer.SetMaxBodySize(10 << 20)
 
 	//开启development模式
 	app.SetDevelopmentMode()

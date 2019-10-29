@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+var maxBodySize int64 = 32 << 20 // 32 MB
+
 type Request struct {
 	*http.Request
 	httpCtx    *HttpContext
@@ -19,6 +21,7 @@ type Request struct {
 
 // reset response attr
 func (req *Request) reset(r *http.Request, ctx *HttpContext) {
+	req.httpCtx = ctx
 	req.Request = r
 	req.isReadBody = false
 	if ctx.HttpServer().ServerConfig().EnabledRequestID {
@@ -133,6 +136,18 @@ func (req *Request) PostString(key string) string {
 // PostBody returns data from the POST or PUT request body
 func (req *Request) PostBody() []byte {
 	if !req.isReadBody {
+		if req.httpCtx != nil {
+			switch req.httpCtx.httpServer.DotApp.Config.Server.MaxBodySize {
+			case -1:
+				break
+			case 0:
+				req.Body = http.MaxBytesReader(req.httpCtx.response.Writer(), req.Body, maxBodySize)
+				break
+			default:
+				req.Body = http.MaxBytesReader(req.httpCtx.response.Writer(), req.Body, req.httpCtx.httpServer.DotApp.Config.Server.MaxBodySize)
+				break
+			}
+		}
 		bts, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			return []byte{}

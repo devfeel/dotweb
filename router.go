@@ -13,8 +13,7 @@ import (
 	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/framework/convert"
 	"github.com/devfeel/dotweb/framework/exception"
-	_ "github.com/devfeel/dotweb/framework/file"
-	"github.com/devfeel/dotweb/framework/json"
+	jsonutil "github.com/devfeel/dotweb/framework/json"
 	"golang.org/x/net/websocket"
 )
 

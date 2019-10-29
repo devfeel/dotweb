@@ -2,9 +2,10 @@ package dotweb
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/devfeel/dotweb/config"
 	"github.com/devfeel/dotweb/test"
-	"testing"
 )
 
 // 以下为功能测试
@@ -54,7 +55,7 @@ func TestDotWeb_UsePlugin(t *testing.T) {
 
 func newConfigDotWeb() *DotWeb {
 	app := New()
-	appConfig, err := config.InitConfig("d:/gotmp/dotweb.conf", "xml")
+	appConfig, err := config.InitConfig("config/testdata/dotweb.conf", "xml")
 	if err != nil {
 		fmt.Println("dotweb.InitConfig error => " + fmt.Sprint(err))
 		return nil
