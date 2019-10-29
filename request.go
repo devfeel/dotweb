@@ -21,6 +21,7 @@ type Request struct {
 
 // reset response attr
 func (req *Request) reset(r *http.Request, ctx *HttpContext) {
+	req.httpCtx = ctx
 	req.Request = r
 	req.isReadBody = false
 	if ctx.HttpServer().ServerConfig().EnabledRequestID {
