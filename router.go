@@ -58,7 +58,7 @@ type (
 	Router interface {
 		ServeHTTP(ctx *HttpContext)
 		ServerFile(path string, fileRoot string) RouterNode
-		RegisterServerFile(routeMethod string, path string, fileRoot string) RouterNode
+		RegisterServerFile(routeMethod string, path string, fileRoot string, excludeExtension []string) RouterNode
 		GET(path string, handle HttpHandle) RouterNode
 		HEAD(path string, handle HttpHandle) RouterNode
 		OPTIONS(path string, handle HttpHandle) RouterNode
@@ -268,109 +268,6 @@ func (r *router) ServeHTTP(ctx *HttpContext) {
 	}
 }
 
-// wrap HttpHandle to Handle
-func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandle {
-	return func(httpCtx *HttpContext) {
-		httpCtx.handler = handler
-
-		// hijack handling
-		if isHijack {
-			_, hijack_err := httpCtx.Hijack()
-			if hijack_err != nil {
-				httpCtx.Response().WriteHeader(http.StatusInternalServerError)
-				httpCtx.Response().Header().Set(HeaderContentType, CharsetUTF8)
-				httpCtx.WriteString(hijack_err.Error())
-				return
-			}
-		}
-
-		defer func() {
-			var errmsg string
-			if err := recover(); err != nil {
-				errmsg = exception.CatchError("HttpServer::RouterHandle", LogTarget_HttpServer, err)
-
-				// handler the exception
-				if r.server.DotApp.ExceptionHandler != nil {
-					r.server.DotApp.ExceptionHandler(httpCtx, fmt.Errorf("%v", err))
-				}
-
-				// if set enabledLog, take the error log
-				if r.server.Logger().IsEnabledLog() {
-					// record access log
-					headinfo := fmt.Sprintln(httpCtx.Response().Header())
-					logJson := LogJson{
-						RequestUrl: httpCtx.Request().RequestURI,
-						HttpHeader: headinfo,
-						HttpBody:   errmsg,
-					}
-					logString := jsonutil.GetJsonString(logJson)
-					r.server.Logger().Error(logString, LogTarget_HttpServer)
-				}
-
-				// Increment error count
-				r.server.StateInfo().AddErrorCount(httpCtx.Request().Path(), fmt.Errorf("%v", err), 1)
-			}
-
-			// cancle Context
-			if httpCtx.cancle != nil {
-				httpCtx.cancle()
-			}
-		}()
-
-		// do mock, special, mock will ignore all middlewares
-		if r.server.DotApp.Mock != nil && r.server.DotApp.Mock.CheckNeedMock(httpCtx) {
-			r.server.DotApp.Mock.Do(httpCtx)
-			if httpCtx.isEnd {
-				return
-			}
-		}
-
-		// process user defined handle
-		var ctxErr error
-
-		if len(httpCtx.routerNode.AppMiddlewares()) > 0 {
-			ctxErr = httpCtx.routerNode.AppMiddlewares()[0].Handle(httpCtx)
-		} else {
-			ctxErr = handler(httpCtx)
-		}
-
-		if ctxErr != nil {
-			// handler the exception
-			if r.server.DotApp.ExceptionHandler != nil {
-				r.server.DotApp.ExceptionHandler(httpCtx, ctxErr)
-				// increment error count
-				r.server.StateInfo().AddErrorCount(httpCtx.Request().Path(), ctxErr, 1)
-			}
-		}
-
-	}
-}
-
-// wrap fileHandler to httprouter.Handle
-func (r *router) wrapFileHandle(fileHandler http.Handler) RouterHandle {
-	return func(httpCtx *HttpContext) {
-		httpCtx.handler = transStaticFileHandler(fileHandler)
-		startTime := time.Now()
-		httpCtx.Request().realUrl = httpCtx.Request().URL.String()
-		httpCtx.Request().URL.Path = httpCtx.RouterParams().ByName("filepath")
-		if httpCtx.HttpServer().ServerConfig().EnabledStaticFileMiddleware && len(httpCtx.routerNode.AppMiddlewares()) > 0 {
-			ctxErr := httpCtx.routerNode.AppMiddlewares()[0].Handle(httpCtx)
-			if ctxErr != nil {
-				if r.server.DotApp.ExceptionHandler != nil {
-					r.server.DotApp.ExceptionHandler(httpCtx, ctxErr)
-					r.server.StateInfo().AddErrorCount(httpCtx.Request().Path(), ctxErr, 1)
-				}
-			}
-		} else {
-			httpCtx.Handler()(httpCtx)
-		}
-		if r.server.Logger().IsEnabledLog() {
-			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
-			r.server.Logger().Debug(httpCtx.Request().Url()+" "+logRequest(httpCtx.Request().Request, timetaken), LogTarget_HttpRequest)
-		}
-	}
-}
-
 // GET is a shortcut for router.Handle("GET", path, handle)
 func (r *router) GET(path string, handle HttpHandle) RouterNode {
 	return r.RegisterRoute(RouteMethod_GET, path, handle)
@@ -491,13 +388,13 @@ func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandl
 // simple demo:router.ServerFile("/src/*", "/var/www")
 // simple demo:router.ServerFile("/src/*filepath", "/var/www")
 func (r *router) ServerFile(path string, fileRoot string) RouterNode {
-	return r.RegisterServerFile(RouteMethod_GET, path, fileRoot)
+	return r.RegisterServerFile(RouteMethod_GET, path, fileRoot, nil)
 }
 
 // RegisterServerFile register ServerFile router with routeMethod method on http.FileServer
-// simple demo:server.RegisterServerFile(RouteMethod_GET, "/src/*", "/var/www")
-// simple demo:server.RegisterServerFile(RouteMethod_GET, "/src/*filepath", "/var/www")
-func (r *router) RegisterServerFile(routeMethod string, path string, fileRoot string) RouterNode {
+// simple demo:server.RegisterServerFile(RouteMethod_GET, "/src/*", "/var/www", nil)
+// simple demo:server.RegisterServerFile(RouteMethod_GET, "/src/*filepath", "/var/www", []string{".zip", ".rar"})
+func (r *router) RegisterServerFile(routeMethod string, path string, fileRoot string, excludeExtension []string) RouterNode {
 	realPath := r.server.VirtualPath() + path
 	node := &Node{}
 	if len(realPath) < 2 {
@@ -515,12 +412,12 @@ func (r *router) RegisterServerFile(routeMethod string, path string, fileRoot st
 		root = &core.HideReaddirFS{root}
 	}
 	fileServer := http.FileServer(root)
-	r.add(routeMethod, realPath, r.wrapFileHandle(fileServer))
+	r.add(routeMethod, realPath, r.wrapFileHandle(fileServer, excludeExtension))
 	node = r.getNode(routeMethod, realPath)
 
 	if r.server.ServerConfig().EnabledAutoHEAD {
 		if !r.existsRouter(RouteMethod_HEAD, realPath) {
-			r.add(RouteMethod_HEAD, realPath, r.wrapFileHandle(fileServer))
+			r.add(RouteMethod_HEAD, realPath, r.wrapFileHandle(fileServer, excludeExtension))
 		}
 	}
 	if r.server.ServerConfig().EnabledAutoOPTIONS {
@@ -606,6 +503,109 @@ func (r *router) allowed(path, reqMethod string) (allow string) {
 	return
 }
 
+// wrap HttpHandle to Handle
+func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandle {
+	return func(httpCtx *HttpContext) {
+		httpCtx.handler = handler
+
+		// hijack handling
+		if isHijack {
+			_, hijack_err := httpCtx.Hijack()
+			if hijack_err != nil {
+				httpCtx.Response().WriteHeader(http.StatusInternalServerError)
+				httpCtx.Response().Header().Set(HeaderContentType, CharsetUTF8)
+				httpCtx.WriteString(hijack_err.Error())
+				return
+			}
+		}
+
+		defer func() {
+			var errmsg string
+			if err := recover(); err != nil {
+				errmsg = exception.CatchError("HttpServer::RouterHandle", LogTarget_HttpServer, err)
+
+				// handler the exception
+				if r.server.DotApp.ExceptionHandler != nil {
+					r.server.DotApp.ExceptionHandler(httpCtx, fmt.Errorf("%v", err))
+				}
+
+				// if set enabledLog, take the error log
+				if r.server.Logger().IsEnabledLog() {
+					// record access log
+					headinfo := fmt.Sprintln(httpCtx.Response().Header())
+					logJson := LogJson{
+						RequestUrl: httpCtx.Request().RequestURI,
+						HttpHeader: headinfo,
+						HttpBody:   errmsg,
+					}
+					logString := jsonutil.GetJsonString(logJson)
+					r.server.Logger().Error(logString, LogTarget_HttpServer)
+				}
+
+				// Increment error count
+				r.server.StateInfo().AddErrorCount(httpCtx.Request().Path(), fmt.Errorf("%v", err), 1)
+			}
+
+			// cancle Context
+			if httpCtx.cancle != nil {
+				httpCtx.cancle()
+			}
+		}()
+
+		// do mock, special, mock will ignore all middlewares
+		if r.server.DotApp.Mock != nil && r.server.DotApp.Mock.CheckNeedMock(httpCtx) {
+			r.server.DotApp.Mock.Do(httpCtx)
+			if httpCtx.isEnd {
+				return
+			}
+		}
+
+		// process user defined handle
+		var ctxErr error
+
+		if len(httpCtx.routerNode.AppMiddlewares()) > 0 {
+			ctxErr = httpCtx.routerNode.AppMiddlewares()[0].Handle(httpCtx)
+		} else {
+			ctxErr = handler(httpCtx)
+		}
+
+		if ctxErr != nil {
+			// handler the exception
+			if r.server.DotApp.ExceptionHandler != nil {
+				r.server.DotApp.ExceptionHandler(httpCtx, ctxErr)
+				// increment error count
+				r.server.StateInfo().AddErrorCount(httpCtx.Request().Path(), ctxErr, 1)
+			}
+		}
+
+	}
+}
+
+// wrap fileHandler to httprouter.Handle
+func (r *router) wrapFileHandle(fileHandler http.Handler, excludeExtension []string) RouterHandle {
+	return func(httpCtx *HttpContext) {
+		httpCtx.handler = transStaticFileHandler(fileHandler, excludeExtension)
+		startTime := time.Now()
+		httpCtx.Request().realUrl = httpCtx.Request().URL.String()
+		httpCtx.Request().URL.Path = httpCtx.RouterParams().ByName("filepath")
+		if httpCtx.HttpServer().ServerConfig().EnabledStaticFileMiddleware && len(httpCtx.routerNode.AppMiddlewares()) > 0 {
+			ctxErr := httpCtx.routerNode.AppMiddlewares()[0].Handle(httpCtx)
+			if ctxErr != nil {
+				if r.server.DotApp.ExceptionHandler != nil {
+					r.server.DotApp.ExceptionHandler(httpCtx, ctxErr)
+					r.server.StateInfo().AddErrorCount(httpCtx.Request().Path(), ctxErr, 1)
+				}
+			}
+		} else {
+			httpCtx.Handler()(httpCtx)
+		}
+		if r.server.Logger().IsEnabledLog() {
+			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
+			r.server.Logger().Debug(httpCtx.Request().Url()+" "+logRequest(httpCtx.Request().Request, timetaken), LogTarget_HttpRequest)
+		}
+	}
+}
+
 // wrap HttpHandle to websocket.Handle
 func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 	return func(ws *websocket.Conn) {
@@ -654,9 +654,21 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 	}
 }
 
-func transStaticFileHandler(fileHandler http.Handler) HttpHandle {
+func transStaticFileHandler(fileHandler http.Handler, excludeExtension []string) HttpHandle {
 	return func(httpCtx Context) error {
-		fileHandler.ServeHTTP(httpCtx.Response().Writer(), httpCtx.Request().Request)
+		needDefaultHandle := true
+		if excludeExtension != nil && !strings.HasSuffix(httpCtx.Request().URL.Path, "/") {
+			for _, v := range excludeExtension {
+				if strings.HasSuffix(httpCtx.Request().URL.Path, v) {
+					httpCtx.HttpServer().DotApp.NotFoundHandler(httpCtx)
+					needDefaultHandle = false
+					break
+				}
+			}
+		}
+		if needDefaultHandle {
+			fileHandler.ServeHTTP(httpCtx.Response().Writer(), httpCtx.Request().Request)
+		}
 		return nil
 	}
 }

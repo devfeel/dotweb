@@ -1,6 +1,17 @@
 ## dotweb版本记录：
 
 
+#### Version 1.7.4
+* New Feature: HttpServer.RegisterServerFile增加excludeExtension参数，用于设置不希望被访问的文件后缀名
+* Update: 增加ErrNotFound
+* About HttpServer.RegisterServerFile:
+    - Demo: server.RegisterServerFile(RouteMethod_GET, "/src/*", "/var/www", nil)
+    - Demo: server.RegisterServerFile(RouteMethod_GET, "/src/*filepath", "/var/www", []string{".zip", ".rar"})
+    - 当设置excludeExtension为nil时，可访问所有文件
+    - 本次更新涉及API变更
+* Fixed for issue #125 & #212
+* 2019-11-04 01:00 at ShangHai
+
 #### Version 1.7.3
 * New Feature: Request.PostBody增加Post内容大小限制,默认为32mb
 * About MaxBodySize:

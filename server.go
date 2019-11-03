@@ -321,9 +321,10 @@ func (server *HttpServer) ServerFile(path string, fileRoot string) RouterNode {
 }
 
 // RegisterServerFile a shortcut for router.RegisterServerFile(routeMethod, path, fileRoot)
-// simple demo:server.RegisterServerFile(RouteMethod_GET, "/src/*filepath", "/var/www")
-func (server *HttpServer) RegisterServerFile(routeMethod string, path string, fileRoot string) RouterNode {
-	return server.Router().RegisterServerFile(routeMethod, path, fileRoot)
+// simple demo:server.RegisterServerFile(RouteMethod_GET, "/src/*", "/var/www", nil)
+// simple demo:server.RegisterServerFile(RouteMethod_GET, "/src/*filepath", "/var/www", []string{".zip", ".rar"})
+func (server *HttpServer) RegisterServerFile(routeMethod string, path string, fileRoot string, excludeExtension []string) RouterNode {
+	return server.Router().RegisterServerFile(routeMethod, path, fileRoot, excludeExtension)
 }
 
 // HiJack is a shortcut for router.HiJack(path, handle)
