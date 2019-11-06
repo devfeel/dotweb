@@ -1,5 +1,21 @@
 ## dotweb版本记录：
 
+#### Version 1.7.5
+* Feature: Router增加RegisterHandlerFunc,用于支持注册go原生http.HandlerFunc形式的函数
+* Feature: HttpServer增加RegisterHandlerFunc与RegisterRoute
+* Opt: Router增加transferHandlerFunc、transferStaticFileHandler辅助函数
+* Example: 修改example/router增加RegisterHandlerFunc示例
+* About RegisterHandlerFunc
+    - Func: RegisterHandlerFunc(routeMethod string, path string, handler http.HandlerFunc) RouterNode
+* How to use RegisterHandlerFunc:
+~~~ go
+func HandlerFunc(w http.ResponseWriter, r *http.Request){
+	w.Write([]byte("go raw http func"))
+}
+
+server.RegisterHandlerFunc("GET", "/h/func", HandlerFunc)
+~~~
+* 2019-11-07 01:00 at ShangHai
 
 #### Version 1.7.4
 * New Feature: HttpServer.RegisterServerFile增加excludeExtension参数，用于设置不希望被访问的文件后缀名

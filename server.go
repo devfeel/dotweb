@@ -320,6 +320,16 @@ func (server *HttpServer) ServerFile(path string, fileRoot string) RouterNode {
 	return server.Router().ServerFile(path, fileRoot)
 }
 
+// RegisterHandlerFunc a shortcut for router.RegisterHandlerFunc(routeMethod string, path string, handler http.HandlerFunc)
+func (server *HttpServer) RegisterHandlerFunc(routeMethod string, path string, handler http.HandlerFunc) RouterNode {
+	return server.Router().RegisterHandlerFunc(routeMethod, path, handler)
+}
+
+// RegisterRoute a shortcut for router.RegisterRoute(routeMethod string, path string,handle HttpHandle)
+func (server *HttpServer) RegisterRoute(routeMethod string, path string, handle HttpHandle) RouterNode {
+	return server.Router().RegisterRoute(routeMethod, path, handle)
+}
+
 // RegisterServerFile a shortcut for router.RegisterServerFile(routeMethod, path, fileRoot)
 // simple demo:server.RegisterServerFile(RouteMethod_GET, "/src/*", "/var/www", nil)
 // simple demo:server.RegisterServerFile(RouteMethod_GET, "/src/*filepath", "/var/www", []string{".zip", ".rar"})

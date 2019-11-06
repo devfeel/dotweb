@@ -69,6 +69,7 @@ type (
 		HiJack(path string, handle HttpHandle)
 		WebSocket(path string, handle HttpHandle)
 		Any(path string, handle HttpHandle)
+		RegisterHandlerFunc(routeMethod string, path string, handler http.HandlerFunc) RouterNode
 		RegisterRoute(routeMethod string, path string, handle HttpHandle) RouterNode
 		RegisterHandler(name string, handler HttpHandle)
 		GetHandler(name string) (HttpHandle, bool)
@@ -317,6 +318,11 @@ func (r *router) WebSocket(path string, handle HttpHandle) {
 	r.RegisterRoute(RouteMethod_WebSocket, path, handle)
 }
 
+// RegisterHandlerFunc register router with http.HandlerFunc
+func (r *router) RegisterHandlerFunc(routeMethod string, path string, handler http.HandlerFunc) RouterNode {
+	return r.RegisterRoute(routeMethod, path, transferHandlerFunc(handler))
+}
+
 // RegisterRoute register router
 // support GET\POST\DELETE\PUT\HEAD\PATCH\OPTIONS\HiJack\WebSocket\ANY
 func (r *router) RegisterRoute(routeMethod string, path string, handle HttpHandle) RouterNode {
@@ -503,7 +509,7 @@ func (r *router) allowed(path, reqMethod string) (allow string) {
 	return
 }
 
-// wrap HttpHandle to Handle
+// wrap HttpHandle to RouterHandle
 func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandle {
 	return func(httpCtx *HttpContext) {
 		httpCtx.handler = handler
@@ -581,10 +587,10 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 	}
 }
 
-// wrap fileHandler to httprouter.Handle
+// wrap fileHandler to RouterHandle
 func (r *router) wrapFileHandle(fileHandler http.Handler, excludeExtension []string) RouterHandle {
 	return func(httpCtx *HttpContext) {
-		httpCtx.handler = transStaticFileHandler(fileHandler, excludeExtension)
+		httpCtx.handler = transferStaticFileHandler(fileHandler, excludeExtension)
 		startTime := time.Now()
 		httpCtx.Request().realUrl = httpCtx.Request().URL.String()
 		httpCtx.Request().URL.Path = httpCtx.RouterParams().ByName("filepath")
@@ -654,7 +660,16 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 	}
 }
 
-func transStaticFileHandler(fileHandler http.Handler, excludeExtension []string) HttpHandle {
+// transferHandlerFunc transfer HandlerFunc to HttpHandle
+func transferHandlerFunc(handlerFunc http.HandlerFunc) HttpHandle {
+	return func(httpCtx Context) error {
+		handlerFunc(httpCtx.Response().Writer(), httpCtx.Request().Request)
+		return nil
+	}
+}
+
+// transferStaticFileHandler transfer http.Handler to HttpHandle
+func transferStaticFileHandler(fileHandler http.Handler, excludeExtension []string) HttpHandle {
 	return func(httpCtx Context) error {
 		needDefaultHandle := true
 		if excludeExtension != nil && !strings.HasSuffix(httpCtx.Request().URL.Path, "/") {
