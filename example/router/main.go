@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/devfeel/dotweb"
@@ -41,8 +42,13 @@ func Any(ctx dotweb.Context) error {
 	return ctx.WriteString("any - " + ctx.Request().Method)
 }
 
+func HandlerFunc(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("go raw http func"))
+}
+
 func InitRoute(server *dotweb.HttpServer) {
 	server.GET("/", Index)
 	server.GET("/d/:x/y", Index)
 	server.Any("/any", Any)
+	server.RegisterHandlerFunc("GET", "/h/func", HandlerFunc)
 }
