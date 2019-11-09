@@ -1,5 +1,37 @@
 ## dotweb版本记录：
 
+
+#### Version 1.7.6
+* Fix: 修复在调用SetMethodNotAllowedHandle时修改StatusCode无效问题
+* Opt: 将路由阶段设置405代码逻辑移除，相关逻辑在DefaultMethodNotAllowedHandler实现
+* About MethodNotAllowedHandle:
+    - 默认使用DefaultMethodNotAllowedHandler
+    - 如调用SetMethodNotAllowedHandle，则使用用户代码覆盖DefaultMethodNotAllowedHandler
+* How to use SetMethodNotAllowedHandle:
+~~~ go
+app.SetMethodNotAllowedHandle(func(ctx dotweb.Context){
+    ctx.Redirect(301, "/")
+})
+~~~
+* 2019-11-10 00:00 at ShangHai
+
+#### Version 1.7.5
+* Feature: Router增加RegisterHandlerFunc,用于支持注册go原生http.HandlerFunc形式的函数
+* Feature: HttpServer增加RegisterHandlerFunc与RegisterRoute
+* Opt: Router增加transferHandlerFunc、transferStaticFileHandler辅助函数
+* Example: 修改example/router增加RegisterHandlerFunc示例
+* About RegisterHandlerFunc
+    - Func: RegisterHandlerFunc(routeMethod string, path string, handler http.HandlerFunc) RouterNode
+* How to use RegisterHandlerFunc:
+~~~ go
+func HandlerFunc(w http.ResponseWriter, r *http.Request){
+	w.Write([]byte("go raw http func"))
+}
+
+server.RegisterHandlerFunc("GET", "/h/func", HandlerFunc)
+~~~
+* 2019-11-07 01:00 at ShangHai
+
 #### Version 1.7.5
 * Feature: Router增加RegisterHandlerFunc,用于支持注册go原生http.HandlerFunc形式的函数
 * Feature: HttpServer增加RegisterHandlerFunc与RegisterRoute

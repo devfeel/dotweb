@@ -18,6 +18,10 @@ func main() {
 	app.HttpServer.SetEnabledAutoHEAD(true)
 	//app.HttpServer.SetEnabledAutoOPTIONS(true)
 
+	app.SetMethodNotAllowedHandle(func(ctx dotweb.Context) {
+		ctx.Redirect(301, "/")
+	})
+
 	//设置路由
 	InitRoute(app.HttpServer)
 
@@ -49,6 +53,11 @@ func HandlerFunc(w http.ResponseWriter, r *http.Request) {
 func InitRoute(server *dotweb.HttpServer) {
 	server.GET("/", Index)
 	server.GET("/d/:x/y", Index)
+	server.GET("/x/:y", Index)
+	server.GET("/x/", Index)
+
+	server.POST("/post", Index)
+
 	server.Any("/any", Any)
 	server.RegisterHandlerFunc("GET", "/h/func", HandlerFunc)
 }
