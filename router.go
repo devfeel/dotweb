@@ -257,7 +257,7 @@ func (r *router) ServeHTTP(ctx *HttpContext) {
 		// Handle 405
 		if allow := r.allowed(path, req.Method); len(allow) > 0 {
 			w.Header().Set("Allow", allow)
-			ctx.Response().SetStatusCode(http.StatusMethodNotAllowed)
+			// In DefaultMethodNotAllowedHandler will be call SetStatusCode(http.StatusMethodNotAllowed)
 			r.server.DotApp.MethodNotAllowedHandler(ctx)
 			return
 		}
