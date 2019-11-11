@@ -19,6 +19,120 @@ const (
 	defaultCheckTimeMinutes = 10
 )
 
+var htmlTable = `<html>
+<head>
+  <title> New Document </title>
+  <meta name="Generator" content="EditPlus">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <style>
+
+    body {
+      width: 600px;
+      margin: 40px auto;
+      font-family: 'trebuchet MS', 'Lucida sans', Arial;
+      font-size: 14px;
+      color: #444;
+    }
+
+    table {
+      *border-collapse: collapse; /* IE7 and lower */
+      border-spacing: 0;
+      width: 100%;
+    }
+
+    .bordered {
+      border: solid #ccc 1px;
+      -moz-border-radius: 6px;
+      -webkit-border-radius: 6px;
+      border-radius: 6px;
+      -webkit-box-shadow: 0 1px 1px #ccc;
+      -moz-box-shadow: 0 1px 1px #ccc;
+      box-shadow: 0 1px 1px #ccc;
+    }
+
+    .bordered tr:hover {
+      background: #fbf8e9;
+      -o-transition: all 0.1s ease-in-out;
+      -webkit-transition: all 0.1s ease-in-out;
+      -moz-transition: all 0.1s ease-in-out;
+      -ms-transition: all 0.1s ease-in-out;
+      transition: all 0.1s ease-in-out;
+    }
+
+    .bordered td, .bordered th {
+      border-left: 1px solid #ccc;
+      border-top: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+
+    .bordered th {
+      background-color: #dce9f9;
+      background-image: -webkit-gradient(linear, left top, left bottom, from(#ebf3fc), to(#dce9f9));
+      background-image: -webkit-linear-gradient(top, #ebf3fc, #dce9f9);
+      background-image: -moz-linear-gradient(top, #ebf3fc, #dce9f9);
+      background-image: -ms-linear-gradient(top, #ebf3fc, #dce9f9);
+      background-image: -o-linear-gradient(top, #ebf3fc, #dce9f9);
+      background-image: linear-gradient(top, #ebf3fc, #dce9f9);
+      -webkit-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
+      -moz-box-shadow:0 1px 0 rgba(255,255,255,.8) inset;
+      box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
+      border-top: none;
+      text-shadow: 0 1px 0 rgba(255,255,255,.5);
+    }
+
+    .bordered td:first-child, .bordered th:first-child {
+      border-left: none;
+    }
+
+    .bordered th:first-child {
+      -moz-border-radius: 6px 0 0 0;
+      -webkit-border-radius: 6px 0 0 0;
+      border-radius: 6px 0 0 0;
+    }
+
+    .bordered th:last-child {
+      -moz-border-radius: 0 6px 0 0;
+      -webkit-border-radius: 0 6px 0 0;
+      border-radius: 0 6px 0 0;
+    }
+
+    .bordered th:only-child{
+      -moz-border-radius: 6px 6px 0 0;
+      -webkit-border-radius: 6px 6px 0 0;
+      border-radius: 6px 6px 0 0;
+    }
+
+    .bordered tr:last-child td:first-child {
+      -moz-border-radius: 0 0 0 6px;
+      -webkit-border-radius: 0 0 0 6px;
+      border-radius: 0 0 0 6px;
+    }
+
+    .bordered tr:last-child td:last-child {
+      -moz-border-radius: 0 0 6px 0;
+      -webkit-border-radius: 0 0 6px 0;
+      border-radius: 0 0 6px 0;
+    }
+  </style>
+</head>
+<body>
+<table class="bordered">
+  <thead>
+
+  <tr>
+    <th>Index</th>
+    <th>Value</th>
+  </tr>
+  </thead>
+	{{body}}
+</table>
+</body>
+</html>
+`
+
 // NewServerStateInfo return ServerStateInfo which is init
 func NewServerStateInfo() *ServerStateInfo {
 	state := &ServerStateInfo{
@@ -99,8 +213,8 @@ type ServerStateInfo struct {
 	infoPool         *pool
 }
 
-// ShowHtmlData show server state data html-string format
-func (state *ServerStateInfo) ShowHtmlData(version, globalUniqueId string) string {
+// ShowHtmlDataRaw show server state data html-string format
+func (state *ServerStateInfo) ShowHtmlDataRaw(version, globalUniqueId string) string {
 	data := "<html><body><div>"
 	data += "GlobalUniqueId : " + globalUniqueId
 	data += "<br>"
@@ -143,6 +257,37 @@ func (state *ServerStateInfo) ShowHtmlData(version, globalUniqueId string) strin
 	state.DetailHTTPCodeData.RUnlock()
 	data += "</div></body></html>"
 	return data
+}
+
+// ShowHtmlData show server state data html-table format
+func (state *ServerStateInfo) ShowHtmlTableData(version, globalUniqueId string) string {
+	data := "<tr><td>" + "GlobalUniqueId" + "</td><td>" + globalUniqueId + "</td></tr>"
+	data += "<tr><td>" + "HostInfo" + "</td><td>" + sysx.GetHostName() + "</td></tr>"
+	data += "<tr><td>" + "CurrentTime" + "</td><td>" + time.Now().Format("2006-01-02 15:04:05") + "</td></tr>"
+	data += "<tr><td>" + "ServerVersion" + "</td><td>" + version + "</td></tr>"
+	data += "<tr><td>" + "ServerStartTime" + "</td><td>" + state.ServerStartTime.Format(dateTimeLayout) + "</td></tr>"
+	data += "<tr><td>" + "TotalRequestCount" + "</td><td>" + strconv.FormatUint(state.TotalRequestCount, 10) + "</td></tr>"
+	data += "<tr><td>" + "CurrentRequestCount" + "</td><td>" + strconv.FormatUint(state.CurrentRequestCount, 10) + "</td></tr>"
+	data += "<tr><td>" + "TotalErrorCount" + "</td><td>" + strconv.FormatUint(state.TotalErrorCount, 10) + "</td></tr>"
+	state.IntervalRequestData.RLock()
+	data += "<tr><td>" + "IntervalRequestData" + "</td><td>" + jsonutil.GetJsonString(state.IntervalRequestData.GetCurrentMap()) + "</td></tr>"
+	state.IntervalRequestData.RUnlock()
+	state.DetailRequestURLData.RLock()
+	data += "<tr><td>" + "DetailRequestUrlData" + "</td><td>" + jsonutil.GetJsonString(state.DetailRequestURLData.GetCurrentMap()) + "</td></tr>"
+	state.DetailRequestURLData.RUnlock()
+	state.IntervalErrorData.RLock()
+	data += "<tr><td>" + "IntervalErrorData" + "</td><td>" + jsonutil.GetJsonString(state.IntervalErrorData.GetCurrentMap()) + "</td></tr>"
+	state.IntervalErrorData.RUnlock()
+	state.DetailErrorPageData.RLock()
+	data += "<tr><td>" + "DetailErrorPageData" + "</td><td>" + jsonutil.GetJsonString(state.DetailErrorPageData.GetCurrentMap()) + "</td></tr>"
+	state.DetailErrorPageData.RUnlock()
+	state.DetailErrorData.RLock()
+	data += "<tr><td>" + "DetailErrorData" + "</td><td>" + jsonutil.GetJsonString(state.DetailErrorData.GetCurrentMap()) + "</td></tr>"
+	state.DetailErrorData.RUnlock()
+	state.DetailHTTPCodeData.RLock()
+	data += "<tr><td>" + "DetailHttpCodeData" + "</td><td>" + jsonutil.GetJsonString(state.DetailHTTPCodeData.GetCurrentMap()) + "</td></tr>"
+	state.DetailHTTPCodeData.RUnlock()
+	return strings.Replace(htmlTable, "{{body}}", data, -1)
 }
 
 // QueryIntervalRequestData query request count by query time

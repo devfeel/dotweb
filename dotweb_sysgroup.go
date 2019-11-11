@@ -50,7 +50,7 @@ func showIntervalData(ctx Context) error {
 
 // snow server status
 func showServerState(ctx Context) error {
-	return ctx.WriteHtml(ctx.HttpServer().StateInfo().ShowHtmlData(Version, ctx.HttpServer().DotApp.GlobalUniqueID()))
+	return ctx.WriteHtml(ctx.HttpServer().StateInfo().ShowHtmlTableData(Version, ctx.HttpServer().DotApp.GlobalUniqueID()))
 }
 
 // query server information
