@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,116 +20,114 @@ const (
 	defaultCheckTimeMinutes = 10
 )
 
-var htmlTable = `<html>
-<head>
-  <title> New Document </title>
+var TableHtml = `<html>
+<html><head>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;">
+ 
   <meta name="Generator" content="EditPlus">
   <meta name="Author" content="">
   <meta name="Keywords" content="">
   <meta name="Description" content="">
-  <style>
-
+  <title>Dotweb</title>
+    <style>
+    .overtable {
+      width: 100%;
+      overflow: hidden;
+      overflow-x: auto;
+    }
     body {
-      width: 600px;
-      margin: 40px auto;
+      max-width: 780px;
+       margin:0 auto;
       font-family: 'trebuchet MS', 'Lucida sans', Arial;
-      font-size: 14px;
+      font-size: 1rem;
       color: #444;
     }
-
     table {
-      *border-collapse: collapse; /* IE7 and lower */
+      font-family: 'trebuchet MS', 'Lucida sans', Arial;
+      *border-collapse: collapse;
+      /* IE7 and lower */
       border-spacing: 0;
       width: 100%;
+      border-collapse: collapse;
+      overflow-x: auto
     }
-
-    .bordered {
-      border: solid #ccc 1px;
-      -moz-border-radius: 6px;
-      -webkit-border-radius: 6px;
-      border-radius: 6px;
-      -webkit-box-shadow: 0 1px 1px #ccc;
-      -moz-box-shadow: 0 1px 1px #ccc;
-      box-shadow: 0 1px 1px #ccc;
+    caption {
+      font-family: 'Microsoft Yahei', 'trebuchet MS', 'Lucida sans', Arial;
+    text-align: left;
+    padding: .5rem;
+    font-weight: bold;
+    font-size: 110%;
+    color: #666;
     }
-
+    tr {
+      border-top: 1px solid #dfe2e5
+    }
+    tr:nth-child(2n) {
+      background-color: #f6f8fa
+    }
+    td,
+    th {
+      border: 1px solid #dfe2e5;
+      padding: .6em 1em;
+    }
     .bordered tr:hover {
       background: #fbf8e9;
-      -o-transition: all 0.1s ease-in-out;
-      -webkit-transition: all 0.1s ease-in-out;
-      -moz-transition: all 0.1s ease-in-out;
-      -ms-transition: all 0.1s ease-in-out;
-      transition: all 0.1s ease-in-out;
     }
-
-    .bordered td, .bordered th {
-      border-left: 1px solid #ccc;
-      border-top: 1px solid #ccc;
+    .bordered td,
+    .bordered th {
+      border: 1px solid #ccc;
       padding: 10px;
       text-align: left;
     }
-
-    .bordered th {
-      background-color: #dce9f9;
-      background-image: -webkit-gradient(linear, left top, left bottom, from(#ebf3fc), to(#dce9f9));
-      background-image: -webkit-linear-gradient(top, #ebf3fc, #dce9f9);
-      background-image: -moz-linear-gradient(top, #ebf3fc, #dce9f9);
-      background-image: -ms-linear-gradient(top, #ebf3fc, #dce9f9);
-      background-image: -o-linear-gradient(top, #ebf3fc, #dce9f9);
-      background-image: linear-gradient(top, #ebf3fc, #dce9f9);
-      -webkit-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
-      -moz-box-shadow:0 1px 0 rgba(255,255,255,.8) inset;
-      box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
-      border-top: none;
-      text-shadow: 0 1px 0 rgba(255,255,255,.5);
-    }
-
-    .bordered td:first-child, .bordered th:first-child {
-      border-left: none;
-    }
-
-    .bordered th:first-child {
-      -moz-border-radius: 6px 0 0 0;
-      -webkit-border-radius: 6px 0 0 0;
-      border-radius: 6px 0 0 0;
-    }
-
-    .bordered th:last-child {
-      -moz-border-radius: 0 6px 0 0;
-      -webkit-border-radius: 0 6px 0 0;
-      border-radius: 0 6px 0 0;
-    }
-
-    .bordered th:only-child{
-      -moz-border-radius: 6px 6px 0 0;
-      -webkit-border-radius: 6px 6px 0 0;
-      border-radius: 6px 6px 0 0;
-    }
-
-    .bordered tr:last-child td:first-child {
-      -moz-border-radius: 0 0 0 6px;
-      -webkit-border-radius: 0 0 0 6px;
-      border-radius: 0 0 0 6px;
-    }
-
-    .bordered tr:last-child td:last-child {
-      -moz-border-radius: 0 0 6px 0;
-      -webkit-border-radius: 0 0 6px 0;
-      border-radius: 0 0 6px 0;
-    }
   </style>
+  <script>
+  
+(function(doc, win) {
+    window.MPIXEL_RATIO = (function () {
+        var Mctx = document.createElement("canvas").getContext("2d"),
+            Mdpr = window.devicePixelRatio || 1,
+            Mbsr = Mctx.webkitBackingStorePixelRatio ||
+                Mctx.mozBackingStorePixelRatio ||
+                Mctx.msBackingStorePixelRatio ||
+                Mctx.oBackingStorePixelRatio ||
+                Mctx.backingStorePixelRatio || 1;
+    
+        return Mdpr/Mbsr;
+    })();
+
+    function addEventListeners(ele,type,callback){
+    
+        try{  // Chrome、FireFox、Opera、Safari、IE9.0及其以上版本
+            ele.addEventListener(type,callback,false);
+        }catch(e){
+            try{  // IE8.0及其以下版本
+                ele.attachEvent('on' + type,callback);
+            }catch(e){  // 早期浏览器
+                ele['on' + type] = callback;
+            }
+        }
+    }
+
+    var docEl = doc.documentElement,
+        resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize';
+    window.recalc = function() {
+            var clientWidth = docEl.clientWidth < 768 ? docEl.clientWidth : 768;
+            if (!clientWidth) return;
+            docEl.style.fontSize = 10 * (clientWidth / 320) *  window.MPIXEL_RATIO + 'px';
+        };
+    window.recalc();
+    
+    addEventListeners(win, resizeEvt, recalc);
+})(document, window);
+
+</script>
 </head>
 <body>
-<table class="bordered">
-  <thead>
-
-  <tr>
-    <th>Index</th>
-    <th>Value</th>
-  </tr>
-  </thead>
-	{{body}}
-</table>
+<div class="overtable">
+{{tableBody}}
+</div>
 </body>
 </html>
 `
@@ -269,12 +268,6 @@ func (state *ServerStateInfo) ShowHtmlTableData(version, globalUniqueId string) 
 	data += "<tr><td>" + "TotalRequestCount" + "</td><td>" + strconv.FormatUint(state.TotalRequestCount, 10) + "</td></tr>"
 	data += "<tr><td>" + "CurrentRequestCount" + "</td><td>" + strconv.FormatUint(state.CurrentRequestCount, 10) + "</td></tr>"
 	data += "<tr><td>" + "TotalErrorCount" + "</td><td>" + strconv.FormatUint(state.TotalErrorCount, 10) + "</td></tr>"
-	state.IntervalRequestData.RLock()
-	data += "<tr><td>" + "IntervalRequestData" + "</td><td>" + jsonutil.GetJsonString(state.IntervalRequestData.GetCurrentMap()) + "</td></tr>"
-	state.IntervalRequestData.RUnlock()
-	state.DetailRequestURLData.RLock()
-	data += "<tr><td>" + "DetailRequestUrlData" + "</td><td>" + jsonutil.GetJsonString(state.DetailRequestURLData.GetCurrentMap()) + "</td></tr>"
-	state.DetailRequestURLData.RUnlock()
 	state.IntervalErrorData.RLock()
 	data += "<tr><td>" + "IntervalErrorData" + "</td><td>" + jsonutil.GetJsonString(state.IntervalErrorData.GetCurrentMap()) + "</td></tr>"
 	state.IntervalErrorData.RUnlock()
@@ -287,7 +280,40 @@ func (state *ServerStateInfo) ShowHtmlTableData(version, globalUniqueId string) 
 	state.DetailHTTPCodeData.RLock()
 	data += "<tr><td>" + "DetailHttpCodeData" + "</td><td>" + jsonutil.GetJsonString(state.DetailHTTPCodeData.GetCurrentMap()) + "</td></tr>"
 	state.DetailHTTPCodeData.RUnlock()
-	return strings.Replace(htmlTable, "{{body}}", data, -1)
+	header := `<tr>
+          <th>Index</th>
+          <th>Value</th>
+        </tr>`
+	data = CreateTableHtml("Core State", header, data)
+
+	//show IntervalRequestData
+	intervalRequestData := ""
+	state.IntervalRequestData.RLock()
+	for k, v := range state.IntervalRequestData.GetCurrentMap() {
+		intervalRequestData += "<tr><td>" + k + "</td><td>" + fmt.Sprint(v) + "</td></tr>"
+	}
+	state.IntervalRequestData.RUnlock()
+	header = `<tr>
+          <th>Time</th>
+          <th>Value</th>
+        </tr>`
+	data += CreateTableHtml("IntervalRequestData", header, intervalRequestData)
+
+	//show DetailRequestURLData
+	detailRequestURLData := ""
+	state.DetailRequestURLData.RLock()
+	for k, v := range state.DetailRequestURLData.GetCurrentMap() {
+		detailRequestURLData += "<tr><td>" + k + "</td><td>" + fmt.Sprint(v) + "</td></tr>"
+	}
+	state.DetailRequestURLData.RUnlock()
+	header = `<tr>
+          <th>Url</th>
+          <th>Value</th>
+        </tr>`
+	data += CreateTableHtml("DetailRequestURLData", header, detailRequestURLData)
+	html := strings.Replace(TableHtml, "{{tableBody}}", data, -1)
+
+	return html
 }
 
 // QueryIntervalRequestData query request count by query time
