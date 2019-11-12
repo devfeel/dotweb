@@ -1,8 +1,9 @@
 package dotweb
 
 import (
+	"fmt"
+	"github.com/devfeel/dotweb/core"
 	jsonutil "github.com/devfeel/dotweb/framework/json"
-	"github.com/devfeel/dotweb/framework/stringx"
 	"runtime"
 	"runtime/debug"
 	"runtime/pprof"
@@ -50,7 +51,7 @@ func showIntervalData(ctx Context) error {
 
 // snow server status
 func showServerState(ctx Context) error {
-	return ctx.WriteHtml(ctx.HttpServer().StateInfo().ShowHtmlData(Version, ctx.HttpServer().DotApp.GlobalUniqueID()))
+	return ctx.WriteHtml(ctx.HttpServer().StateInfo().ShowHtmlTableData(Version, ctx.HttpServer().DotApp.GlobalUniqueID()))
 }
 
 // query server information
@@ -68,11 +69,18 @@ func showQuery(ctx Context) error {
 
 func showRouters(ctx Context) error {
 
-	result := ""
+	data := ""
+	routerCount := len(ctx.HttpServer().router.GetAllRouterExpress())
 	for k, _ := range ctx.HttpServer().router.GetAllRouterExpress() {
 		method := strings.Split(k, routerExpressSplit)[0]
 		router := strings.Split(k, routerExpressSplit)[1]
-		result += stringx.CompletionRight(method, " ", 12) + router + "\r\n"
+		data += "<tr><td>" + method + "</td><td>" + router + "</td></tr>"
 	}
-	return ctx.WriteString(result)
+	header := `<tr>
+          <th>Method</th>
+          <th>Router</th>
+        </tr>`
+	html := strings.Replace(core.TableHtml, "{{tableBody}}", core.CreateTableHtml("Routers:"+fmt.Sprint(routerCount), header, data), -1)
+
+	return ctx.WriteHtml(html)
 }

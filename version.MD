@@ -1,6 +1,14 @@
 ## dotweb版本记录：
 
 
+#### Version 1.7.7
+* Opt: 优化系统路由dotweb/state、dotweb/routers展现方式，以方便阅读的表格形式输出
+* Feature: 新增core.TableHtml\core.CreateTableHtml()用于生成相关Html代码
+* About:
+    - 可访问dotweb/state查看当前实例运行时信息
+    - 可访问dotweb/routers查看当前实例注册的所有路由信息
+* 2019-11-12 18:00 at ShangHai
+
 #### Version 1.7.6
 * Fix: 修复在调用SetMethodNotAllowedHandle时修改StatusCode无效问题
 * Opt: 将路由阶段设置405代码逻辑移除，相关逻辑在DefaultMethodNotAllowedHandler实现
