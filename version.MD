@@ -1,5 +1,15 @@
 ## dotweb版本记录：
 
+#### Version 1.7.8
+* Opt: optimize tree.go
+* Opt: Fix some panic information when a 'catch-all' wildcard conflict occurs. 
+* Opt: use maxParamCount const instead of magic number.
+* Opt: optimize countParams.
+* Opt: optimize incrementChildPrio.
+* Opt: comment style fixes.
+* Opt: improve param name check.
+* Opt: fix maxParams bug.
+* 2019-11-19 12:00 at ShangHai
 
 #### Version 1.7.7
 * Opt: 优化系统路由dotweb/state、dotweb/routers展现方式，以方便阅读的表格形式输出
