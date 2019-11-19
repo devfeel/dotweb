@@ -17,6 +17,8 @@ func min(a, b int) int {
 	return b
 }
 
+const maxParamCount uint8 = ^uint8(0)
+
 func countParams(path string) uint8 {
 	var n uint
 	for i := 0; i < len(path); i++ {
@@ -25,8 +27,8 @@ func countParams(path string) uint8 {
 		}
 		n++
 	}
-	if n >= 255 {
-		return 255
+	if n >= uint(maxParamCount) {
+		return maxParamCount
 	}
 	return uint8(n)
 }
@@ -90,7 +92,7 @@ func (n *Node) Middlewares() []Middleware {
 }
 
 // Path return full path in node
-func (n *Node) Path() string{
+func (n *Node) Path() string {
 	return n.fullPath
 }
 
@@ -198,7 +200,12 @@ func (n *Node) addRoute(path string, handle RouterHandle, m ...Middleware) (outn
 						continue walk
 					} else {
 						// Wildcard conflict
-						pathSeg := strings.SplitN(path, "/", 2)[0]
+						var pathSeg string
+						if n.nType == catchAll {
+							pathSeg = path
+						} else {
+							pathSeg = strings.SplitN(path, "/", 2)[0]
+						}
 						prefix := fullPath[:strings.Index(fullPath, pathSeg)] + n.path
 						panic("'" + pathSeg +
 							"' in new path '" + fullPath +
