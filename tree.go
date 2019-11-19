@@ -21,14 +21,11 @@ const maxParamCount uint8 = ^uint8(0)
 
 func countParams(path string) uint8 {
 	var n uint
-	for i := 0; i < len(path); i++ {
-		if path[i] != ':' && path[i] != '*' {
-			continue
+	for i := range []byte(path) {
+		switch path[i] {
+		case ':', '*':
+			n++
 		}
-		n++
-	}
-	if n >= uint(maxParamCount) {
-		return maxParamCount
 	}
 	return uint8(n)
 }
@@ -100,25 +97,24 @@ func (n *Node) Node() *Node {
 	return n
 }
 
-// increments priority of the given child and reorders if necessary
+// Increments priority of the given child and reorders if necessary
 func (n *Node) incrementChildPrio(pos int) int {
-	n.children[pos].priority++
-	prio := n.children[pos].priority
+	cs := n.children
+	cs[pos].priority++
+	prio := cs[pos].priority
 
-	// adjust position (move to front)
+	// Adjust position (move to front)
 	newPos := pos
-	for newPos > 0 && n.children[newPos-1].priority < prio {
-		// swap node positions
-		n.children[newPos-1], n.children[newPos] = n.children[newPos], n.children[newPos-1]
-
-		newPos--
+	for ; newPos > 0 && cs[newPos-1].priority < prio; newPos-- {
+		// Swap node positions
+		cs[newPos-1], cs[newPos] = cs[newPos], cs[newPos-1]
 	}
 
-	// build new index char string
+	// Build new index char string
 	if newPos != pos {
-		n.indices = n.indices[:newPos] + // unchanged prefix, might be empty
-			n.indices[pos:pos+1] + // the index char we move
-			n.indices[newPos:pos] + n.indices[pos+1:] // rest without char at 'pos'
+		n.indices = n.indices[:newPos] + // Unchanged prefix, might be empty
+			n.indices[pos:pos+1] + // The index char we move
+			n.indices[newPos:pos] + n.indices[pos+1:] // Rest without char at 'pos'
 	}
 
 	return newPos
@@ -133,7 +129,7 @@ func (n *Node) addRoute(path string, handle RouterHandle, m ...Middleware) (outn
 	n.priority++
 	numParams := countParams(path)
 
-	// non-empty tree
+	// Non-empty tree
 	if len(n.path) > 0 || len(n.children) > 0 {
 	walk:
 		for {
@@ -217,7 +213,7 @@ func (n *Node) addRoute(path string, handle RouterHandle, m ...Middleware) (outn
 
 				c := path[0]
 
-				// slash after param
+				// Slash after param
 				if n.nType == param && c == '/' && len(n.children) == 1 {
 					n = n.children[0]
 					n.priority++
@@ -267,40 +263,48 @@ func (n *Node) addRoute(path string, handle RouterHandle, m ...Middleware) (outn
 func (n *Node) insertChild(numParams uint8, path, fullPath string, handle RouterHandle, m ...Middleware) *Node {
 	var offset int // already handled bytes of the path
 
-	// find prefix until first wildcard (beginning with ':'' or '*'')
+	// Find prefix until first wildcard (beginning with ':'' or '*'')
 	for i, max := 0, len(path); numParams > 0; i++ {
 		c := path[i]
 		if c != ':' && c != '*' {
 			continue
 		}
 
-		// find wildcard end (either '/' or path end)
+		// Find wildcard end (either '/' or path end) and check the name for
+		// invalid characters
 		end := i + 1
-		for end < max && path[end] != '/' {
-			switch path[end] {
-			// the wildcard name must not contain ':' and '*'
-			case ':', '*':
-				panic("only one wildcard per path segment is allowed, has: '" +
-					path[i:] + "' in path '" + fullPath + "'")
-			default:
-				end++
+		invalid := false
+		for end < max {
+			c := path[end]
+			if c == '/' {
+				break
 			}
+			if c == ':' || c == '*' {
+				invalid = true
+			}
+			end++
 		}
 
-		// check if this Node existing children which would be
+		// The wildcard name must not contain ':' and '*'
+		if invalid {
+			panic("only one wildcard per path segment is allowed, has: '" +
+				path[i:end] + "' in path '" + fullPath + "'")
+		}
+
+		// Check if the wildcard has a name
+		if end-i < 2 {
+			panic("wildcards must be named with a non-empty name in path '" + fullPath + "'")
+		}
+
+		// Check if this node has existing children which would be
 		// unreachable if we insert the wildcard here
 		if len(n.children) > 0 {
 			panic("wildcard route '" + path[i:end] +
 				"' conflicts with existing children in path '" + fullPath + "'")
 		}
 
-		// check if the wildcard has a name
-		if end-i < 2 {
-			panic("wildcards must be named with a non-empty name in path '" + fullPath + "'")
-		}
-
 		if c == ':' { // param
-			// split path at the beginning of the wildcard
+			// Split path at the beginning of the wildcard
 			if i > 0 {
 				n.path = path[offset:i]
 				offset = i
@@ -316,7 +320,7 @@ func (n *Node) insertChild(numParams uint8, path, fullPath string, handle Router
 			n.priority++
 			numParams--
 
-			// if the path doesn't end with the wildcard, then there
+			// If the path doesn't end with the wildcard, then there
 			// will be another non-wildcard subpath starting with '/'
 			if end < max {
 				n.path = path[offset:end]
@@ -353,6 +357,9 @@ func (n *Node) insertChild(numParams uint8, path, fullPath string, handle Router
 				nType:     catchAll,
 				maxParams: 1,
 			}
+			if child.maxParams > n.maxParams {
+				n.maxParams = child.maxParams
+			}
 			n.children = []*Node{child}
 			n.indices = string(path[i])
 			n = child
@@ -373,7 +380,7 @@ func (n *Node) insertChild(numParams uint8, path, fullPath string, handle Router
 		}
 	}
 
-	// insert remaining path part and handle to the leaf
+	// Insert remaining path part and handle to the leaf
 	n.path = path[offset:]
 	n.handle = handle
 	n.Use(m...)
