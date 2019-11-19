@@ -80,7 +80,7 @@ func showRouters(ctx Context) error {
           <th>Method</th>
           <th>Router</th>
         </tr>`
-	html := strings.Replace(core.TableHtml, "{{tableBody}}", core.CreateTableHtml("Routers:"+fmt.Sprint(routerCount), header, data), -1)
+	html := core.CreateTableHtml("Routers:"+fmt.Sprint(routerCount), header, data)
 
 	return ctx.WriteHtml(html)
 }

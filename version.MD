@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+#### Version 1.7.9
+* Opt: optimize html create code
+* Opt: optimize core.CreateTablePart\core.CreateTableHtml\core.CreateHtml
+* 2019-11-20 07:00 at ShangHai
+
 #### Version 1.7.8
 * Opt: optimize tree.go
 * Opt: Fix some panic information when a 'catch-all' wildcard conflict occurs. 
