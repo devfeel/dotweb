@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+#### Version 1.7.9.1
+* Opt: optimize file layout
+* Opt: remove websocket.go\hijack.go\errors.go, add to dotweb.go and context.go
+* 2019-11-23 15:00 at ShangHai
+
 #### Version 1.7.9
 * Opt: optimize html create code
 * Opt: optimize core.CreateTablePart\core.CreateTableHtml\core.CreateHtml

@@ -23,6 +23,14 @@ import (
 	"github.com/devfeel/dotweb/session"
 )
 
+var (
+	// ErrValidatorNotRegistered error for not register Validator
+	ErrValidatorNotRegistered = errors.New("validator not registered")
+
+	// ErrNotFound error for not found file
+	ErrNotFound = errors.New("not found file")
+)
+
 type (
 	DotWeb struct {
 		HttpServer              *HttpServer
@@ -59,6 +67,11 @@ type (
 	// IdGenerater the handler for create Unique Id
 	// default is use dotweb.
 	IdGenerate func() string
+
+	// Validator is the interface that wraps the Validate function.
+	Validator interface {
+		Validate(i interface{}) error
+	}
 )
 
 const (
