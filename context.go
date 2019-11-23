@@ -1,10 +1,13 @@
 package dotweb
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"golang.org/x/net/websocket"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -113,6 +116,17 @@ type (
 		items          core.ConcurrenceMap
 		viewData       core.ConcurrenceMap
 		handler        HttpHandle
+	}
+
+	WebSocket struct {
+		Conn *websocket.Conn
+	}
+
+	// hijack conn
+	HijackConn struct {
+		ReadWriter *bufio.ReadWriter
+		Conn       net.Conn
+		header     string
 	}
 )
 
@@ -612,4 +626,49 @@ func (ctx *HttpContext) WriteJsonpBlob(callback string, b []byte) error {
 	}
 	err = ctx.WriteBlob("", []byte(");"))
 	return err
+}
+
+// Request get http request
+func (ws *WebSocket) Request() *http.Request {
+	return ws.Conn.Request()
+}
+
+// SendMessage send message from websocket.conn
+func (ws *WebSocket) SendMessage(msg string) error {
+	return websocket.Message.Send(ws.Conn, msg)
+}
+
+// ReadMessage read message from websocket.conn
+func (ws *WebSocket) ReadMessage() (string, error) {
+	str := ""
+	err := websocket.Message.Receive(ws.Conn, &str)
+	return str, err
+}
+
+// WriteString hjiack conn write string
+func (hj *HijackConn) WriteString(content string) (int, error) {
+	n, err := hj.ReadWriter.WriteString(hj.header + "\r\n" + content)
+	if err == nil {
+		hj.ReadWriter.Flush()
+	}
+	return n, err
+}
+
+// WriteBlob hjiack conn write []byte
+func (hj *HijackConn) WriteBlob(p []byte) (size int, err error) {
+	size, err = hj.ReadWriter.Write(p)
+	if err == nil {
+		hj.ReadWriter.Flush()
+	}
+	return
+}
+
+// SetHeader hjiack conn write header
+func (hj *HijackConn) SetHeader(key, value string) {
+	hj.header += key + ": " + value + "\r\n"
+}
+
+// Close close hijack conn
+func (hj *HijackConn) Close() error {
+	return hj.Conn.Close()
 }
