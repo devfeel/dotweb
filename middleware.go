@@ -12,32 +12,48 @@ const (
 	middleware_Router = "router"
 )
 
-type MiddlewareFunc func() Middleware
+type (
+	// HttpModule global module in http server
+	// it will be no effect when websocket request or use offline mode
+	HttpModule struct {
+		Name string
+		// OnBeginRequest is the first event in the execution chain
+		OnBeginRequest func(Context)
+		// OnEndRequest is the last event in the execution chain
+		OnEndRequest func(Context)
+	}
 
-// middleware execution priority:
-// app > group > router
+	MiddlewareFunc func() Middleware
 
-// Middleware middleware interface
-type Middleware interface {
-	Handle(ctx Context) error
-	SetNext(m Middleware)
-	Next(ctx Context) error
-	Exclude(routers ...string)
-	HasExclude() bool
-	ExistsExcludeRouter(router string) bool
-}
+	// middleware execution priority:
+	// app > group > router
+	// Middleware middleware interface
+	Middleware interface {
+		Handle(ctx Context) error
+		SetNext(m Middleware)
+		Next(ctx Context) error
+		Exclude(routers ...string)
+		HasExclude() bool
+		ExistsExcludeRouter(router string) bool
+	}
 
-// BaseMiddlware is a shortcut for BaseMiddleware
-// Deprecated: 由于该struct命名有误，将在2.0版本弃用，请大家尽快修改自己的middleware
-type BaseMiddlware struct {
-	BaseMiddleware
-}
+	// BaseMiddlware is a shortcut for BaseMiddleware
+	// Deprecated: 由于该struct命名有误，将在2.0版本弃用，请大家尽快修改自己的middleware
+	BaseMiddlware struct {
+		BaseMiddleware
+	}
 
-// BaseMiddleware is the base struct, user defined middleware should extend this
-type BaseMiddleware struct {
-	next           Middleware
-	excludeRouters map[string]struct{}
-}
+	// BaseMiddleware is the base struct, user defined middleware should extend this
+	BaseMiddleware struct {
+		next           Middleware
+		excludeRouters map[string]struct{}
+	}
+
+	xMiddleware struct {
+		BaseMiddleware
+		IsEnd bool
+	}
+)
 
 func (bm *BaseMiddleware) SetNext(m Middleware) {
 	bm.next = m
@@ -108,9 +124,15 @@ func (bm *BaseMiddleware) ExistsExcludeRouter(router string) bool {
 	return exists
 }
 
-type xMiddleware struct {
-	BaseMiddleware
-	IsEnd bool
+func getIgnoreFaviconModule() *HttpModule {
+	return &HttpModule{
+		Name: "IgnoreFavicon",
+		OnBeginRequest: func(ctx Context) {
+			if ctx.Request().Path() == "/favicon.ico" {
+				ctx.End()
+			}
+		},
+	}
 }
 
 func (x *xMiddleware) Handle(ctx Context) error {

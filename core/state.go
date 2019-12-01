@@ -172,7 +172,7 @@ func (state *ServerStateInfo) ShowHtmlTableData(version, globalUniqueId string) 
           <th>Index</th>
           <th>Value</th>
         </tr>`
-	data = CreateTablePart("Core State", header, data)
+	data = CreateTablePart("", "Core State", header, data)
 
 	//show IntervalRequestData
 	intervalRequestData := ""
@@ -185,7 +185,7 @@ func (state *ServerStateInfo) ShowHtmlTableData(version, globalUniqueId string) 
           <th>Time</th>
           <th>Value</th>
         </tr>`
-	data += CreateTablePart("IntervalRequestData", header, intervalRequestData)
+	data += CreateTablePart("", "IntervalRequestData", header, intervalRequestData)
 
 	//show DetailRequestURLData
 	detailRequestURLData := ""
@@ -198,7 +198,7 @@ func (state *ServerStateInfo) ShowHtmlTableData(version, globalUniqueId string) 
           <th>Url</th>
           <th>Value</th>
         </tr>`
-	data += CreateTablePart("DetailRequestURLData", header, detailRequestURLData)
+	data += CreateTablePart("", "DetailRequestURLData", header, detailRequestURLData)
 	html := CreateHtml(data)
 	return html
 }

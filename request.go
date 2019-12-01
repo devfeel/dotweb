@@ -70,6 +70,12 @@ func (req *Request) QueryString(key string) string {
 	return req.URL.Query().Get(key)
 }
 
+// ExistsQueryKey check is exists from query params with the given key.
+func (req *Request) ExistsQueryKey(key string) bool {
+	_, isExists := req.URL.Query()[key]
+	return isExists
+}
+
 // FormFile get file by form key
 func (req *Request) FormFile(key string) (*UploadFile, error) {
 	file, header, err := req.Request.FormFile(key)
