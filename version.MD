@@ -1,5 +1,12 @@
 ## dotweb版本记录：
 
+#### Version 1.7.10
+* Feature: add Request.ExistsQueryKey used to check is exists from query params with the given key.
+* Opt: optimize file layout, remove module.go
+* Opt: optimize core/htmx implementation
+* Opt: /dotweb/state/interval support pretty mode, you can visit like this: /dotweb/state/interval?pretty
+* 2019-12-01 15:00 at ShangHai
+
 #### Version 1.7.9.1
 * Opt: optimize file layout
 * Opt: remove websocket.go\hijack.go\errors.go, add to dotweb.go and context.go

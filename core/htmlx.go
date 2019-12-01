@@ -2,6 +2,10 @@ package core
 
 import "strings"
 
+var defaultCol = `<colgroup>
+		  <col width="40%">
+		  <col width="60%">
+		</colgroup>`
 var tableHtml = `<html>
 <html><head>
    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -115,38 +119,41 @@ var tableHtml = `<html>
 `
 
 // CreateTablePart create a table part html by replacing flags
-func CreateTablePart(title, header, body string) string {
+func CreateTablePart(col, title, header, body string) string {
 	template := `<br><table class="bordered">
-	<colgroup>
-		  <col width="40%">
-		  <col width="60%">
-		</colgroup>
+		{{col}}
 		<caption>{{title}}</caption>
 	  <thead>
 	 {{header}}
 	  </thead>
 		{{body}}
 	</table>`
-	html := strings.Replace(template, "{{title}}", title, -1)
-	html = strings.Replace(html, "{{header}}", header, -1)
-	html = strings.Replace(html, "{{body}}", body, -1)
-	return html
+	if col == "" {
+		col = defaultCol
+	}
+	data := strings.Replace(template, "{{col}}", col, -1)
+	data = strings.Replace(data, "{{title}}", title, -1)
+	data = strings.Replace(data, "{{header}}", header, -1)
+	data = strings.Replace(data, "{{body}}", body, -1)
+	return data
 }
 
 // CreateTableHtml create a complete page html by replacing {{tableBody}} and table part html
-func CreateTableHtml(title, header, body string) string {
+func CreateTableHtml(col, title, header, body string) string {
 	template := `<br><table class="bordered">
-	<colgroup>
-		  <col width="40%">
-		  <col width="60%">
-		</colgroup>
+		{{col}}
 		<caption>{{title}}</caption>
 	  <thead>
 	 {{header}}
 	  </thead>
 		{{body}}
 	</table>`
-	data := strings.Replace(template, "{{title}}", title, -1)
+
+	if col == "" {
+		col = defaultCol
+	}
+	data := strings.Replace(template, "{{col}}", col, -1)
+	data = strings.Replace(data, "{{title}}", title, -1)
 	data = strings.Replace(data, "{{header}}", header, -1)
 	data = strings.Replace(data, "{{body}}", body, -1)
 	return CreateHtml(data)
