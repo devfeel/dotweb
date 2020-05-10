@@ -1,5 +1,12 @@
 ## dotweb版本记录：
 
+
+#### Version 1.7.11
+* Feature: add Tools include some useful functions
+* Feature: add Tools.PrettyJson used to pretty json format view in text
+* Detail: use ctx.Tools() to use Tools
+* 2020-05-10 15:00 at ShangHai
+
 #### Version 1.7.10
 * Feature: add Request.ExistsQueryKey used to check is exists from query params with the given key.
 * Opt: optimize file layout, remove module.go

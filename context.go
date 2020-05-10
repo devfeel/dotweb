@@ -46,6 +46,7 @@ type (
 		RouterNode() RouterNode
 		RouterParams() Params
 		Handler() HttpHandle
+		Tools() *Tools
 		AppItems() core.ConcurrenceMap
 		Cache() cache.Cache
 		Items() core.ConcurrenceMap
@@ -116,6 +117,7 @@ type (
 		items          core.ConcurrenceMap
 		viewData       core.ConcurrenceMap
 		handler        HttpHandle
+		tools          *Tools
 	}
 
 	WebSocket struct {
@@ -267,6 +269,15 @@ func (ctx *HttpContext) Items() core.ConcurrenceMap {
 		ctx.items = core.NewConcurrenceMap()
 	}
 	return ctx.items
+}
+
+// Tools get tools
+// lazy init when first use
+func (ctx *HttpContext) Tools() *Tools {
+	if ctx.tools == nil {
+		ctx.tools = new(Tools)
+	}
+	return ctx.tools
 }
 
 // AppSetConfig get appset from config file
