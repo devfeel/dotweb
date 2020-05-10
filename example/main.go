@@ -97,7 +97,7 @@ func main() {
 
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	ctx.WriteString(ctx.Request().RemoteIP())
+	ctx.Write(200, []byte(ctx.Request().RemoteIP()))
 	//_, err := ctx.WriteStringC(201, "index => ", ctx.RemoteIP(), "我是首页")
 	return nil
 }
@@ -120,6 +120,18 @@ func IndexReg(ctx dotweb.Context) error {
 	ctx.HttpServer().Logger().Info(dotweb.LogTarget_Default, "test log")
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
 	return ctx.WriteString("welcome to dotweb")
+}
+
+func IndexPretty(ctx dotweb.Context) error {
+	type Result struct {
+		Code    int
+		Message string
+	}
+	result := Result{
+		Code:    200,
+		Message: "Test",
+	}
+	return ctx.WriteString(ctx.Tools().PrettyJson(result))
 }
 
 func ReadPost(ctx dotweb.Context) error {
@@ -172,5 +184,6 @@ func InitRoute(server *dotweb.HttpServer) {
 	server.GET("/returnerr", ReturnError)
 	server.GET("/redirect", Redirect)
 	server.POST("/readpost", ReadPost)
+	server.GET("/pretty", IndexPretty)
 	//server.Router().RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
 }
