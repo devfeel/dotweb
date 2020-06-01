@@ -1,6 +1,11 @@
 ## dotweb版本记录：
 
 
+#### Version 1.7.12
+* fix: fix error when set HttpServer.SetEnabledGzip(true)
+* add Happy 6.1 print
+* 2020-06-01 23:00 at ShangHai
+
 #### Version 1.7.11
 * Feature: add Tools include some useful functions
 * Feature: add Tools.PrettyJson used to pretty json format view in text
