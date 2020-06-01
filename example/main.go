@@ -43,6 +43,8 @@ func main() {
 	//设置Session开关
 	app.HttpServer.SetEnabledSession(true)
 
+	app.HttpServer.SetEnabledGzip(true)
+
 	//set virtual path
 	app.HttpServer.SetVirtualPath("/1")
 

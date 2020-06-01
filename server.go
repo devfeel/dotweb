@@ -532,6 +532,11 @@ func prepareHttpContext(server *HttpServer, w http.ResponseWriter, req *http.Req
 
 // releaseHttpContext release HttpContext, release gzip writer
 func releaseHttpContext(server *HttpServer, httpCtx *HttpContext) {
+	if server.ServerConfig().EnabledGzip {
+		var w io.Writer
+		w = httpCtx.Response().Writer().(*gzipResponseWriter).Writer
+		w.(*gzip.Writer).Close()
+	}
 	// release response
 	httpCtx.Response().release()
 	server.pool.response.Put(httpCtx.Response())
@@ -541,10 +546,4 @@ func releaseHttpContext(server *HttpServer, httpCtx *HttpContext) {
 	// release context
 	httpCtx.release()
 	server.pool.context.Put(httpCtx)
-
-	if server.ServerConfig().EnabledGzip {
-		var w io.Writer
-		w = httpCtx.Response().Writer().(*gzipResponseWriter).Writer
-		w.(*gzip.Writer).Close()
-	}
 }
