@@ -151,6 +151,7 @@ func (n *Node) addRoute(path string, handle RouterHandle, m ...Middleware) (outn
 			if i < len(n.path) {
 				child := Node{
 					path:        n.path[i:],
+					fullPath:    n.fullPath,
 					wildChild:   n.wildChild,
 					nType:       static,
 					indices:     n.indices,
