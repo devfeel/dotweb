@@ -1,6 +1,10 @@
 ## dotweb版本记录：
 
 
+#### Version 1.7.13
+* fix: fixed can not get correct Path which in Post requests
+* 2020-08-11 18:00 at ShangHai
+
 #### Version 1.7.12
 * fix: fix error when set HttpServer.SetEnabledGzip(true)
 * add Happy 6.1 print

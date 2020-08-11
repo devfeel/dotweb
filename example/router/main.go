@@ -43,7 +43,7 @@ func Index(ctx dotweb.Context) error {
 
 func Any(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	return ctx.WriteString("any - " + ctx.Request().Method)
+	return ctx.WriteString("any - " + ctx.Request().Method + " - " + ctx.RouterNode().Path())
 }
 
 func HandlerFunc(w http.ResponseWriter, r *http.Request) {
