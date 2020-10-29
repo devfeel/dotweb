@@ -1,5 +1,10 @@
 package dotweb
 
+import (
+	"reflect"
+	"strings"
+)
+
 type (
 	Group interface {
 		Use(m ...Middleware) Group
@@ -30,9 +35,16 @@ func NewGroup(prefix string, server *HttpServer) Group {
 }
 
 // Use implements `Router#Use()` for sub-routes within the Group.
-func (g *xGroup) Use(m ...Middleware) Group {
-	if len(m) <= 0 {
+func (g *xGroup) Use(ms ...Middleware) Group {
+	if len(ms) <= 0 {
 		return g
+	}
+	// deepcopy middleware structs to avoid middleware chain misbehaving
+	m := []Middleware{}
+	for _, om := range ms {
+		newM := reflect.New(reflect.ValueOf(om).Elem().Type()).Interface().(Middleware)
+		newM.SetNext(nil)
+		m = append(m, newM)
 	}
 	step := len(g.middlewares) - 1
 	for i := range m {
@@ -86,7 +98,6 @@ func (g *xGroup) PUT(path string, h HttpHandle) RouterNode {
 func (g *xGroup) ServerFile(path string, fileroot string) RouterNode {
 	g.allRouterExpress[RouteMethod_GET+routerExpressSplit+g.prefix+path] = struct{}{}
 	node := g.server.Router().ServerFile(g.prefix+path, fileroot)
-	node.Node().groupMiddlewares = g.middlewares
 	return node
 }
 
@@ -96,12 +107,11 @@ func (g *xGroup) Group(prefix string, m ...Middleware) Group {
 }
 
 func (g *xGroup) RegisterRoute(method, path string, handler HttpHandle) RouterNode {
-	return g.add(method, path, handler)
+	return g.add(strings.ToUpper(method), path, handler)
 }
 
 func (g *xGroup) add(method, path string, handler HttpHandle) RouterNode {
 	node := g.server.Router().RegisterRoute(method, g.prefix+path, handler)
 	g.allRouterExpress[method+routerExpressSplit+g.prefix+path] = struct{}{}
-	node.Node().groupMiddlewares = g.middlewares
 	return node
 }

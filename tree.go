@@ -150,15 +150,17 @@ func (n *Node) addRoute(path string, handle RouterHandle, m ...Middleware) (outn
 			// Split edge
 			if i < len(n.path) {
 				child := Node{
-					path:        n.path[i:],
-					fullPath:    n.fullPath,
-					wildChild:   n.wildChild,
-					nType:       static,
-					indices:     n.indices,
-					children:    n.children,
-					handle:      n.handle,
-					priority:    n.priority - 1,
-					middlewares: n.middlewares,
+					path:             n.path[i:],
+					fullPath:         n.fullPath,
+					wildChild:        n.wildChild,
+					nType:            static,
+					indices:          n.indices,
+					children:         n.children,
+					handle:           n.handle,
+					priority:         n.priority - 1,
+					middlewares:      n.middlewares,
+					groupMiddlewares: n.groupMiddlewares,
+					appMiddlewares:   n.appMiddlewares,
 				}
 
 				// Update maxParams (max of all children)
@@ -172,8 +174,12 @@ func (n *Node) addRoute(path string, handle RouterHandle, m ...Middleware) (outn
 				// []byte for proper unicode char conversion, see #65
 				n.indices = string([]byte{n.path[i]})
 				n.path = path[:i]
+				n.fullPath = n.path
 				n.handle = nil
 				n.wildChild = false
+				n.middlewares = nil
+				n.groupMiddlewares = nil
+				n.appMiddlewares = nil
 			}
 
 			// Make new node a child of this node
