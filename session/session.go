@@ -40,6 +40,8 @@ type (
 		ServerIP        string // if use redis, connection string, like "redis://:password@10.0.1.11:6379/0"
 		BackupServerUrl string // if use redis, if ServerIP is down, use this server, like "redis://:password@10.0.1.11:6379/0"
 		StoreKeyPre     string // if use redis, set custom redis key-pre; default is dotweb:session:
+		MaxIdle         int    // if use redis, set MaxIdle; default is 10
+		MaxActive       int    // if use redis, set MaxActive; default is 50
 	}
 
 	SessionManager struct {
@@ -71,27 +73,29 @@ func GetSessionStore(config *StoreConfig) SessionStore {
 
 // NewDefaultRuntimeConfig create new store with default config and use runtime store
 func NewDefaultRuntimeConfig() *StoreConfig {
-	return NewStoreConfig(SessionMode_Runtime, DefaultSessionMaxLifeTime, "", "")
+	return NewStoreConfig(SessionMode_Runtime, DefaultSessionMaxLifeTime, "", "", 0, 0)
 }
 
 // NewDefaultRedisConfig create new store with default config and use redis store
 func NewDefaultRedisConfig(serverIp string) *StoreConfig {
-	return NewStoreConfig(SessionMode_Redis, DefaultSessionMaxLifeTime, serverIp, "")
+	return NewRedisConfig(serverIp, DefaultSessionMaxLifeTime, "", 0, 0)
 }
 
 // NewRedisConfig create new store with config and use redis store
 // must set serverIp and storeKeyPre
-func NewRedisConfig(serverIp string, storeKeyPre string) *StoreConfig {
-	return NewStoreConfig(SessionMode_Redis, DefaultSessionMaxLifeTime, serverIp, storeKeyPre)
+func NewRedisConfig(serverIp string, maxlifetime int64, storeKeyPre string, maxIdle int, maxActive int) *StoreConfig {
+	return NewStoreConfig(SessionMode_Redis, maxlifetime, serverIp, storeKeyPre, maxIdle, maxActive)
 }
 
 // NewStoreConfig create new store config
-func NewStoreConfig(storeName string, maxlifetime int64, serverIp string, storeKeyPre string) *StoreConfig {
+func NewStoreConfig(storeName string, maxlifetime int64, serverIp string, storeKeyPre string, maxIdle int, maxActive int) *StoreConfig {
 	return &StoreConfig{
 		StoreName:   storeName,
 		Maxlifetime: maxlifetime,
 		ServerIP:    serverIp,
 		StoreKeyPre: storeKeyPre,
+		MaxIdle:     maxIdle,
+		MaxActive:   maxActive,
 	}
 }
 

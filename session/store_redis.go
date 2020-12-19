@@ -23,6 +23,8 @@ type RedisStore struct {
 	serverIp        string // connection string, like "redis://:password@10.0.1.11:6379/0"
 	backupServerUrl string // backup connection string, like "redis://:password@10.0.1.11:6379/0"
 	storeKeyPre     string // set custom redis key-pre; default is dotweb:session:
+	maxIdle         int    // set MaxIdle; default is 10
+	maxActive       int    // set MaxActive; default is 20
 }
 
 // create new redis store
@@ -32,6 +34,8 @@ func NewRedisStore(config *StoreConfig) (*RedisStore, error) {
 		serverIp:        config.ServerIP,
 		backupServerUrl: config.BackupServerUrl,
 		maxlifetime:     config.Maxlifetime,
+		maxIdle:         config.MaxIdle,
+		maxActive:       config.MaxActive,
 	}
 	store.hystrix = hystrix.NewHystrix(store.checkRedisAlive, nil)
 	store.hystrix.SetMaxFailedNumber(HystrixErrorCount)
@@ -134,7 +138,7 @@ func (store *RedisStore) SessionUpdate(state *SessionState) error {
 
 // SessionRemove delete session state in store
 func (store *RedisStore) SessionRemove(sessionId string) error {
-	redisClient := redisutil.GetRedisClient(store.serverIp)
+	redisClient := redisutil.GetRedisClient(store.serverIp, store.maxIdle, store.maxActive)
 	key := store.getRedisKey(sessionId)
 	_, err := redisClient.Del(key)
 	if store.checkConnErrorAndNeedRetry(err) {
@@ -166,11 +170,11 @@ func (store *RedisStore) getRedisClient() *redisutil.RedisClient {
 }
 
 func (store *RedisStore) getDefaultRedis() *redisutil.RedisClient {
-	return redisutil.GetRedisClient(store.serverIp)
+	return redisutil.GetRedisClient(store.serverIp, store.maxIdle, store.maxActive)
 }
 
 func (store *RedisStore) getBackupRedis() *redisutil.RedisClient {
-	return redisutil.GetRedisClient(store.backupServerUrl)
+	return redisutil.GetRedisClient(store.backupServerUrl, store.maxIdle, store.maxActive)
 }
 
 // checkConnErrorAndNeedRetry check err is Conn error and is need to retry

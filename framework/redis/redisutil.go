@@ -21,7 +21,9 @@ var (
 )
 
 const (
-	defaultTimeout = 60 * 10 // defaults to 10 minutes
+	defaultTimeout   = 60 * 10 // defaults to 10 minutes
+	defaultMaxIdle   = 10
+	defaultMaxActive = 50
 )
 
 func init() {
@@ -31,11 +33,11 @@ func init() {
 
 // returns new connection pool
 // redisURL: connection string, like "redis:// :password@10.0.1.11:6379/0"
-func newPool(redisURL string) *redis.Pool {
+func newPool(redisURL string, maxIdle, maxActive int) *redis.Pool {
 
 	return &redis.Pool{
-		MaxIdle:   5,
-		MaxActive: 20, // max number of connections
+		MaxIdle:   maxIdle,
+		MaxActive: maxActive, // max number of connections
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.DialURL(redisURL)
 			return c, err
@@ -43,15 +45,27 @@ func newPool(redisURL string) *redis.Pool {
 	}
 }
 
-// GetRedisClient returns the RedisClient of specified address
-func GetRedisClient(address string) *RedisClient {
+// GetDefaultRedisClient returns the RedisClient of specified address
+// use default maxIdle & maxActive
+func GetDefaultRedisClient(address string) *RedisClient {
+	return GetRedisClient(address, defaultMaxIdle, defaultMaxActive)
+}
+
+// GetRedisClient returns the RedisClient of specified address & maxIdle & maxActive
+func GetRedisClient(address string, maxIdle, maxActive int) *RedisClient {
+	if maxIdle <= 0 {
+		maxIdle = defaultMaxIdle
+	}
+	if maxActive <= 0 {
+		maxActive = defaultMaxActive
+	}
 	var redis *RedisClient
 	var mok bool
 	mapMutex.RLock()
 	redis, mok = redisMap[address]
 	mapMutex.RUnlock()
 	if !mok {
-		redis = &RedisClient{Address: address, pool: newPool(address)}
+		redis = &RedisClient{Address: address, pool: newPool(address, maxIdle, maxActive)}
 		mapMutex.Lock()
 		redisMap[address] = redis
 		mapMutex.Unlock()
