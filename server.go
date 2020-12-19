@@ -218,6 +218,8 @@ func (server *HttpServer) SetSessionConfig(storeConfig *session.StoreConfig) {
 	server.SessionConfig().BackupServerUrl = storeConfig.BackupServerUrl
 	server.SessionConfig().StoreKeyPre = storeConfig.StoreKeyPre
 	server.SessionConfig().CookieName = storeConfig.CookieName
+	server.SessionConfig().MaxIdle = storeConfig.MaxIdle
+	server.SessionConfig().MaxActive = storeConfig.MaxActive
 	server.DotApp.Logger().Debug("DotWeb:HttpServer SetSessionConfig ["+jsonutil.GetJsonString(storeConfig)+"]", LogTarget_HttpServer)
 }
 
@@ -229,6 +231,8 @@ func (server *HttpServer) InitSessionManager() {
 	storeConfig.ServerIP = server.SessionConfig().ServerIP
 	storeConfig.BackupServerUrl = server.SessionConfig().BackupServerUrl
 	storeConfig.StoreKeyPre = server.SessionConfig().StoreKeyPre
+	storeConfig.MaxIdle = server.SessionConfig().MaxIdle
+	storeConfig.MaxActive = server.SessionConfig().MaxActive
 	storeConfig.CookieName = server.SessionConfig().CookieName
 
 	if server.sessionManager == nil {

@@ -670,7 +670,7 @@ func (app *DotWeb) printDotLogo() {
 	app.Logger().Print(`  / / / / / __ \ / __/| | /| / / / _ \  / __ \`, LogTarget_HttpServer)
 	app.Logger().Print(` / /_/ / / /_/ // /_  | |/ |/ / /  __/ / /_/ /`, LogTarget_HttpServer)
 	app.Logger().Print(`/_____/  \____/ \__/  |__/|__/  \___/ /_.___/`, LogTarget_HttpServer)
-	app.Logger().Print(`                                  Happy 6.1`, LogTarget_HttpServer)
+	app.Logger().Print(`                             Version 1.7.14`, LogTarget_HttpServer)
 }
 
 // Close immediately stops the server.

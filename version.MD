@@ -1,5 +1,20 @@
 ## dotweb版本记录：
 
+#### Version 1.7.14
+* fix: fixed can not set redis maxIdle & maxActive when use redis session, fix for issue #236
+* refactor: add StoreConfig.MaxIdle & StoreConfig.MaxActive set redis maxIdle & maxActive
+* refactor: add redisutil.GetDefaultRedisClient to returns the RedisClient of specified address
+* refactor: update redisutil.GetRedisClient returns the RedisClient of specified address & maxIdle & maxActive
+* opt: set defaultMaxIdle=10, defaultMaxActive=50 when use default redis config
+* How to set redis maxIdle & maxActive when use redis session:
+~~~ go
+sessionConf := session.NewDefaultRedisConfig("redis://xx.xx.xx.xx:6379/0")
+sessionConf.BackupServerUrl = "redis://xx.xx.xx.xx:6379/0"
+sessionConf.CookieName = "dotweb-example.SessionID"
+sessionConf.MaxIdle = 20
+sessionConf.MaxActive = 100
+~~~
+* 2020-12-19 21:00 at ShangHai
 
 #### Version 1.7.13
 * fix: fixed can not get correct Path which in Post requests

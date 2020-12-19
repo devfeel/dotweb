@@ -69,6 +69,8 @@ type (
 		ServerIP        string `xml:"serverip,attr"`        // remote session server url
 		BackupServerUrl string `xml:"backupserverurl,attr"` // backup remote session server url
 		StoreKeyPre     string `xml:"storekeypre,attr"`     // remote session StoreKeyPre
+		MaxIdle         int    `xml:"maxidle,attr"`         // remote session MaxIdle
+		MaxActive       int    `xml:"maxactive,attr"`       // remote session MaxActive
 	}
 
 	// RouterNode dotweb app's router config
