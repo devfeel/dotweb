@@ -139,6 +139,11 @@ type (
 	}
 )
 
+// DefaultContext return new HttpContex{}
+func DefaultContext() Context {
+	return &HttpContext{}
+}
+
 //************* HttpContext public func **********************
 
 // reset response attr

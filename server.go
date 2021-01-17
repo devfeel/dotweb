@@ -64,7 +64,7 @@ func NewHttpServer() *HttpServer {
 			},
 			context: sync.Pool{
 				New: func() interface{} {
-					return &HttpContext{}
+					return DefaultContext()
 				},
 			},
 		},
