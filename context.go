@@ -95,6 +95,13 @@ type (
 		WriteJsonBlobC(code int, b []byte) error
 		WriteJsonp(callback string, i interface{}) error
 		WriteJsonpBlob(callback string, b []byte) error
+
+		//inner func
+		getMiddlewareStep() string
+		setMiddlewareStep(step string)
+		release()
+		reset(res *Response, r *Request, server *HttpServer, node RouterNode, params Params, handler HttpHandle)
+		setSessionID(id string)
 	}
 
 	HttpContext struct {
@@ -131,6 +138,8 @@ type (
 		header     string
 	}
 )
+
+//************* HttpContext public func **********************
 
 // reset response attr
 func (ctx *HttpContext) reset(res *Response, r *Request, server *HttpServer, node RouterNode, params Params, handler HttpHandle) {
@@ -639,6 +648,25 @@ func (ctx *HttpContext) WriteJsonpBlob(callback string, b []byte) error {
 	return err
 }
 
+//**************** HttpContext inner func ************************
+
+// setMiddlewareStep
+func (ctx *HttpContext) setMiddlewareStep(step string) {
+	ctx.middlewareStep = step
+}
+
+// getMiddlewareStep
+func (ctx *HttpContext) getMiddlewareStep() string {
+	return ctx.middlewareStep
+}
+
+// setSessionID
+func (ctx *HttpContext) setSessionID(id string) {
+	ctx.sessionID = id
+}
+
+//************* WebSocket public func **********************
+
 // Request get http request
 func (ws *WebSocket) Request() *http.Request {
 	return ws.Conn.Request()
@@ -655,6 +683,8 @@ func (ws *WebSocket) ReadMessage() (string, error) {
 	err := websocket.Message.Receive(ws.Conn, &str)
 	return str, err
 }
+
+//************* HijackConn public func **********************
 
 // WriteString hjiack conn write string
 func (hj *HijackConn) WriteString(content string) (int, error) {

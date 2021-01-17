@@ -12,7 +12,7 @@ var maxBodySize int64 = 32 << 20 // 32 MB
 
 type Request struct {
 	*http.Request
-	httpCtx    *HttpContext
+	httpCtx    Context
 	postBody   []byte
 	realUrl    string
 	isReadBody bool
@@ -20,13 +20,13 @@ type Request struct {
 }
 
 // reset response attr
-func (req *Request) reset(r *http.Request, ctx *HttpContext) {
+func (req *Request) reset(r *http.Request, ctx Context) {
 	req.httpCtx = ctx
 	req.Request = r
 	req.isReadBody = false
 	if ctx.HttpServer().ServerConfig().EnabledRequestID {
 		req.requestID = ctx.HttpServer().DotApp.IDGenerater()
-		ctx.response.SetHeader(HeaderRequestID, req.requestID)
+		ctx.Response().SetHeader(HeaderRequestID, req.requestID)
 	} else {
 		req.requestID = ""
 	}
@@ -151,14 +151,14 @@ func (req *Request) PostString(key string) string {
 func (req *Request) PostBody() []byte {
 	if !req.isReadBody {
 		if req.httpCtx != nil {
-			switch req.httpCtx.httpServer.DotApp.Config.Server.MaxBodySize {
+			switch req.httpCtx.HttpServer().DotApp.Config.Server.MaxBodySize {
 			case -1:
 				break
 			case 0:
-				req.Body = http.MaxBytesReader(req.httpCtx.response.Writer(), req.Body, maxBodySize)
+				req.Body = http.MaxBytesReader(req.httpCtx.Response().Writer(), req.Body, maxBodySize)
 				break
 			default:
-				req.Body = http.MaxBytesReader(req.httpCtx.response.Writer(), req.Body, req.httpApp().Config.Server.MaxBodySize)
+				req.Body = http.MaxBytesReader(req.httpCtx.Response().Writer(), req.Body, req.httpApp().Config.Server.MaxBodySize)
 				break
 			}
 		}

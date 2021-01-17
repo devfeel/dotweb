@@ -498,7 +498,7 @@ func prepareHttpContext(server *HttpServer, w http.ResponseWriter, req *http.Req
 	// get from pool
 	response := server.pool.response.Get().(*Response)
 	request := server.pool.request.Get().(*Request)
-	httpCtx := server.pool.context.Get().(*HttpContext)
+	httpCtx := server.pool.context.Get().(Context)
 	httpCtx.reset(response, request, server, nil, nil, nil)
 	response.reset(w)
 	request.reset(req, httpCtx)
@@ -509,9 +509,9 @@ func prepareHttpContext(server *HttpServer, w http.ResponseWriter, req *http.Req
 	if httpCtx.HttpServer().SessionConfig().EnabledSession {
 		sessionId, err := httpCtx.HttpServer().GetSessionManager().GetClientSessionID(httpCtx.Request().Request)
 		if err == nil && sessionId != "" {
-			httpCtx.sessionID = sessionId
+			httpCtx.setSessionID(sessionId)
 		} else {
-			httpCtx.sessionID = httpCtx.HttpServer().GetSessionManager().NewSessionID()
+			httpCtx.setSessionID(httpCtx.HttpServer().GetSessionManager().NewSessionID())
 			cookie := &http.Cookie{
 				Name:  httpCtx.HttpServer().sessionManager.StoreConfig().CookieName,
 				Value: url.QueryEscape(httpCtx.SessionID()),
@@ -531,11 +531,11 @@ func prepareHttpContext(server *HttpServer, w http.ResponseWriter, req *http.Req
 		httpCtx.Response().SetHeader(HeaderContentEncoding, gzipScheme)
 	}
 
-	return httpCtx
+	return httpCtx.(*HttpContext)
 }
 
 // releaseHttpContext release HttpContext, release gzip writer
-func releaseHttpContext(server *HttpServer, httpCtx *HttpContext) {
+func releaseHttpContext(server *HttpServer, httpCtx Context) {
 	if server.ServerConfig().EnabledGzip {
 		var w io.Writer
 		w = httpCtx.Response().Writer().(*gzipResponseWriter).Writer
