@@ -102,12 +102,17 @@ type (
 		release()
 		reset(res *Response, r *Request, server *HttpServer, node RouterNode, params Params, handler HttpHandle)
 		setSessionID(id string)
+		setRouterParams(params Params)
+		setRouterNode(node RouterNode)
+		setHandler(handler HttpHandle)
+		getCancel() context.CancelFunc
+		setCancel(cancel context.CancelFunc)
 	}
 
 	HttpContext struct {
 		context context.Context
 		// Reserved
-		cancle         context.CancelFunc
+		cancel         context.CancelFunc
 		middlewareStep string
 		request        *Request
 		routerNode     RouterNode
@@ -193,7 +198,7 @@ func (ctx *HttpContext) Context() context.Context {
 // set Context & cancle
 // withvalue RequestID
 func (ctx *HttpContext) SetTimeoutContext(timeout time.Duration) context.Context {
-	ctx.context, ctx.cancle = context.WithTimeout(context.Background(), timeout)
+	ctx.context, ctx.cancel = context.WithTimeout(context.Background(), timeout)
 	ctx.context = context.WithValue(ctx.context, "RequestID", ctx.Request().RequestID())
 	return ctx.context
 }
@@ -668,6 +673,31 @@ func (ctx *HttpContext) getMiddlewareStep() string {
 // setSessionID
 func (ctx *HttpContext) setSessionID(id string) {
 	ctx.sessionID = id
+}
+
+// setRouterParams
+func (ctx *HttpContext) setRouterParams(params Params) {
+	ctx.routerParams = params
+}
+
+// setRouterNode
+func (ctx *HttpContext) setRouterNode(node RouterNode) {
+	ctx.routerNode = node
+}
+
+// setHandler
+func (ctx *HttpContext) setHandler(handler HttpHandle) {
+	ctx.handler = handler
+}
+
+// getCancel return context.CancelFunc
+func (ctx *HttpContext) getCancel() context.CancelFunc {
+	return ctx.cancel
+}
+
+// setCancel
+func (ctx *HttpContext) setCancel(cancel context.CancelFunc) {
+	ctx.cancel = cancel
 }
 
 //************* WebSocket public func **********************
