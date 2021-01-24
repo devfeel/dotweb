@@ -1,5 +1,33 @@
 ## dotweb版本记录：
 
+####Version 1.7.15
+* tip: replace *HttpContext to Context interface，used to implementation custom Context in dotweb
+* feature: add ContextCreater func() Context & HttpServer.SetContextCreater
+* refactor: update *HttpContext to Context interface in HttpServer & Middleware & Request
+* refactor: add defaultContextCreater used to create Context with HttpContext when HttpServer.ServeHTTP
+* example code: example/main.go
+* How to use SetContextCreater:
+~~~
+// define
+type testContext struct {
+	dotweb.HttpContext
+	TestInfo string
+}
+
+func testContextCreater() dotweb.Context {
+	return &testContext{TestInfo:"Test"}
+}
+
+// set into dotweb
+app.HttpServer.SetContextCreater(testContextCreater)
+
+// use in router
+func OutputTestInfo(ctx dotweb.Context) error {
+	return ctx.WriteString(ctx.(*testContext).TestInfo)
+}
+~~~
+* 2021-01-24 18:00 at ShangHai
+
 #### Version 1.7.14
 * fix: fixed can not set redis maxIdle & maxActive when use redis session, fix for issue #236
 * refactor: add StoreConfig.MaxIdle & StoreConfig.MaxActive set redis maxIdle & maxActive
