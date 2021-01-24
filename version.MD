@@ -12,7 +12,7 @@
 * refactor: add defaultContextCreater used to create Context with HttpContext when HttpServer.ServeHTTP
 * example code: example/main.go
 * How to use SetContextCreater:
-~~~
+~~~ go
 // define
 type testContext struct {
 	dotweb.HttpContext
