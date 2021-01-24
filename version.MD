@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+####Version 1.7.16
+* Bug fix: fix middleware chain misbehaving in netsed groups
+* Tips: for issue #234, thanks for @live's code
+* 2021-01-24 22:00 at ShangHai
+
 ####Version 1.7.15
 * tip: replace *HttpContext to Context interface，used to implementation custom Context in dotweb
 * feature: add ContextCreater func() Context & HttpServer.SetContextCreater
