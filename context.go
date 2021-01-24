@@ -144,8 +144,8 @@ type (
 	}
 )
 
-// DefaultContext return new HttpContex{}
-func DefaultContext() Context {
+// defaultContextCreater return new HttpContex{}
+func defaultContextCreater() Context {
 	return &HttpContext{}
 }
 

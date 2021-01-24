@@ -37,6 +37,9 @@ func main() {
 	app.SetDevelopmentMode()
 	app.SetProductionMode()
 
+	//设置自定义Context
+	app.HttpServer.SetContextCreater(testContextCreater)
+
 	//设置gzip开关
 	//app.HttpServer.SetEnabledGzip(true)
 
@@ -99,7 +102,7 @@ func main() {
 
 func Index(ctx dotweb.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-	ctx.Write(200, []byte(ctx.Request().RemoteIP()))
+	ctx.Write(200, []byte(ctx.Request().RemoteIP()+" "+ctx.(*testContext).TestInfo))
 	//_, err := ctx.WriteStringC(201, "index => ", ctx.RemoteIP(), "我是首页")
 	return nil
 }
@@ -116,6 +119,10 @@ func Time(ctx dotweb.Context) error {
 		//ctx.WriteString(t.Sub(time.Now()) > 5*time.Minute)
 	}
 	return nil
+}
+
+func OutputTestInfo(ctx dotweb.Context) error {
+	return ctx.WriteString(ctx.(*testContext).TestInfo)
 }
 
 func IndexReg(ctx dotweb.Context) error {
@@ -188,4 +195,13 @@ func InitRoute(server *dotweb.HttpServer) {
 	server.POST("/readpost", ReadPost)
 	server.GET("/pretty", IndexPretty)
 	//server.Router().RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
+}
+
+type testContext struct {
+	dotweb.HttpContext
+	TestInfo string
+}
+
+func testContextCreater() dotweb.Context {
+	return &testContext{TestInfo: "Test"}
 }
