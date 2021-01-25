@@ -60,26 +60,25 @@ func (bm *BaseMiddleware) SetNext(m Middleware) {
 }
 
 func (bm *BaseMiddleware) Next(ctx Context) error {
-	httpCtx := ctx.(*HttpContext)
-	if httpCtx.middlewareStep == "" {
-		httpCtx.middlewareStep = middleware_App
+	if ctx.getMiddlewareStep() == "" {
+		ctx.setMiddlewareStep(middleware_App)
 	}
 	if bm.next == nil {
-		if httpCtx.middlewareStep == middleware_App {
-			httpCtx.middlewareStep = middleware_Group
-			if len(httpCtx.RouterNode().GroupMiddlewares()) > 0 {
-				return httpCtx.RouterNode().GroupMiddlewares()[0].Handle(ctx)
+		if ctx.getMiddlewareStep() == middleware_App {
+			ctx.setMiddlewareStep(middleware_Group)
+			if len(ctx.RouterNode().GroupMiddlewares()) > 0 {
+				return ctx.RouterNode().GroupMiddlewares()[0].Handle(ctx)
 			}
 		}
-		if httpCtx.middlewareStep == middleware_Group {
-			httpCtx.middlewareStep = middleware_Router
-			if len(httpCtx.RouterNode().Middlewares()) > 0 {
-				return httpCtx.RouterNode().Middlewares()[0].Handle(ctx)
+		if ctx.getMiddlewareStep() == middleware_Group {
+			ctx.setMiddlewareStep(middleware_Router)
+			if len(ctx.RouterNode().Middlewares()) > 0 {
+				return ctx.RouterNode().Middlewares()[0].Handle(ctx)
 			}
 		}
 
-		if httpCtx.middlewareStep == middleware_Router {
-			return httpCtx.Handler()(ctx)
+		if ctx.getMiddlewareStep() == middleware_Router {
+			return ctx.Handler()(ctx)
 		}
 	} else {
 		// check exclude config
@@ -136,12 +135,11 @@ func getIgnoreFaviconModule() *HttpModule {
 }
 
 func (x *xMiddleware) Handle(ctx Context) error {
-	httpCtx := ctx.(*HttpContext)
-	if httpCtx.middlewareStep == "" {
-		httpCtx.middlewareStep = middleware_App
+	if ctx.getMiddlewareStep() == "" {
+		ctx.setMiddlewareStep(middleware_App)
 	}
 	if x.IsEnd {
-		return httpCtx.Handler()(ctx)
+		return ctx.Handler()(ctx)
 	}
 	return x.Next(ctx)
 }

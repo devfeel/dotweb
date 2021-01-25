@@ -37,6 +37,7 @@ type (
 		sessionManager *session.SessionManager
 		lock_session   *sync.RWMutex
 		pool           *pool
+		contextCreater ContextCreater
 		binder         Binder
 		render         Renderer
 		offline        bool
@@ -47,30 +48,34 @@ type (
 		response sync.Pool
 		context  sync.Pool
 	}
+
+	ContextCreater func() Context
 )
 
 func NewHttpServer() *HttpServer {
 	server := &HttpServer{
-		pool: &pool{
-			response: sync.Pool{
-				New: func() interface{} {
-					return &Response{}
-				},
-			},
-			request: sync.Pool{
-				New: func() interface{} {
-					return &Request{}
-				},
-			},
-			context: sync.Pool{
-				New: func() interface{} {
-					return &HttpContext{}
-				},
+
+		Modules:        make([]*HttpModule, 0),
+		lock_session:   new(sync.RWMutex),
+		binder:         newBinder(),
+		contextCreater: defaultContextCreater,
+	}
+	server.pool = &pool{
+		response: sync.Pool{
+			New: func() interface{} {
+				return &Response{}
 			},
 		},
-		Modules:      make([]*HttpModule, 0),
-		lock_session: new(sync.RWMutex),
-		binder:       newBinder(),
+		request: sync.Pool{
+			New: func() interface{} {
+				return &Request{}
+			},
+		},
+		context: sync.Pool{
+			New: func() interface{} {
+				return server.contextCreater()
+			},
+		},
 	}
 	// setup router
 	server.router = NewRouter(server)
@@ -97,10 +102,22 @@ func (server *HttpServer) SetBinder(binder Binder) {
 	server.binder = binder
 }
 
+// SetContextCreater
+func (server *HttpServer) SetContextCreater(creater ContextCreater) {
+	server.contextCreater = creater
+	server.pool.context = sync.Pool{
+		New: func() interface{} {
+			return server.contextCreater()
+		},
+	}
+	server.DotApp.Logger().Debug("DotWeb:HttpServer SetContextCreater()", LogTarget_HttpServer)
+}
+
 // ListenAndServe listens on the TCP network address srv.Addr and then
 // calls Serve to handle requests on incoming connections.
 func (server *HttpServer) ListenAndServe(addr string) error {
 	server.stdServer.Addr = addr
+
 	server.DotApp.Logger().Debug("DotWeb:HttpServer ListenAndServe ["+addr+"]", LogTarget_HttpServer)
 	return server.stdServer.ListenAndServe()
 }
@@ -494,11 +511,11 @@ func checkIsDebugRequest(req *http.Request) bool {
 }
 
 // prepareHttpContext init HttpContext, init session & gzip config on HttpContext
-func prepareHttpContext(server *HttpServer, w http.ResponseWriter, req *http.Request) *HttpContext {
+func prepareHttpContext(server *HttpServer, w http.ResponseWriter, req *http.Request) Context {
 	// get from pool
 	response := server.pool.response.Get().(*Response)
 	request := server.pool.request.Get().(*Request)
-	httpCtx := server.pool.context.Get().(*HttpContext)
+	httpCtx := server.pool.context.Get().(Context)
 	httpCtx.reset(response, request, server, nil, nil, nil)
 	response.reset(w)
 	request.reset(req, httpCtx)
@@ -509,9 +526,9 @@ func prepareHttpContext(server *HttpServer, w http.ResponseWriter, req *http.Req
 	if httpCtx.HttpServer().SessionConfig().EnabledSession {
 		sessionId, err := httpCtx.HttpServer().GetSessionManager().GetClientSessionID(httpCtx.Request().Request)
 		if err == nil && sessionId != "" {
-			httpCtx.sessionID = sessionId
+			httpCtx.setSessionID(sessionId)
 		} else {
-			httpCtx.sessionID = httpCtx.HttpServer().GetSessionManager().NewSessionID()
+			httpCtx.setSessionID(httpCtx.HttpServer().GetSessionManager().NewSessionID())
 			cookie := &http.Cookie{
 				Name:  httpCtx.HttpServer().sessionManager.StoreConfig().CookieName,
 				Value: url.QueryEscape(httpCtx.SessionID()),
@@ -535,7 +552,7 @@ func prepareHttpContext(server *HttpServer, w http.ResponseWriter, req *http.Req
 }
 
 // releaseHttpContext release HttpContext, release gzip writer
-func releaseHttpContext(server *HttpServer, httpCtx *HttpContext) {
+func releaseHttpContext(server *HttpServer, httpCtx Context) {
 	if server.ServerConfig().EnabledGzip {
 		var w io.Writer
 		w = httpCtx.Response().Writer().(*gzipResponseWriter).Writer

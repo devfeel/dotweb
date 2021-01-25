@@ -1,5 +1,7 @@
 package dotweb
 
+import "reflect"
+
 type (
 	Group interface {
 		Use(m ...Middleware) Group
@@ -30,9 +32,17 @@ func NewGroup(prefix string, server *HttpServer) Group {
 }
 
 // Use implements `Router#Use()` for sub-routes within the Group.
-func (g *xGroup) Use(m ...Middleware) Group {
-	if len(m) <= 0 {
+func (g *xGroup) Use(ms ...Middleware) Group {
+	if len(ms) <= 0 {
 		return g
+	}
+
+	// deepcopy middleware structs to avoid middleware chain misbehaving
+	m := []Middleware{}
+	for _, om := range ms {
+		newM := reflect.New(reflect.ValueOf(om).Elem().Type()).Interface().(Middleware)
+		newM.SetNext(nil)
+		m = append(m, newM)
 	}
 	step := len(g.middlewares) - 1
 	for i := range m {

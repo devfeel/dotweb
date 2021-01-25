@@ -52,6 +52,11 @@ func Index(ctx dotweb.Context) error {
 	return err
 }
 
+func ShowMiddlewares(ctx dotweb.Context) error {
+	err := ctx.WriteString("ShowMiddlewares  => ", ctx.RouterNode().GroupMiddlewares())
+	return err
+}
+
 func InitRoute(server *dotweb.HttpServer) {
 	server.Router().GET("/", Index)
 	server.Router().GET("/index", Index)
@@ -59,9 +64,20 @@ func InitRoute(server *dotweb.HttpServer) {
 	server.Router().GET("/v1/machines/queryIP2", Index)
 	server.Router().GET("/use", Index).Use(NewAccessFmtLog("Router-use"))
 
-	g := server.Group("/group").Use(NewAccessFmtLog("group")).Use(NewSimpleAuth("admin"))
+	/*g := server.Group("/group").Use(NewAccessFmtLog("group")).Use(NewSimpleAuth("admin"))
 	g.GET("/", Index)
-	g.GET("/use", Index).Use(NewAccessFmtLog("group-use"))
+	g.GET("/use", Index).Use(NewAccessFmtLog("group-use"))*/
+
+	g := server.Group("/A").Use(NewAGroup())
+	g.GET("/", ShowMiddlewares)
+	g1 := g.Group("/B").Use(NewBGroup())
+	g1.GET("/", ShowMiddlewares)
+	g2 := g.Group("/C").Use(NewCGroup())
+	g2.GET("/", ShowMiddlewares)
+
+	g = server.Group("/B").Use(NewBGroup())
+	g.GET("/", ShowMiddlewares)
+
 }
 
 func InitModule(dotserver *dotweb.HttpServer) {
@@ -121,4 +137,46 @@ func (m *SimpleAuth) Handle(ctx dotweb.Context) error {
 
 func NewSimpleAuth(exactToken string) *SimpleAuth {
 	return &SimpleAuth{exactToken: exactToken}
+}
+
+type AGroup struct {
+	dotweb.BaseMiddleware
+}
+
+func (m *AGroup) Handle(ctx dotweb.Context) error {
+	fmt.Println(time.Now(), "[AGroup] request)")
+	err := m.Next(ctx)
+	return err
+}
+
+func NewAGroup() *AGroup {
+	return &AGroup{}
+}
+
+type BGroup struct {
+	dotweb.BaseMiddleware
+}
+
+func (m *BGroup) Handle(ctx dotweb.Context) error {
+	fmt.Println(time.Now(), "[BGroup] request)")
+	err := m.Next(ctx)
+	return err
+}
+
+func NewBGroup() *BGroup {
+	return &BGroup{}
+}
+
+type CGroup struct {
+	dotweb.BaseMiddleware
+}
+
+func (m *CGroup) Handle(ctx dotweb.Context) error {
+	fmt.Println(time.Now(), "[CGroup] request)")
+	err := m.Next(ctx)
+	return err
+}
+
+func NewCGroup() *CGroup {
+	return &CGroup{}
 }

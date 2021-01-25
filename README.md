@@ -23,7 +23,7 @@ go get github.com/devfeel/dotweb
 ```
 
 ## 2. Getting Started
-```go
+``` go
 package main
 
 import (
@@ -58,6 +58,7 @@ func main() {
 * Feature支持，可绑定HttpServer全局启用
 * 支持STRING/JSON/JSONP/HTML格式输出
 * 集成Mock能力
+* 支持自定义Context
 * 集成Timeout Hook
 * 全局HTTP错误处理
 * 全局日志处理
@@ -103,26 +104,26 @@ cpu | 内存 | Samples | Average | Median | 90%Line | 95%Line | 99%Line | Min | 
 * 支持通过配置开启默认添加HEAD方式
 * 支持注册Handler，以启用配置化
 * 支持检查请求与指定路由是否匹配
-```go
-1、Router.GET(path string, handle HttpHandle)
-2、Router.POST(path string, handle HttpHandle)
-3、Router.HEAD(path string, handle HttpHandle)
-4、Router.OPTIONS(path string, handle HttpHandle)
-5、Router.PUT(path string, handle HttpHandle)
-6、Router.PATCH(path string, handle HttpHandle)
-7、Router.DELETE(path string, handle HttpHandle)
-8、Router.HiJack(path string, handle HttpHandle)
-9、Router.WebSocket(path string, handle HttpHandle)
-10、Router.Any(path string, handle HttpHandle)
-11、Router.RegisterRoute(routeMethod string, path string, handle HttpHandle)
-12、Router.RegisterHandler(name string, handler HttpHandle)
-13、Router.GetHandler(name string) (HttpHandle, bool)
-14、Router.MatchPath(ctx Context, routePath string) bool
+``` go
+Router.GET(path string, handle HttpHandle)
+Router.POST(path string, handle HttpHandle)
+Router.HEAD(path string, handle HttpHandle)
+Router.OPTIONS(path string, handle HttpHandle)
+Router.PUT(path string, handle HttpHandle)
+Router.PATCH(path string, handle HttpHandle)
+Router.DELETE(path string, handle HttpHandle)
+Router.HiJack(path string, handle HttpHandle)
+Router.WebSocket(path string, handle HttpHandle)
+Router.Any(path string, handle HttpHandle)
+Router.RegisterRoute(routeMethod string, path string, handle HttpHandle)
+Router.RegisterHandler(name string, handler HttpHandle)
+Router.GetHandler(name string) (HttpHandle, bool)
+Router.MatchPath(ctx Context, routePath string) bool
 ```
 接受两个参数，一个是URI路径，另一个是 HttpHandle 类型，设定匹配到该路径时执行的方法；
 #### 2) static router
 静态路由语法就是没有任何参数变量，pattern是一个固定的字符串。
-```go
+``` go
 package main
 
 import (
@@ -141,7 +142,7 @@ test：
 curl http://127.0.0.1/hello
 #### 3) parameter router
 参数路由以冒号 : 后面跟一个字符串作为参数名称，可以通过 HttpContext的 GetRouterName 方法获取路由参数的值。
-```go
+``` go
 package main
 
 import (
@@ -165,7 +166,7 @@ test：
 <br>curl http://127.0.0.1/hello/devfeel
 <br>curl http://127.0.0.1/hello/category1/1
 #### 4) group router
-```go
+``` go
     g := server.Group("/user")
 	g.GET("/", Index)
 	g.GET("/profile", Profile)
@@ -178,7 +179,7 @@ test：
 ## 6. Binder
 * HttpContext.Bind(interface{})
 * Support data from json、xml、Form
-```go
+``` go
 type UserInfo struct {
 		UserName string `form:"user"`
 		Sex      int    `form:"sex"`
@@ -213,7 +214,7 @@ func TestBind(ctx dotweb.HttpContext) error{
 * Recover
 * HeaderOverride
 
-```go
+``` go
 app.Use(NewAccessFmtLog("app"))
 
 func InitRoute(server *dotweb.HttpServer) {
@@ -286,13 +287,13 @@ func NewAccessFmtLog(index string) *AccessFmtLog {
 #### 500 error
 * Default: 当发生未处理异常时，会根据RunMode向页面输出默认错误信息或者具体异常信息，并返回 500 错误头
 * User-defined: 通过DotServer.SetExceptionHandle(handler *ExceptionHandle)实现自定义异常处理逻辑
-```go
+``` go
 type ExceptionHandle func(Context, error)
 ```
 #### 404 error
 * Default: 当发生404异常时，会默认使用http.NotFound处理
 * User-defined: 通过DotWeb.SetNotFoundHandle(handler NotFoundHandle)实现自定义404处理逻辑
-```go
+``` go
 type NotFoundHandle  func(http.ResponseWriter, *http.Request)
 ```
 
