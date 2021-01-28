@@ -2,8 +2,8 @@ package cryptos
 
 import (
 	"crypto/md5"
-	"math/rand"
 	"encoding/hex"
+	"math/rand"
 	"time"
 )
 
@@ -17,7 +17,7 @@ func GetMd5String(s string) string {
 // GetRandString returns randominzed string with given length
 func GetRandString(length int) string {
 	bytes := []byte("0123456789abcdefghijklmnopqrstuvwxyz")
-	result := []byte{}
+	result := make([]byte, 0, length)
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for i := 0; i < length; i++ {
 		result = append(result, bytes[r.Intn(len(bytes))])
