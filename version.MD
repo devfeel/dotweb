@@ -1,5 +1,9 @@
 ## dotweb版本记录：
 
+####Version 1.7.17
+* Bug fix: fix GetRandString return same result
+* 2021-01-29 08:00 at ShangHai
+
 ####Version 1.7.16
 * Bug fix: fix middleware chain misbehaving in netsed groups
 * Tips: for issue #234, thanks for @live's code
