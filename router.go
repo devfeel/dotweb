@@ -56,7 +56,7 @@ func init() {
 type (
 	// Router is the interface that wraps the router method.
 	Router interface {
-		ServeHTTP(ctx *HttpContext)
+		ServeHTTP(ctx Context)
 		ServerFile(path string, fileRoot string) RouterNode
 		RegisterServerFile(routeMethod string, path string, fileRoot string, excludeExtension []string) RouterNode
 		GET(path string, handle HttpHandle) RouterNode
@@ -127,7 +127,7 @@ type (
 	// Handle is a function that can be registered to a route to handle HTTP
 	// requests. Like http.HandlerFunc, but has a third parameter for the values of
 	// wildcards (variables).
-	RouterHandle func(ctx *HttpContext)
+	RouterHandle func(ctx Context)
 
 	// Param is a single URL parameter, consisting of a key and a value.
 	Param struct {
@@ -201,14 +201,14 @@ func (r *router) getNode(httpMethod string, routePath string) *Node {
 }
 
 // ServeHTTP makes the router implement the http.Handler interface.
-func (r *router) ServeHTTP(ctx *HttpContext) {
+func (r *router) ServeHTTP(ctx Context) {
 	req := ctx.Request().Request
 	w := ctx.Response().Writer()
 	path := req.URL.Path
 	if root := r.Nodes[req.Method]; root != nil {
 		if handle, ps, node, tsr := root.getValue(path); handle != nil {
-			ctx.routerParams = ps
-			ctx.routerNode = node
+			ctx.setRouterParams(ps)
+			ctx.setRouterNode(node)
 			handle(ctx)
 			return
 		} else if req.Method != "CONNECT" && path != "/" {
@@ -511,8 +511,8 @@ func (r *router) allowed(path, reqMethod string) (allow string) {
 
 // wrap HttpHandle to RouterHandle
 func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandle {
-	return func(httpCtx *HttpContext) {
-		httpCtx.handler = handler
+	return func(httpCtx Context) {
+		httpCtx.setHandler(handler)
 
 		// hijack handling
 		if isHijack {
@@ -553,15 +553,15 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 			}
 
 			// cancle Context
-			if httpCtx.cancle != nil {
-				httpCtx.cancle()
+			if httpCtx.getCancel() != nil {
+				httpCtx.getCancel()()
 			}
 		}()
 
 		// do mock, special, mock will ignore all middlewares
 		if r.server.DotApp.Mock != nil && r.server.DotApp.Mock.CheckNeedMock(httpCtx) {
 			r.server.DotApp.Mock.Do(httpCtx)
-			if httpCtx.isEnd {
+			if httpCtx.IsEnd() {
 				return
 			}
 		}
@@ -569,8 +569,8 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 		// process user defined handle
 		var ctxErr error
 
-		if len(httpCtx.routerNode.AppMiddlewares()) > 0 {
-			ctxErr = httpCtx.routerNode.AppMiddlewares()[0].Handle(httpCtx)
+		if len(httpCtx.RouterNode().AppMiddlewares()) > 0 {
+			ctxErr = httpCtx.RouterNode().AppMiddlewares()[0].Handle(httpCtx)
 		} else {
 			ctxErr = handler(httpCtx)
 		}
@@ -589,13 +589,13 @@ func (r *router) wrapRouterHandle(handler HttpHandle, isHijack bool) RouterHandl
 
 // wrap fileHandler to RouterHandle
 func (r *router) wrapFileHandle(fileHandler http.Handler, excludeExtension []string) RouterHandle {
-	return func(httpCtx *HttpContext) {
-		httpCtx.handler = transferStaticFileHandler(fileHandler, excludeExtension)
+	return func(httpCtx Context) {
+		httpCtx.setHandler(transferStaticFileHandler(fileHandler, excludeExtension))
 		startTime := time.Now()
 		httpCtx.Request().realUrl = httpCtx.Request().URL.String()
 		httpCtx.Request().URL.Path = httpCtx.RouterParams().ByName("filepath")
-		if httpCtx.HttpServer().ServerConfig().EnabledStaticFileMiddleware && len(httpCtx.routerNode.AppMiddlewares()) > 0 {
-			ctxErr := httpCtx.routerNode.AppMiddlewares()[0].Handle(httpCtx)
+		if httpCtx.HttpServer().ServerConfig().EnabledStaticFileMiddleware && len(httpCtx.RouterNode().AppMiddlewares()) > 0 {
+			ctxErr := httpCtx.RouterNode().AppMiddlewares()[0].Handle(httpCtx)
 			if ctxErr != nil {
 				if r.server.DotApp.ExceptionHandler != nil {
 					r.server.DotApp.ExceptionHandler(httpCtx, ctxErr)

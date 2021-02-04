@@ -1,5 +1,57 @@
 ## dotweb版本记录：
 
+####Version 1.7.17
+* Bug fix: fix GetRandString return same result
+* 2021-01-29 08:00 at ShangHai
+
+####Version 1.7.16
+* Bug fix: fix middleware chain misbehaving in netsed groups
+* Tips: for issue #234, thanks for @live's code
+* 2021-01-24 22:00 at ShangHai
+
+####Version 1.7.15
+* tip: replace *HttpContext to Context interface，used to implementation custom Context in dotweb
+* feature: add ContextCreater func() Context & HttpServer.SetContextCreater
+* refactor: update *HttpContext to Context interface in HttpServer & Middleware & Request
+* refactor: add defaultContextCreater used to create Context with HttpContext when HttpServer.ServeHTTP
+* example code: example/main.go
+* How to use SetContextCreater:
+~~~ go
+// define
+type testContext struct {
+	dotweb.HttpContext
+	TestInfo string
+}
+
+func testContextCreater() dotweb.Context {
+	return &testContext{TestInfo:"Test"}
+}
+
+// set into dotweb
+app.HttpServer.SetContextCreater(testContextCreater)
+
+// use in router
+func OutputTestInfo(ctx dotweb.Context) error {
+	return ctx.WriteString(ctx.(*testContext).TestInfo)
+}
+~~~
+* 2021-01-24 18:00 at ShangHai
+
+#### Version 1.7.14
+* fix: fixed can not set redis maxIdle & maxActive when use redis session, fix for issue #236
+* refactor: add StoreConfig.MaxIdle & StoreConfig.MaxActive set redis maxIdle & maxActive
+* refactor: add redisutil.GetDefaultRedisClient to returns the RedisClient of specified address
+* refactor: update redisutil.GetRedisClient returns the RedisClient of specified address & maxIdle & maxActive
+* opt: set defaultMaxIdle=10, defaultMaxActive=50 when use default redis config
+* How to set redis maxIdle & maxActive when use redis session:
+~~~ go
+sessionConf := session.NewDefaultRedisConfig("redis://xx.xx.xx.xx:6379/0")
+sessionConf.BackupServerUrl = "redis://xx.xx.xx.xx:6379/0"
+sessionConf.CookieName = "dotweb-example.SessionID"
+sessionConf.MaxIdle = 20
+sessionConf.MaxActive = 100
+~~~
+* 2020-12-19 21:00 at ShangHai
 
 #### Version 1.7.13
 * fix: fixed can not get correct Path which in Post requests

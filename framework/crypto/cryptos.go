@@ -1,12 +1,15 @@
 package cryptos
 
 import (
+	"bytes"
 	"crypto/md5"
+	"crypto/rand"
 	"encoding/hex"
 	"math/rand"
 	"time"
 
 	"github.com/devfeel/dotweb/framework/convert"
+	"math/big"
 )
 
 // GetMd5String compute the md5 sum as string
@@ -18,11 +21,14 @@ func GetMd5String(s string) string {
 
 // GetRandString returns randominzed string with given length
 func GetRandString(length int) string {
-	bytes := []byte("0123456789abcdefghijklmnopqrstuvwxyz")
-	result := make([]byte, 0, length)
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	var container string
+	var str = "0123456789abcdefghijklmnopqrstuvwxyz"
+	b := bytes.NewBufferString(str)
+	len := b.Len()
+	bigInt := big.NewInt(int64(len))
 	for i := 0; i < length; i++ {
-		result = append(result, bytes[r.Intn(len(bytes))])
+		randomInt, _ := rand.Int(rand.Reader, bigInt)
+		container += string(str[randomInt.Int64()])
 	}
-	return convert.Bytes2String(result)
+	return container
 }

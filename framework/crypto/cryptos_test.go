@@ -17,6 +17,13 @@ func Test_GetMd5String_1(t *testing.T) {
 
 func Test_GetRandString(t *testing.T) {
 	randStr := GetRandString(12)
-	t.Log("GetRandString:", randStr)
-	test.Equal(t, 12, len(randStr))
+	rand1 := GetRandString(12)
+	rand2 := GetRandString(12)
+	rand3 := GetRandString(12)
+	if rand1 == rand2 || rand2 == rand3 || rand1 == rand3 {
+		t.Error("rand result is same")
+	} else {
+		t.Log("GetRandString:", randStr)
+		test.Equal(t, 12, len(randStr))
+	}
 }

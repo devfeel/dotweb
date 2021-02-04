@@ -95,12 +95,24 @@ type (
 		WriteJsonBlobC(code int, b []byte) error
 		WriteJsonp(callback string, i interface{}) error
 		WriteJsonpBlob(callback string, b []byte) error
+
+		//inner func
+		getMiddlewareStep() string
+		setMiddlewareStep(step string)
+		release()
+		reset(res *Response, r *Request, server *HttpServer, node RouterNode, params Params, handler HttpHandle)
+		setSessionID(id string)
+		setRouterParams(params Params)
+		setRouterNode(node RouterNode)
+		setHandler(handler HttpHandle)
+		getCancel() context.CancelFunc
+		setCancel(cancel context.CancelFunc)
 	}
 
 	HttpContext struct {
 		context context.Context
 		// Reserved
-		cancle         context.CancelFunc
+		cancel         context.CancelFunc
 		middlewareStep string
 		request        *Request
 		routerNode     RouterNode
@@ -131,6 +143,13 @@ type (
 		header     string
 	}
 )
+
+// defaultContextCreater return new HttpContex{}
+func defaultContextCreater() Context {
+	return &HttpContext{}
+}
+
+//************* HttpContext public func **********************
 
 // reset response attr
 func (ctx *HttpContext) reset(res *Response, r *Request, server *HttpServer, node RouterNode, params Params, handler HttpHandle) {
@@ -179,7 +198,7 @@ func (ctx *HttpContext) Context() context.Context {
 // set Context & cancle
 // withvalue RequestID
 func (ctx *HttpContext) SetTimeoutContext(timeout time.Duration) context.Context {
-	ctx.context, ctx.cancle = context.WithTimeout(context.Background(), timeout)
+	ctx.context, ctx.cancel = context.WithTimeout(context.Background(), timeout)
 	ctx.context = context.WithValue(ctx.context, "RequestID", ctx.Request().RequestID())
 	return ctx.context
 }
@@ -639,6 +658,50 @@ func (ctx *HttpContext) WriteJsonpBlob(callback string, b []byte) error {
 	return err
 }
 
+//**************** HttpContext inner func ************************
+
+// setMiddlewareStep
+func (ctx *HttpContext) setMiddlewareStep(step string) {
+	ctx.middlewareStep = step
+}
+
+// getMiddlewareStep
+func (ctx *HttpContext) getMiddlewareStep() string {
+	return ctx.middlewareStep
+}
+
+// setSessionID
+func (ctx *HttpContext) setSessionID(id string) {
+	ctx.sessionID = id
+}
+
+// setRouterParams
+func (ctx *HttpContext) setRouterParams(params Params) {
+	ctx.routerParams = params
+}
+
+// setRouterNode
+func (ctx *HttpContext) setRouterNode(node RouterNode) {
+	ctx.routerNode = node
+}
+
+// setHandler
+func (ctx *HttpContext) setHandler(handler HttpHandle) {
+	ctx.handler = handler
+}
+
+// getCancel return context.CancelFunc
+func (ctx *HttpContext) getCancel() context.CancelFunc {
+	return ctx.cancel
+}
+
+// setCancel
+func (ctx *HttpContext) setCancel(cancel context.CancelFunc) {
+	ctx.cancel = cancel
+}
+
+//************* WebSocket public func **********************
+
 // Request get http request
 func (ws *WebSocket) Request() *http.Request {
 	return ws.Conn.Request()
@@ -655,6 +718,8 @@ func (ws *WebSocket) ReadMessage() (string, error) {
 	err := websocket.Message.Receive(ws.Conn, &str)
 	return str, err
 }
+
+//************* HijackConn public func **********************
 
 // WriteString hjiack conn write string
 func (hj *HijackConn) WriteString(content string) (int, error) {
