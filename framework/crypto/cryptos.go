@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"math/rand"
 	"time"
+
+	"github.com/devfeel/dotweb/framework/convert"
 )
 
 // GetMd5String compute the md5 sum as string
@@ -22,5 +24,5 @@ func GetRandString(length int) string {
 	for i := 0; i < length; i++ {
 		result = append(result, bytes[r.Intn(len(bytes))])
 	}
-	return string(result)
+	return convert.Bytes2String(result)
 }

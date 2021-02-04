@@ -1,47 +1,43 @@
 package uuid
 
 import (
+	"bytes"
 	"crypto/md5"
+	"crypto/rand"
 	"crypto/sha1"
 	"database/sql/driver"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"hash"
+	"net"
 	"os"
 	"sync"
 	"time"
-)
 
-// Copyright (C) 2013-2015 by Maxim Bublis <b@codemonkey.ru>
-//
-// Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to
-// permit persons to whom the Software is furnished to do so, subject to
-// the following conditions:
-//
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// Package uuid provides implementation of Universally Unique Identifier (UUID).
-// Supported versions are 1, 3, 4 and 5 (as specified in RFC 4122) and
-// version 2 (as specified in DCE 1.1).
-
-import (
-	"bytes"
-	"crypto/rand"
-	"encoding/binary"
-	"net"
+	"github.com/devfeel/dotweb/framework/convert" // Copyright (C) 2013-2015 by Maxim Bublis <b@codemonkey.ru>
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining
+	// a copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to
+	// permit persons to whom the Software is furnished to do so, subject to
+	// the following conditions:
+	//
+	// The above copyright notice and this permission notice shall be
+	// included in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+	// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+	// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+	// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+	// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+	// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+	// Package uuid provides implementation of Universally Unique Identifier (UUID).
+	// Supported versions are 1, 3, 4 and 5 (as specified in RFC 4122) and
+	// version 2 (as specified in DCE 1.1).
 )
 
 // UUID layout variants.
@@ -211,7 +207,7 @@ func (u UUID) String() string {
 	buf[23] = dash
 	hex.Encode(buf[24:], u[10:])
 
-	return string(buf)
+	return convert.Bytes2String(buf)
 }
 
 // String32 return uuid with 32 len
@@ -221,7 +217,7 @@ func (u UUID) String32() string {
 
 	hex.Encode(buf[0:], u[0:])
 
-	return string(buf)
+	return convert.Bytes2String(buf)
 }
 
 // SetVersion sets version bits.
