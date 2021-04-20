@@ -40,7 +40,11 @@ func (g *xGroup) Use(ms ...Middleware) Group {
 	// deepcopy middleware structs to avoid middleware chain misbehaving
 	m := []Middleware{}
 	for _, om := range ms {
-		newM := reflect.New(reflect.ValueOf(om).Elem().Type()).Interface().(Middleware)
+		//newM := reflect.New(reflect.ValueOf(om).Elem().Type()).Interface().(Middleware)
+		newElem := reflect.New(reflect.TypeOf(om).Elem())
+		newElem.Elem().Set(reflect.ValueOf(om).Elem())
+		newM := newElem.Interface().(Middleware)
+
 		newM.SetNext(nil)
 		m = append(m, newM)
 	}

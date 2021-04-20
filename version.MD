@@ -1,5 +1,9 @@
 ## dotweb版本记录：
 
+####Version 1.7.18
+* Bug fix: fix deepcopy middleware not success
+* 2021-04-20 13:00 at ShangHai
+
 ####Version 1.7.17
 * Bug fix: fix GetRandString return same result
 * 2021-01-29 08:00 at ShangHai
