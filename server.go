@@ -2,13 +2,13 @@ package dotweb
 
 import (
 	"compress/gzip"
+	"github.com/devfeel/dotweb/logger"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 	"sync"
-
-	"github.com/devfeel/dotweb/logger"
+	"time"
 
 	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/session"
@@ -84,7 +84,19 @@ func NewHttpServer() *HttpServer {
 }
 
 // initConfig init config from app config
-func (server *HttpServer) initConfig() {
+func (server *HttpServer) initConfig(config *config.Config) {
+	if config.Server.WriteTimeout > 0 {
+		server.stdServer.WriteTimeout = time.Duration(config.Server.WriteTimeout) * time.Millisecond
+	}
+	if config.Server.ReadTimeout > 0 {
+		server.stdServer.ReadTimeout = time.Duration(config.Server.ReadTimeout) * time.Millisecond
+	}
+	if config.Server.ReadHeaderTimeout > 0 {
+		server.stdServer.ReadHeaderTimeout = time.Duration(config.Server.ReadHeaderTimeout) * time.Millisecond
+	}
+	if config.Server.IdleTimeout > 0 {
+		server.stdServer.IdleTimeout = time.Duration(config.Server.IdleTimeout) * time.Millisecond
+	}
 }
 
 // ServerConfig a shortcut for App.Config.ServerConfig
@@ -473,6 +485,31 @@ func (server *HttpServer) SetEnabledDetailRequestData(isEnabled bool) {
 func (server *HttpServer) SetEnabledStaticFileMiddleware(isEnabled bool) {
 	server.ServerConfig().EnabledStaticFileMiddleware = isEnabled
 	server.Logger().Debug("DotWeb:HttpServer SetEnabledStaticFileMiddleware ["+strconv.FormatBool(isEnabled)+"]", LogTarget_HttpServer)
+}
+
+// SetReadTimeout To limit the request's body size to be read with Millisecond
+func (server *HttpServer) SetReadTimeout(readTimeout int64) {
+	server.ServerConfig().ReadTimeout = readTimeout
+	server.Logger().Debug("DotWeb:HttpServer SetReadTimeout ["+strconv.FormatInt(readTimeout, 10)+"]", LogTarget_HttpServer)
+}
+
+// SetReadHeaderTimeout ReadHeaderTimeout is the amount of time allowed to read request headers with Millisecond
+func (server *HttpServer) SetReadHeaderTimeout(readHeaderTimeout int64) {
+	server.ServerConfig().ReadHeaderTimeout = readHeaderTimeout
+	server.Logger().Debug("DotWeb:HttpServer SetReadHeaderTimeout ["+strconv.FormatInt(readHeaderTimeout, 10)+"]", LogTarget_HttpServer)
+}
+
+// SetIdleTimeout IdleTimeout is the maximum amount of time to wait for the next request when keep-alives are enabled with Millisecond
+func (server *HttpServer) SetIdleTimeout(idleTimeout int64) {
+	server.ServerConfig().IdleTimeout = idleTimeout
+	server.Logger().Debug("DotWeb:HttpServer SetIdleTimeout ["+strconv.FormatInt(idleTimeout, 10)+"]", LogTarget_HttpServer)
+}
+
+// SetWriteTimeout WriteTimeout is the maximum duration before timing out
+// writes of the response with Millisecond
+func (server *HttpServer) SetWriteTimeout(writeTimeout int64) {
+	server.ServerConfig().WriteTimeout = writeTimeout
+	server.Logger().Debug("DotWeb:HttpServer SetWriteTimeout ["+strconv.FormatInt(writeTimeout, 10)+"]", LogTarget_HttpServer)
 }
 
 // SetMaxBodySize set body size to limit read
