@@ -1,6 +1,11 @@
 ## dotweb版本记录：
 
-####Version 1.7.18
+
+####Version 1.7.19 
+* feature: add SetReadTimeout\SetReadHeaderTimeout\SetIdleTimeoutSetWriteTimeout func() in HttpServer
+* 2021-04-20 13:00 at ShangHai
+
+####Version 1.7.18 
 * Bug fix: fix deepcopy middleware not success
 * 2021-04-20 13:00 at ShangHai
 

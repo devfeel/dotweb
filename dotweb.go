@@ -433,7 +433,7 @@ func (app *DotWeb) initAppConfig() {
 		app.Config.App.RunMode = RunMode_Development
 	}
 
-	app.HttpServer.initConfig()
+	app.HttpServer.initConfig(app.Config)
 
 	// detailed request metrics
 	if config.Server.EnabledDetailRequestData {

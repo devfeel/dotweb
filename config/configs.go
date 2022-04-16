@@ -57,7 +57,30 @@ type (
 		// default is 32 << 20 (32 mb), MaxBodySize use go runtime default zero value
 		// -1 : unlimted
 		// 0 : use default value
-		MaxBodySize int64 `xml:"MaxBodySize,attr"` // To limit the request's body size to be read
+		MaxBodySize int64 `xml:"MaxBodySize,attr"`
+
+		// To limit the request's body size to be read with Millisecond
+		// ReadTimeout is the maximum duration for reading the entire
+		// request, including the body.
+		ReadTimeout int64 `xml:"ReadTimeout,attr"`
+
+		// ReadHeaderTimeout is the amount of time allowed to read
+		// request headers with Millisecond. The connection's read deadline is reset
+		// after reading the headers and the Handler can decide what
+		// is considered too slow for the body.
+		ReadHeaderTimeout int64 `xml:"ReadHeaderTimeout,attr"`
+
+		// WriteTimeout is the maximum duration before timing out
+		// writes of the response with Millisecond. It is reset whenever a new
+		// request's header is read. Like ReadTimeout, it does not
+		// let Handlers make decisions on a per-request basis.
+		WriteTimeout int64 `xml:"WriteTimeout,attr"`
+
+		// IdleTimeout is the maximum amount of time to wait for the
+		// next request when keep-alives are enabled with Millisecond. If IdleTimeout
+		// is zero, the value of ReadTimeout is used. If both are
+		// zero, ReadHeaderTimeout is used.
+		IdleTimeout int64 `xml:"IdleTimeout,attr"`
 	}
 
 	// SessionNode dotweb app's session config
