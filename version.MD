@@ -1,5 +1,9 @@
 ## dotweb版本记录：
 
+####Version 1.7.20
+* Bug fix: delete minor unreachable code caused by log.Fatal
+* Thanks to @Abirdcfly for PR #248
+* 2022-08-11 17:00 at FuZhou
 
 ####Version 1.7.19 
 * feature: add SetReadTimeout\SetReadHeaderTimeout\SetIdleTimeoutSetWriteTimeout func() in HttpServer
