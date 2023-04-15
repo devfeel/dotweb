@@ -121,6 +121,19 @@ func Time(ctx dotweb.Context) error {
 	return nil
 }
 
+func LogOut(ctx dotweb.Context) error {
+	err := ctx.DestorySession()
+	if err != nil {
+		ctx.WriteString(err)
+		return err
+	}
+	err = ctx.Redirect(http.StatusMovedPermanently, "index?fromlogout")
+	if err != nil {
+		ctx.WriteString(err)
+	}
+	return err
+}
+
 func OutputTestInfo(ctx dotweb.Context) error {
 	return ctx.WriteString(ctx.(*testContext).TestInfo)
 }
@@ -194,6 +207,7 @@ func InitRoute(server *dotweb.HttpServer) {
 	server.GET("/redirect", Redirect)
 	server.POST("/readpost", ReadPost)
 	server.GET("/pretty", IndexPretty)
+	server.GET("/logout", LogOut)
 	//server.Router().RegisterRoute(dotweb.RouteMethod_GET, "/index", IndexReg)
 }
 

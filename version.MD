@@ -1,5 +1,11 @@
 ## dotweb版本记录：
 
+####Version 1.7.21
+* feature: add SessionManager.RemoveSessionState to delete the session state associated with a specific session ID
+* feature: add HttpContext.DestorySession() to delete all contents of the session and set the sessionId to empty
+* For my birthday!
+* 2023-04-15 16:00 at ShangHai
+
 ####Version 1.7.20
 * Bug fix: delete minor unreachable code caused by log.Fatal
 * Thanks to @Abirdcfly for PR #248

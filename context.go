@@ -54,6 +54,7 @@ type (
 		ViewData() core.ConcurrenceMap
 		SessionID() string
 		Session() (state *session.SessionState)
+		DestorySession() error
 		Hijack() (*HijackConn, error)
 		IsHijack() bool
 		IsWebSocket() bool
@@ -299,7 +300,7 @@ func (ctx *HttpContext) Tools() *Tools {
 	return ctx.tools
 }
 
-// AppSetConfig get appset from config file
+// ConfigSet get appset from config file
 // update for issue #16 Config file
 func (ctx *HttpContext) ConfigSet() core.ReadonlyMap {
 	return ctx.HttpServer().DotApp.Config.ConfigSet
@@ -317,15 +318,26 @@ func (ctx *HttpContext) ViewData() core.ConcurrenceMap {
 // Session get session state in current context
 func (ctx *HttpContext) Session() (state *session.SessionState) {
 	if ctx.httpServer == nil {
-		// return nil, errors.New("no effective http-server")
 		panic("no effective http-server")
 	}
 	if !ctx.httpServer.SessionConfig().EnabledSession {
-		// return nil, errors.New("http-server not enabled session")
 		panic("http-server not enabled session")
 	}
 	state, _ = ctx.httpServer.sessionManager.GetSessionState(ctx.sessionID)
 	return state
+}
+
+// DestorySession delete all contents of the session and set the sessionId to empty
+func (ctx *HttpContext) DestorySession() error {
+	if ctx.httpServer != nil {
+		ctx.Session().Clear()
+		if err := ctx.HttpServer().sessionManager.RemoveSessionState(ctx.SessionID()); err != nil {
+			return err
+		}
+		ctx.sessionID = ""
+		ctx.SetCookieValue(session.DefaultSessionCookieName, "", -1)
+	}
+	return nil
 }
 
 // Hijack make current connection to hijack mode
@@ -353,7 +365,7 @@ func (ctx *HttpContext) IsEnd() bool {
 	return ctx.isEnd
 }
 
-// Redirect redirect replies to the request with a redirect to url and with httpcode
+// Redirect replies to the request with a redirect to url and with httpcode
 // default you can use http.StatusFound
 func (ctx *HttpContext) Redirect(code int, targetUrl string) error {
 	return ctx.response.Redirect(code, targetUrl)
