@@ -32,7 +32,7 @@ func NewSessionState(store SessionStore, sessionId string, values map[interface{
 	return state
 }
 
-// Set set key-value to current state
+// Set key-value to current state
 func (state *SessionState) reset(store SessionStore, sessionId string, values map[interface{}]interface{}, accessTime time.Time) {
 	state.values = values
 	state.sessionId = sessionId
@@ -41,7 +41,7 @@ func (state *SessionState) reset(store SessionStore, sessionId string, values ma
 	state.lock = new(sync.RWMutex)
 }
 
-// Set set key-value to current state
+// Set key-value to current state
 func (state *SessionState) Set(key, value interface{}) error {
 	state.lock.Lock()
 	defer state.lock.Unlock()
@@ -50,7 +50,7 @@ func (state *SessionState) Set(key, value interface{}) error {
 
 }
 
-// Get get value by key in current state
+// Get value by key in current state
 func (state *SessionState) Get(key interface{}) interface{} {
 	state.lock.RLock()
 	defer state.lock.RUnlock()
@@ -60,25 +60,25 @@ func (state *SessionState) Get(key interface{}) interface{} {
 	return nil
 }
 
-// Get get value as string by key in current state
+// GetString Get value as string by key in current state
 func (state *SessionState) GetString(key interface{}) string {
 	v := state.Get(key)
 	return fmt.Sprint(v)
 }
 
-// Get get value as int by key in current state
+// GetInt Get value as int by key in current state
 func (state *SessionState) GetInt(key interface{}) int {
 	v, _ := strconv.Atoi(state.GetString(key))
 	return v
 }
 
-// Get get value as int64 by key in current state
+// GetInt64 Get value as int64 by key in current state
 func (state *SessionState) GetInt64(key interface{}) int64 {
 	v, _ := strconv.ParseInt(state.GetString(key), 10, 64)
 	return v
 }
 
-// Remove remove value by key in current state
+// Remove value by key in current state
 func (state *SessionState) Remove(key interface{}) error {
 	state.lock.Lock()
 	defer state.lock.Unlock()
@@ -86,7 +86,7 @@ func (state *SessionState) Remove(key interface{}) error {
 	return nil
 }
 
-// Clear clear all values in current store
+// Clear delete all values in current store
 func (state *SessionState) Clear() error {
 	state.lock.Lock()
 	defer state.lock.Unlock()

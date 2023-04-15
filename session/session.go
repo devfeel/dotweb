@@ -159,6 +159,11 @@ func (manager *SessionManager) GetSessionState(sessionId string) (session *Sessi
 	return session, nil
 }
 
+// RemoveSessionState delete the session state associated with a specific session ID
+func (manager *SessionManager) RemoveSessionState(sessionId string) error {
+	return manager.store.SessionRemove(sessionId)
+}
+
 // GC loop gc session data
 func (manager *SessionManager) GC() {
 	num := manager.store.SessionGC()
