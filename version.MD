@@ -1,5 +1,10 @@
 ## dotweb版本记录：
 
+####Version 1.7.22
+* tip: use strings.Contains instead strings.Index on server.go
+* Thanks for @testwill #253!
+* 2023-12-13 08:00 at ShangHai
+
 ####Version 1.7.21
 * feature: add SessionManager.RemoveSessionState to delete the session state associated with a specific session ID
 * feature: add HttpContext.DestorySession() to delete all contents of the session and set the sessionId to empty
