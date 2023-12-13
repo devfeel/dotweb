@@ -533,7 +533,7 @@ type LogJson struct {
 // check request is the websocket request
 // check Connection contains upgrade
 func checkIsWebSocketRequest(req *http.Request) bool {
-	if strings.Index(strings.ToLower(req.Header.Get("Connection")), "upgrade") >= 0 {
+	if strings.Contains(strings.ToLower(req.Header.Get("Connection")), "upgrade") {
 		return true
 	}
 	return false
