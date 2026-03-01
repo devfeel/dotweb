@@ -29,6 +29,10 @@ const (
 	ItemKeyHandleDuration = "dotweb.HttpContext.HandleDuration"
 )
 
+// ctxKey is a custom type for context keys to avoid staticcheck warnings
+type ctxKey string
+const requestIDKey ctxKey = "RequestID"
+
 const (
 	innerKeyAddView = "inner_AddView"
 )
@@ -200,7 +204,7 @@ func (ctx *HttpContext) Context() context.Context {
 // withvalue RequestID
 func (ctx *HttpContext) SetTimeoutContext(timeout time.Duration) context.Context {
 	ctx.context, ctx.cancel = context.WithTimeout(context.Background(), timeout)
-	ctx.context = context.WithValue(ctx.context, "RequestID", ctx.Request().RequestID())
+	ctx.context = context.WithValue(ctx.context, requestIDKey, ctx.Request().RequestID())
 	return ctx.context
 }
 
@@ -210,7 +214,7 @@ func (ctx *HttpContext) WithContext(runCtx context.Context) {
 		panic("nil context")
 	}
 	ctx.context = runCtx
-	ctx.context = context.WithValue(ctx.context, "RequestID", ctx.Request().RequestID())
+	ctx.context = context.WithValue(ctx.context, requestIDKey, ctx.Request().RequestID())
 }
 
 // HttpServer return HttpServer

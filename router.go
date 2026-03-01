@@ -416,7 +416,7 @@ func (r *router) RegisterServerFile(routeMethod string, path string, fileRoot st
 	var root http.FileSystem
 	root = http.Dir(fileRoot)
 	if !r.server.ServerConfig().EnabledListDir {
-		root = &core.HideReaddirFS{root}
+		root = &core.HideReaddirFS{FileSystem: root}
 	}
 	fileServer := http.FileServer(root)
 	r.add(routeMethod, realPath, r.wrapFileHandle(fileServer, excludeExtension))
@@ -607,7 +607,7 @@ func (r *router) wrapFileHandle(fileHandler http.Handler, excludeExtension []str
 			httpCtx.Handler()(httpCtx)
 		}
 		if r.server.Logger().IsEnabledLog() {
-			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
+			timetaken := int64(time.Since(startTime) / time.Millisecond)
 			r.server.Logger().Debug(httpCtx.Request().Url()+" "+logRequest(httpCtx.Request().Request, timetaken), LogTarget_HttpRequest)
 		}
 	}
@@ -645,7 +645,7 @@ func (r *router) wrapWebSocketHandle(handler HttpHandle) websocket.Handler {
 				// increment error count
 				r.server.StateInfo().AddErrorCount(httpCtx.Request().Path(), fmt.Errorf("%v", err), 1)
 			}
-			timetaken := int64(time.Now().Sub(startTime) / time.Millisecond)
+			timetaken := int64(time.Since(startTime) / time.Millisecond)
 			// HttpServer Logging
 			r.server.Logger().Debug(httpCtx.Request().Url()+" "+logWebsocketContext(httpCtx, timetaken), LogTarget_HttpRequest)
 

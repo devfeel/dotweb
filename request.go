@@ -153,13 +153,10 @@ func (req *Request) PostBody() []byte {
 		if req.httpCtx != nil {
 			switch req.httpCtx.HttpServer().DotApp.Config.Server.MaxBodySize {
 			case -1:
-				break
 			case 0:
 				req.Body = http.MaxBytesReader(req.httpCtx.Response().Writer(), req.Body, maxBodySize)
-				break
 			default:
 				req.Body = http.MaxBytesReader(req.httpCtx.Response().Writer(), req.Body, req.httpApp().Config.Server.MaxBodySize)
-				break
 			}
 		}
 		bts, err := ioutil.ReadAll(req.Body)

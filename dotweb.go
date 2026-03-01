@@ -535,7 +535,7 @@ func (app *DotWeb) initPlugins() {
 func (app *DotWeb) initBindMiddleware() {
 	router := app.HttpServer.Router().(*router)
 	// bind app middlewares
-	for fullExpress, _ := range router.allRouterExpress {
+	for fullExpress := range router.allRouterExpress {
 		expresses := strings.Split(fullExpress, routerExpressSplit)
 		if len(expresses) < 2 {
 			continue
@@ -567,7 +567,7 @@ func (app *DotWeb) initBindMiddleware() {
 		if len(xg.middlewares) <= 0 {
 			continue
 		}
-		for fullExpress, _ := range xg.allRouterExpress {
+		for fullExpress := range xg.allRouterExpress {
 			expresses := strings.Split(fullExpress, routerExpressSplit)
 			if len(expresses) < 2 {
 				continue

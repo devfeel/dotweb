@@ -129,7 +129,6 @@ func (l *xLog) writeLog(chanLog chanLog, level string) {
 	switch level {
 	case "custom":
 		filePath = filePath + "_" + time.Now().Format(defaultDateFormatForFileName) + ".log"
-		break
 	}
 	log := chanLog.Content
 	if !chanLog.isRaw {
@@ -157,10 +156,10 @@ func writeFile(logFile string, log string) {
 	mode = 0666
 	logstr := log + "\r\n"
 	file, err := os.OpenFile(logFile, flag, mode)
-	defer file.Close()
 	if err != nil {
 		fmt.Println(logFile, err)
 		return
 	}
+	defer file.Close()
 	file.WriteString(logstr)
 }
