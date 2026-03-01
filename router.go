@@ -156,7 +156,7 @@ func (ps Params) ByName(name string) string {
 // Path auto-correction, including trailing slashes, is enabled by default.
 func NewRouter(server *HttpServer) *router {
 	return &router{
-		RedirectTrailingSlash: true,
+		RedirectTrailingSlash: false,
 		RedirectFixedPath:     true,
 		HandleOPTIONS:         true,
 		allRouterExpress:      make(map[string]struct{}),
