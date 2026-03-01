@@ -1,7 +1,0 @@
-2026-03-01 16:35:37.2971 [DEBUG] [group.go:30] DotWeb:Group NewGroup [/admin]
-2026-03-01 16:35:37.2974 [DEBUG] [server.go:278] DotWeb:HttpServer InitSessionManager [{"StoreName":"runtime","Maxlifetime":20,"CookieName":"dotweb_sessionId","ServerIP":"","BackupServerUrl":"","StoreKeyPre":"","MaxIdle":0,"MaxActive":0}]
-2026-03-01 16:35:37.2974 [DEBUG] [server.go:409] DotWeb:HttpServer SetRenderer
-2026-03-01 16:35:37.2974 [DEBUG] [dotweb.go:407] DotWeb RunMode is development
-2026-03-01 16:35:37.2974 [DEBUG] [dotweb.go:527] DotWeb initPlugins start run plugin - test
-2026-03-01 16:35:37.2975 [DEBUG] [dotweb.go:527] DotWeb initPlugins start run plugin - NotifyPlugin
-2026-03-01 16:35:37.2975 [DEBUG] [server.go:133] DotWeb:HttpServer ListenAndServe [:8081]
