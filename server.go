@@ -541,7 +541,7 @@ func checkIsWebSocketRequest(req *http.Request) bool {
 
 // check request is startwith /debug/
 func checkIsDebugRequest(req *http.Request) bool {
-	if strings.Index(req.RequestURI, "/debug/") == 0 {
+	if strings.HasPrefix(req.RequestURI, "/debug/") {
 		return true
 	}
 	return false

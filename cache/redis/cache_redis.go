@@ -71,14 +71,8 @@ func (ca *RedisCache) GetInt(key string) (int, error) {
 	v, err := ca.GetString(key)
 	if err != nil || v == "" {
 		return 0, err
-	} else {
-		i, e := strconv.Atoi(v)
-		if e != nil {
-			return 0, err
-		} else {
-			return i, nil
-		}
 	}
+	return strconv.Atoi(v)
 }
 
 //  returns value int64 format by given key
@@ -87,14 +81,8 @@ func (ca *RedisCache) GetInt64(key string) (int64, error) {
 	v, err := ca.GetString(key)
 	if err != nil || v == "" {
 		return ZeroInt64, err
-	} else {
-		i, e := strconv.ParseInt(v, 10, 64)
-		if e != nil {
-			return ZeroInt64, err
-		} else {
-			return i, nil
-		}
 	}
+	return strconv.ParseInt(v, 10, 64)
 }
 
 // Set cache to redis.

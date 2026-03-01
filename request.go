@@ -1,7 +1,7 @@
 package dotweb
 
 import (
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -159,7 +159,7 @@ func (req *Request) PostBody() []byte {
 				req.Body = http.MaxBytesReader(req.httpCtx.Response().Writer(), req.Body, req.httpApp().Config.Server.MaxBodySize)
 			}
 		}
-		bts, err := ioutil.ReadAll(req.Body)
+		bts, err := io.ReadAll(req.Body)
 		if err != nil {
 			//if err, panic it
 			panic(err)

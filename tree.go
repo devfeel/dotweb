@@ -17,7 +17,6 @@ func min(a, b int) int {
 	return b
 }
 
-const maxParamCount uint8 = ^uint8(0)
 
 func countParams(path string) uint8 {
 	var n uint

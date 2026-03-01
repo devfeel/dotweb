@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"

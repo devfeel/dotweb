@@ -66,9 +66,8 @@ func (ca *RuntimeCache) GetString(key string) (string, error) {
 	v, err := ca.Get(key)
 	if err != nil || v == nil {
 		return "", err
-	} else {
-		return fmt.Sprint(v), nil
 	}
+	return fmt.Sprint(v), nil
 }
 
 // returns value int format by given key
@@ -77,14 +76,8 @@ func (ca *RuntimeCache) GetInt(key string) (int, error) {
 	v, err := ca.GetString(key)
 	if err != nil || v == "" {
 		return 0, err
-	} else {
-		i, e := strconv.Atoi(v)
-		if e != nil {
-			return 0, e
-		} else {
-			return i, nil
-		}
 	}
+	return strconv.Atoi(v)
 }
 
 // returns value int64 format by given key
@@ -93,14 +86,8 @@ func (ca *RuntimeCache) GetInt64(key string) (int64, error) {
 	v, err := ca.GetString(key)
 	if err != nil || v == "" {
 		return ZeroInt64, nil
-	} else {
-		i, e := strconv.ParseInt(v, 10, 64)
-		if e != nil {
-			return ZeroInt64, e
-		} else {
-			return i, nil
-		}
 	}
+	return strconv.ParseInt(v, 10, 64)
 }
 
 // Set cache to runtime.
