@@ -216,10 +216,10 @@ func TestRuntimeCache_ConcurrentGetSetError(t *testing.T) {
 	}
 
 	for i := 0; i < 10000; i++ {
-		go func() {
-			cache.Set(TESTCacheKey+strconv.Itoa(i), TESTCacheValue, 0)
+		go func(val int) {
+			cache.Set(TESTCacheKey+strconv.Itoa(val), TESTCacheValue, 0)
 			wg.Done()
-		}()
+		}(i)
 	}
 	wg.Wait()
 }
@@ -232,17 +232,17 @@ func TestRuntimeCache_ConcurrentIncrDecrError(t *testing.T) {
 	wg.Add(2 * 10000)
 
 	for i := 0; i < 10000; i++ {
-		go func() {
-			cache.Incr(TESTCacheKey + strconv.Itoa(i))
+		go func(val int) {
+			cache.Incr(TESTCacheKey + strconv.Itoa(val))
 			wg.Done()
-		}()
+		}(i)
 	}
 
 	for i := 0; i < 10000; i++ {
-		go func() {
-			cache.Decr(TESTCacheKey + strconv.Itoa(i))
+		go func(val int) {
+			cache.Decr(TESTCacheKey + strconv.Itoa(val))
 			wg.Done()
-		}()
+		}(i)
 	}
 	wg.Wait()
 }

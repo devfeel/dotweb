@@ -68,7 +68,6 @@ func GetSessionStore(config *StoreConfig) SessionStore {
 	default:
 		panic("not support session store -> " + config.StoreName)
 	}
-	return nil
 }
 
 // NewDefaultRuntimeConfig create new store with default config and use runtime store
