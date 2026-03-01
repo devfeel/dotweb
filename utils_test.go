@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -112,7 +111,7 @@ func (ho httpWriter) WriteHeader(code int) {
 
 func format(b string) io.ReadCloser {
 	s := strings.NewReader(b)
-	r := ioutil.NopCloser(s)
+	r := io.NopCloser(s)
 	r.Close()
 	return r
 }
