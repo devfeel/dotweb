@@ -20,6 +20,9 @@ const (
 	defaultCheckTimeMinutes = 10
 )
 
+// GlobalState is a global server state instance
+var GlobalState = NewServerStateInfo()
+
 // NewServerStateInfo return ServerStateInfo which is init
 func NewServerStateInfo() *ServerStateInfo {
 	state := &ServerStateInfo{
