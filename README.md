@@ -5,17 +5,66 @@
 # DotWeb
 Simple and easy go web micro framework
 
-Important: Now need go1.9+ version support, and support go mod.
-
-Document: https://www.kancloud.cn/devfeel/dotweb/346608
-
-Guide: https://github.com/devfeel/dotweb/blob/master/docs/GUIDE.md
-
-[![Gitter](https://badges.gitter.im/devfeel/dotweb.svg)](https://gitter.im/devfeel-dotweb/wechat)
-[![GoDoc](https://godoc.org/github.com/devfeel/dotweb?status.svg)](https://godoc.org/github.com/devfeel/dotweb)
+[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go)](https://go.dev)
+[![GoDoc](https://pkg.go.dev/badge/github.com/devfeel/dotweb.svg)](https://pkg.go.dev/github.com/devfeel/dotweb)
 [![Go Report Card](https://goreportcard.com/badge/github.com/devfeel/dotweb)](https://goreportcard.com/report/github.com/devfeel/dotweb)
-[![Go Build Card](https://travis-ci.org/devfeel/dotweb.svg?branch=master)](https://travis-ci.org/devfeel/dotweb.svg?branch=master)
-<a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=836e11667837ad674462a4a97fb21fba487cd3dff5b2e1ca0d7ea4c2324b4574"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="Golang-Devfeel" title="Golang-Devfeel"></a>
+[![Test](https://github.com/devfeel/dotweb/actions/workflows/ci.yml/badge.svg)](https://github.com/devfeel/dotweb/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Release](https://img.shields.io/github/v/release/devfeel/dotweb)](https://github.com/devfeel/dotweb/releases)
+[![Stars](https://img.shields.io/github/stars/devfeel/dotweb?style=social)](https://github.com/devfeel/dotweb/stargazers)
+
+> A lightweight, fast and easy-to-use Go web framework
+
+### Quick Start
+
+```go
+package main
+
+import (
+    "fmt"
+    "github.com/devfeel/dotweb"
+)
+
+func main() {
+    app := dotweb.New()
+    
+    app.HttpServer.GET("/hello", func(ctx dotweb.Context) error {
+        return ctx.WriteString("Hello, World!")
+    })
+    
+    fmt.Println("Server starting on :8080")
+    app.StartServer(8080)
+}
+```
+
+```bash
+go run main.go
+# Visit http://localhost:8080/hello
+```
+
+### Installation
+
+```bash
+go get github.com/devfeel/dotweb
+```
+
+### Key Features
+- **Router**: Static, parameterized, and grouped routes
+- **Middleware**: App, Group, and Router level middleware
+- **Session**: Built-in session with Redis support
+- **Cache**: Multiple cache providers
+- **WebSocket**: Full WebSocket support
+- **TLS**: Built-in HTTPS support
+- **Hot Reload**: Development mode with auto-reload
+
+### Documentation
+- [中文文档](https://www.kancloud.cn/devfeel/dotweb/346608)
+- [English Guide](https://github.com/devfeel/dotweb/blob/master/docs/GUIDE.md)
+- [Examples](https://github.com/devfeel/dotweb-example)
+
+### Community
+[![Gitter](https://badges.gitter.im/devfeel/dotweb.svg)](https://gitter.im/devfeel-dotweb/wechat)
+<a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=836e11673837ad674462a4a97fb21fba487cd3dff5b2e1ca0d7ea4c2324b4574"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="Golang-Devfeel" title="Golang-Devfeel"></a>
 ## 1. Install
 
 ```

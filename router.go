@@ -75,6 +75,7 @@ type (
 		GetHandler(name string) (HttpHandle, bool)
 		MatchPath(ctx Context, routePath string) bool
 		GetAllRouterExpress() map[string]struct{}
+		ExistsRouter(method, path string) bool
 	}
 
 	RouterNode interface {
@@ -692,6 +693,11 @@ func transferStaticFileHandler(fileHandler http.Handler, excludeExtension []stri
 func (r *router) existsRouter(method, path string) bool {
 	_, exists := r.allRouterExpress[method+routerExpressSplit+path]
 	return exists
+}
+
+// ExistsRouter checks if a route exists for the given method and path
+func (r *router) ExistsRouter(method, path string) bool {
+	return r.existsRouter(method, path)
 }
 
 // get default log string

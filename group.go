@@ -117,5 +117,13 @@ func (g *xGroup) add(method, path string, handler HttpHandle) RouterNode {
 	node := g.server.Router().RegisterRoute(method, g.prefix+path, handler)
 	g.allRouterExpress[method+routerExpressSplit+g.prefix+path] = struct{}{}
 	node.Node().groupMiddlewares = g.middlewares
+	
+	// Support AutoOPTIONS for group routes
+	if g.server.ServerConfig().EnabledAutoOPTIONS && method != RouteMethod_OPTIONS && method != RouteMethod_WebSocket {
+		if !g.server.Router().ExistsRouter(RouteMethod_OPTIONS, g.prefix+path) {
+			g.server.Router().RegisterRoute(RouteMethod_OPTIONS, g.prefix+path, DefaultAutoOPTIONSHandler)
+		}
+	}
+	
 	return node
 }
