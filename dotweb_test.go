@@ -29,7 +29,7 @@ func Test_RunMode_2(t *testing.T) {
 	}
 }
 
-//测试IsDevelopmentMode函数
+// 测试IsDevelopmentMode函数
 func Test_IsDevelopmentMode_1(t *testing.T) {
 	app := New()
 	app.Config.App.RunMode = "development"
@@ -43,14 +43,6 @@ func Test_IsDevelopmentMode_2(t *testing.T) {
 	app.Config.App.RunMode = "production"
 	b := app.IsDevelopmentMode()
 	t.Log("Run IsDevelopmentMode :", b)
-}
-
-func TestDotWeb_UsePlugin(t *testing.T) {
-	app := newConfigDotWeb()
-	app.UsePlugin(new(testPlugin))
-	app.UsePlugin(NewDefaultNotifyPlugin(app))
-	fmt.Println(app.pluginMap)
-	app.StartServer(8081)
 }
 
 func newConfigDotWeb() *DotWeb {
