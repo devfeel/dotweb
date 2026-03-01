@@ -19,7 +19,6 @@ type UploadFile struct {
 	fileExt        string // file extensions
 	fileName       string
 	randomFileName string
-	fileSize       int64
 }
 
 func NewUploadFile(file multipart.File, header *multipart.FileHeader) *UploadFile {
