@@ -161,5 +161,5 @@ func writeFile(logFile string, log string) {
 		return
 	}
 	defer file.Close()
-	file.WriteString(logstr)
+	_, _ = file.WriteString(logstr)
 }

@@ -101,7 +101,7 @@ func TestRuntimeCache_Delete(t *testing.T) {
 	test.Nil(t, e)
 	test.Equal(t, TESTCacheValue, value)
 
-	cache.Delete(TESTCacheKey)
+	_, _ = cache.Delete(TESTCacheKey)
 
 	value, e = cache.Get(TESTCacheKey)
 	test.Nil(t, e)
@@ -120,7 +120,7 @@ func TestRuntimeCache_ClearAll(t *testing.T) {
 	}
 	test.Equal(t, TESTCacheValue, val2)
 
-	cache.ClearAll()
+	_, _ = cache.ClearAll()
 	exists2, err := cache.Exists("2")
 	if err != nil {
 		t.Error(err)
@@ -137,7 +137,7 @@ func TestRuntimeCache_Incr(t *testing.T) {
 
 	go func(cache *RuntimeCache) {
 		for i := 0; i < 50; i++ {
-			cache.Incr(TESTCacheKey)
+			_, _ = cache.Incr(TESTCacheKey)
 		}
 
 		wg.Add(-1)
@@ -145,7 +145,7 @@ func TestRuntimeCache_Incr(t *testing.T) {
 
 	go func(cache *RuntimeCache) {
 		for i := 0; i < 50; i++ {
-			cache.Incr(TESTCacheKey)
+			_, _ = cache.Incr(TESTCacheKey)
 		}
 		wg.Add(-1)
 	}(cache)
