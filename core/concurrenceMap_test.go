@@ -72,7 +72,7 @@ func TestItemContext_Current(t *testing.T) {
 func BenchmarkItemContext_Set_1(b *testing.B) {
 	var num uint64 = 1
 	for i := 0; i < b.N; i++ {
-		ic.Set(string(num), num)
+		ic.Set(fmt.Sprintf("%d", num), num)
 	}
 }
 
@@ -81,7 +81,7 @@ func BenchmarkItemContext_Set_Parallel(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		var num uint64 = 1
 		for pb.Next() {
-			ic.Set(string(num), num)
+			ic.Set(fmt.Sprintf("%d", num), num)
 		}
 	})
 }

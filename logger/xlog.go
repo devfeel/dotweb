@@ -162,5 +162,5 @@ func writeFile(logFile string, log string) {
 		fmt.Println(logFile, err)
 		return
 	}
-	file.WriteString(logstr)
+	_, _ = file.WriteString(logstr)
 }

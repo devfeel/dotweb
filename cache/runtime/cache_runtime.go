@@ -106,7 +106,7 @@ func (ca *RuntimeCache) GetInt64(key string) (int64, error) {
 // Set cache to runtime.
 // ttl is second, if ttl is 0, it will be forever till restart.
 func (ca *RuntimeCache) Set(key string, value interface{}, ttl int64) error {
-	ca.initValue(key, value, ttl)
+	_ = ca.initValue(key, value, ttl)
 	return nil
 }
 
@@ -125,7 +125,7 @@ func (ca *RuntimeCache) Incr(key string) (int64, error) {
 	itemObj, ok := ca.items.Load(key)
 	if !ok {
 		// if not exists, auto set new with 0
-		ca.initValue(key, ZeroInt64, 0)
+		_ = ca.initValue(key, ZeroInt64, 0)
 		// reload
 		itemObj, _ = ca.items.Load(key)
 	}
@@ -160,7 +160,7 @@ func (ca *RuntimeCache) Decr(key string) (int64, error) {
 	itemObj, ok := ca.items.Load(key)
 	if !ok {
 		// if not exists, auto set new with 0
-		ca.initValue(key, ZeroInt64, 0)
+		_ = ca.initValue(key, ZeroInt64, 0)
 		// reload
 		itemObj, _ = ca.items.Load(key)
 	}
