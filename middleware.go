@@ -168,7 +168,7 @@ func (m *RequestLogMiddleware) Handle(ctx Context) error {
 		} else {
 			begin = beginVal.(time.Time)
 		}
-		timeTaken = uint64(time.Now().Sub(begin) / time.Millisecond)
+		timeTaken = uint64(time.Since(begin) / time.Millisecond)
 	}
 	log := ctx.Request().Url() + " " + logContext(ctx, timeTaken)
 	ctx.HttpServer().Logger().Debug(log, LogTarget_HttpRequest)
@@ -217,7 +217,7 @@ func (m *TimeoutHookMiddleware) Handle(ctx Context) error {
 	// Do next
 	err := m.Next(ctx)
 	if m.HookHandle != nil {
-		realDuration := time.Now().Sub(begin)
+		realDuration := time.Since(begin)
 		ctx.Items().Set(ItemKeyHandleDuration, realDuration)
 		if realDuration > m.TimeoutDuration {
 			m.HookHandle(ctx)

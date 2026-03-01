@@ -104,7 +104,7 @@ func showQuery(ctx Context) error {
 func showRouters(ctx Context) error {
 	data := ""
 	routerCount := len(ctx.HttpServer().router.GetAllRouterExpress())
-	for k, _ := range ctx.HttpServer().router.GetAllRouterExpress() {
+	for k := range ctx.HttpServer().router.GetAllRouterExpress() {
 		method := strings.Split(k, routerExpressSplit)[0]
 		router := strings.Split(k, routerExpressSplit)[1]
 		data += "<tr><td>" + method + "</td><td>" + router + "</td></tr>"
