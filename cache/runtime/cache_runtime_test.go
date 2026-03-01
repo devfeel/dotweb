@@ -27,7 +27,7 @@ const (
 
 func TestRuntimeCache_Get(t *testing.T) {
 	cache := NewRuntimeCache()
-	cache.Set(TESTCacheKey, TESTCacheValue, 2)
+	_, _ = cache.Set(TESTCacheKey, TESTCacheValue, 2)
 	var wg sync.WaitGroup
 
 	// check value
@@ -75,7 +75,7 @@ func TestRuntimeCache_GetString(t *testing.T) {
 
 func testRuntimeCache(t *testing.T, insertValue interface{}, f func(cache *RuntimeCache, key string) (interface{}, error)) {
 	cache := NewRuntimeCache()
-	cache.Set(TESTCacheKey, insertValue, 2)
+	_, _ = cache.Set(TESTCacheKey, insertValue, 2)
 	var wg sync.WaitGroup
 
 	// check value
@@ -94,14 +94,14 @@ func testRuntimeCache(t *testing.T, insertValue interface{}, f func(cache *Runti
 
 func TestRuntimeCache_Delete(t *testing.T) {
 	cache := NewRuntimeCache()
-	cache.Set(TESTCacheKey, TESTCacheValue, 2)
+	_, _ = cache.Set(TESTCacheKey, TESTCacheValue, 2)
 
 	value, e := cache.Get(TESTCacheKey)
 
 	test.Nil(t, e)
 	test.Equal(t, TESTCacheValue, value)
 
-	cache.Delete(TESTCacheKey)
+	_ = cache.Delete(TESTCacheKey)
 
 	value, e = cache.Get(TESTCacheKey)
 	test.Nil(t, e)
@@ -110,7 +110,7 @@ func TestRuntimeCache_Delete(t *testing.T) {
 
 func TestRuntimeCache_ClearAll(t *testing.T) {
 	cache := NewRuntimeCache()
-	cache.Set(TESTCacheKey, TESTCacheValue, 2)
+	_, _ = cache.Set(TESTCacheKey, TESTCacheValue, 2)
 	cache.Set("2", TESTCacheValue, 2)
 	cache.Set("3", TESTCacheValue, 2)
 
@@ -120,7 +120,7 @@ func TestRuntimeCache_ClearAll(t *testing.T) {
 	}
 	test.Equal(t, TESTCacheValue, val2)
 
-	cache.ClearAll()
+	_, _ = cache.ClearAll()
 	exists2, err := cache.Exists("2")
 	if err != nil {
 		t.Error(err)
@@ -137,7 +137,7 @@ func TestRuntimeCache_Incr(t *testing.T) {
 
 	go func(cache *RuntimeCache) {
 		for i := 0; i < 50; i++ {
-			cache.Incr(TESTCacheKey)
+			_, _ = cache.Incr(TESTCacheKey)
 		}
 
 		wg.Add(-1)
@@ -145,7 +145,7 @@ func TestRuntimeCache_Incr(t *testing.T) {
 
 	go func(cache *RuntimeCache) {
 		for i := 0; i < 50; i++ {
-			cache.Incr(TESTCacheKey)
+			_, _ = cache.Incr(TESTCacheKey)
 		}
 		wg.Add(-1)
 	}(cache)
@@ -188,7 +188,7 @@ func TestRuntimeCache_Decr(t *testing.T) {
 
 func BenchmarkTestRuntimeCache_Get(b *testing.B) {
 	cache := NewRuntimeCache()
-	cache.Set(TESTCacheKey, TESTCacheValue, 200000)
+	_, _ = cache.Set(TESTCacheKey, TESTCacheValue, 200000)
 	for i := 0; i < b.N; i++ {
 		cache.Get(TESTCacheKey)
 	}
@@ -197,13 +197,13 @@ func BenchmarkTestRuntimeCache_Get(b *testing.B) {
 func BenchmarkTestRuntimeCache_Set(b *testing.B) {
 	cache := NewRuntimeCache()
 	for i := 0; i < b.N; i++ {
-		cache.Set(TESTCacheKey+strconv.Itoa(i), TESTCacheValue, 0)
+		_, _ = cache.Set(TESTCacheKey+strconv.Itoa(i), TESTCacheValue, 0)
 	}
 }
 
 func TestRuntimeCache_ConcurrentGetSetError(t *testing.T) {
 	cache := NewRuntimeCache()
-	cache.Set(TESTCacheKey, TESTCacheValue, 200000)
+	_, _ = cache.Set(TESTCacheKey, TESTCacheValue, 200000)
 
 	var wg sync.WaitGroup
 	wg.Add(2 * 10000)
@@ -217,7 +217,7 @@ func TestRuntimeCache_ConcurrentGetSetError(t *testing.T) {
 
 	for i := 0; i < 10000; i++ {
 		go func() {
-			cache.Set(TESTCacheKey+strconv.Itoa(i), TESTCacheValue, 0)
+			_, _ = cache.Set(TESTCacheKey+strconv.Itoa(i), TESTCacheValue, 0)
 			wg.Done()
 		}()
 	}
@@ -226,7 +226,7 @@ func TestRuntimeCache_ConcurrentGetSetError(t *testing.T) {
 
 func TestRuntimeCache_ConcurrentIncrDecrError(t *testing.T) {
 	cache := NewRuntimeCache()
-	cache.Set(TESTCacheKey, TESTCacheValue, 200000)
+	_, _ = cache.Set(TESTCacheKey, TESTCacheValue, 200000)
 
 	var wg sync.WaitGroup
 	wg.Add(2 * 10000)
