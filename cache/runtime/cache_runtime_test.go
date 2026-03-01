@@ -101,7 +101,7 @@ func TestRuntimeCache_Delete(t *testing.T) {
 	test.Nil(t, e)
 	test.Equal(t, TESTCacheValue, value)
 
-	_, _ = cache.Delete(TESTCacheKey)
+	_ = cache.Delete(TESTCacheKey)
 
 	value, e = cache.Get(TESTCacheKey)
 	test.Nil(t, e)
@@ -120,7 +120,7 @@ func TestRuntimeCache_ClearAll(t *testing.T) {
 	}
 	test.Equal(t, TESTCacheValue, val2)
 
-	_, _ = cache.ClearAll()
+	_ = cache.ClearAll()
 	exists2, err := cache.Exists("2")
 	if err != nil {
 		t.Error(err)
