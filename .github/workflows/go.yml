@@ -1,28 +1,26 @@
-name: Go
-on: [push]
+name: Go CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
 jobs:
-
   build:
-    name: Build
+
     runs-on: ubuntu-latest
+
     steps:
+      - uses: actions/checkout@v3
 
-    - name: Set up Go 1.20.1
-      uses: actions/setup-go@v1
-      with:
-        go-version: 1.20.1
-      id: go
+      - name: Set up Go 1.21
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
 
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v1
+      - name: Check out code into the Go module directory
+        run: mkdir -p ./go/src/github.com/ $ GITHUB_REPOSITORY && cp -r ./* ./go/src/github.com/ $ GITHUB_REPOSITORY/
 
-    - name: Get dependencies
-      run: |
-        go get -v -t -d ./...
-        if [ -f Gopkg.toml ]; then
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            dep ensure
-        fi
-
-    - name: Build
-      run: go build -v .
+      - name: Build
+        run: cd ./go/src/github.com/ $ GITHUB_REPOSITORY/ && go build -v ./...
