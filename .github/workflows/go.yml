@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
 
-      - name: Set up Go 1.21
+      - name: Set up Go 1.21.x
         uses: actions/setup-go@v4
         with:
-          go-version: 1.21
+          go-version: 1.21.x
 
       - name: Check out code into the Go module directory
         run: mkdir -p ./go/src/github.com/ $ GITHUB_REPOSITORY && cp -r ./* ./go/src/github.com/ $ GITHUB_REPOSITORY/
