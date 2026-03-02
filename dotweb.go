@@ -639,7 +639,8 @@ func (app *DotWeb) initServerEnvironment() {
 	}
 
 	// start pprof server
-	if app.Config.App.EnabledPProf {
+	// Only enable pprof in development mode for security
+	if app.Config.App.EnabledPProf && app.RunMode() != RunMode_Production {
 		app.Logger().Debug("DotWeb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] Begin", LogTarget_HttpServer)
 		go func() {
 			err := http.ListenAndServe(":"+strconv.Itoa(app.Config.App.PProfPort), nil)

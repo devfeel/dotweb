@@ -9,6 +9,8 @@ import (
 	"github.com/devfeel/dotweb/test"
 )
 
+var GlobalState = NewServerStateInfo()
+
 // function tests
 
 func Test_AddRequestCount_1(t *testing.T) {
