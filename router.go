@@ -415,7 +415,7 @@ func (r *router) RegisterServerFile(routeMethod string, path string, fileRoot st
 	var root http.FileSystem
 	root = http.Dir(fileRoot)
 	if !r.server.ServerConfig().EnabledListDir {
-		root = &core.HideReaddirFS{root}
+		root = &core.HideReaddirFS{FileSystem: root}
 	}
 	fileServer := http.FileServer(root)
 	r.add(routeMethod, realPath, r.wrapFileHandle(fileServer, excludeExtension))
