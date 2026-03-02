@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"strconv"
 	"time"
+	"unsafe"
 )
 
 // String2Bytes convert string to []byte
@@ -49,4 +50,9 @@ func NSToTime(ns int64) (time.Time, error) {
 	}
 	bigNS := big.NewInt(ns)
 	return time.Unix(ns/1e9, int64(bigNS.Mod(bigNS, big.NewInt(1e9)).Uint64())), nil
+}
+
+// Bytes2String converts byte slice to string without copy b.data.
+func Bytes2String(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
 }
