@@ -563,11 +563,10 @@ func (app *DotWeb) initBindMiddleware() {
 
 	// bind group middlewares
 	for _, g := range app.HttpServer.groups {
-		xg := g.(*xGroup)
-		if len(xg.middlewares) <= 0 {
+		if len(g.middlewares) <= 0 {
 			continue
 		}
-		for fullExpress, _ := range xg.allRouterExpress {
+		for fullExpress, _ := range g.allRouterExpress {
 			expresses := strings.Split(fullExpress, routerExpressSplit)
 			if len(expresses) < 2 {
 				continue
@@ -576,7 +575,7 @@ func (app *DotWeb) initBindMiddleware() {
 			if node == nil {
 				continue
 			}
-			node.groupMiddlewares = xg.middlewares
+			node.groupMiddlewares = g.middlewares
 			for _, m := range node.groupMiddlewares {
 				if m.HasExclude() && m.ExistsExcludeRouter(node.fullPath) {
 					app.Logger().Debug("DotWeb initBindMiddleware [group] "+fullExpress+" "+reflect.TypeOf(m).String()+" exclude", LogTarget_HttpServer)
@@ -639,7 +638,8 @@ func (app *DotWeb) initServerEnvironment() {
 	}
 
 	// start pprof server
-	if app.Config.App.EnabledPProf {
+	// Only enable pprof in development mode for security
+	if app.Config.App.EnabledPProf && app.RunMode() != RunMode_Production {
 		app.Logger().Debug("DotWeb:StartPProfServer["+strconv.Itoa(app.Config.App.PProfPort)+"] Begin", LogTarget_HttpServer)
 		go func() {
 			err := http.ListenAndServe(":"+strconv.Itoa(app.Config.App.PProfPort), nil)
@@ -704,7 +704,14 @@ func DefaultMethodNotAllowedHandler(ctx Context) {
 
 // DefaultAutoOPTIONSHandler default handler for options request
 // if set HttpServer.EnabledAutoOPTIONS, auto bind this handler
+// Sets CORS headers to support cross-origin preflight requests (Issue #250)
 func DefaultAutoOPTIONSHandler(ctx Context) error {
+	// Set CORS headers for preflight requests
+	h := ctx.Response().Header()
+	h.Set("Access-Control-Allow-Origin", "*")
+	h.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	h.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+	h.Set("Access-Control-Max-Age", "86400")
 	return ctx.WriteStringC(http.StatusNoContent, "")
 }
 

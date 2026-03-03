@@ -155,8 +155,16 @@ func (ps Params) ByName(name string) string {
 // New returns a new initialized Router.
 // Path auto-correction, including trailing slashes, is enabled by default.
 func NewRouter(server *HttpServer) *router {
+	// Use ServerConfig.EnabledRedirectTrailingSlash if set, otherwise default to false
+	// to match net/http behavior (Issue #245)
+	// Note: During initialization, ServerConfig may be nil, so we check for that
+	redirectTrailingSlash := false
+	if server != nil && server.DotApp != nil && server.DotApp.Config != nil && server.DotApp.Config.Server != nil {
+		redirectTrailingSlash = server.ServerConfig().EnabledRedirectTrailingSlash
+	}
+	
 	return &router{
-		RedirectTrailingSlash: true,
+		RedirectTrailingSlash: redirectTrailingSlash,
 		RedirectFixedPath:     true,
 		HandleOPTIONS:         true,
 		allRouterExpress:      make(map[string]struct{}),
@@ -264,6 +272,14 @@ func (r *router) ServeHTTP(ctx Context) {
 	}
 
 	// Handle 404
+	// Check if request path matches any group prefix and use group's NotFoundHandler
+	for _, g := range r.server.groups {
+		if strings.HasPrefix(path, g.prefix) && g.notFoundHandler != nil {
+			g.notFoundHandler(ctx)
+			return
+		}
+	}
+	// Fall back to app-level NotFoundHandler
 	if r.server.DotApp.NotFoundHandler != nil {
 		r.server.DotApp.NotFoundHandler(ctx)
 	}
@@ -415,7 +431,7 @@ func (r *router) RegisterServerFile(routeMethod string, path string, fileRoot st
 	var root http.FileSystem
 	root = http.Dir(fileRoot)
 	if !r.server.ServerConfig().EnabledListDir {
-		root = &core.HideReaddirFS{root}
+		root = &core.HideReaddirFS{FileSystem: root}
 	}
 	fileServer := http.FileServer(root)
 	r.add(routeMethod, realPath, r.wrapFileHandle(fileServer, excludeExtension))
