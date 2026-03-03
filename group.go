@@ -15,12 +15,14 @@ type (
 		PUT(path string, h HttpHandle) RouterNode
 		ServerFile(path string, fileroot string) RouterNode
 		RegisterRoute(method, path string, h HttpHandle) RouterNode
+		SetNotFoundHandle(handler StandardHandle) Group
 	}
 	xGroup struct {
 		prefix           string
 		middlewares      []Middleware
 		allRouterExpress map[string]struct{}
 		server           *HttpServer
+		notFoundHandler  StandardHandle
 	}
 )
 
@@ -118,4 +120,11 @@ func (g *xGroup) add(method, path string, handler HttpHandle) RouterNode {
 	g.allRouterExpress[method+routerExpressSplit+g.prefix+path] = struct{}{}
 	node.Node().groupMiddlewares = g.middlewares
 	return node
+}
+
+// SetNotFoundHandle sets custom 404 handler for this group.
+// This handler takes priority over the app-level NotFoundHandler.
+func (g *xGroup) SetNotFoundHandle(handler StandardHandle) Group {
+	g.notFoundHandler = handler
+	return g
 }

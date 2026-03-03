@@ -272,6 +272,14 @@ func (r *router) ServeHTTP(ctx Context) {
 	}
 
 	// Handle 404
+	// Check if request path matches any group prefix and use group's NotFoundHandler
+	for _, g := range r.server.groups {
+		if strings.HasPrefix(path, g.prefix) && g.notFoundHandler != nil {
+			g.notFoundHandler(ctx)
+			return
+		}
+	}
+	// Fall back to app-level NotFoundHandler
 	if r.server.DotApp.NotFoundHandler != nil {
 		r.server.DotApp.NotFoundHandler(ctx)
 	}
