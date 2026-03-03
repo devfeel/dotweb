@@ -273,6 +273,9 @@ func (r *router) ServeHTTP(ctx Context) {
 
 	// Handle 404
 	// Check if request path matches any group prefix and use group's NotFoundHandler
+	// Use exact prefix match or prefix + "/" to avoid false positives (e.g., /apiv2 matching /api)
+	for _, g := range r.server.groups {
+		if (path == g.prefix || strings.HasPrefix(path, g.prefix+"/")) && g.notFoundHandler != nil {
 	for _, g := range r.server.groups {
 		if strings.HasPrefix(path, g.prefix) && g.notFoundHandler != nil {
 			g.notFoundHandler(ctx)
