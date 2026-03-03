@@ -1,7 +1,7 @@
 package config
 
 import (
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // UnmarshalYaml decodes the first document found within the in byte slice
