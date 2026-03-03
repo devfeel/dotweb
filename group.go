@@ -2,27 +2,43 @@ package dotweb
 
 import "reflect"
 
-type (
-	Group interface {
-		Use(m ...Middleware) Group
-		Group(prefix string, m ...Middleware) Group
-		DELETE(path string, h HttpHandle) RouterNode
-		GET(path string, h HttpHandle) RouterNode
-		HEAD(path string, h HttpHandle) RouterNode
-		OPTIONS(path string, h HttpHandle) RouterNode
-		PATCH(path string, h HttpHandle) RouterNode
-		POST(path string, h HttpHandle) RouterNode
-		PUT(path string, h HttpHandle) RouterNode
-		ServerFile(path string, fileroot string) RouterNode
-		RegisterRoute(method, path string, h HttpHandle) RouterNode
-	}
-	xGroup struct {
-		prefix           string
-		middlewares      []Middleware
-		allRouterExpress map[string]struct{}
-		server           *HttpServer
-	}
-)
+// Group is the interface that wraps the group router methods.
+// A Group allows you to create routes with a common prefix and middleware chain.
+type Group interface {
+	// Use registers middleware(s) to the group.
+	Use(m ...Middleware) Group
+	// Group creates a new sub-group with prefix and optional sub-group-level middleware.
+	Group(prefix string, m ...Middleware) Group
+	// DELETE registers a new DELETE route with the given path and handler.
+	DELETE(path string, h HttpHandle) RouterNode
+	// GET registers a new GET route with the given path and handler.
+	GET(path string, h HttpHandle) RouterNode
+	// HEAD registers a new HEAD route with the given path and handler.
+	HEAD(path string, h HttpHandle) RouterNode
+	// OPTIONS registers a new OPTIONS route with the given path and handler.
+	OPTIONS(path string, h HttpHandle) RouterNode
+	// PATCH registers a new PATCH route with the given path and handler.
+	PATCH(path string, h HttpHandle) RouterNode
+	// POST registers a new POST route with the given path and handler.
+	POST(path string, h HttpHandle) RouterNode
+	// PUT registers a new PUT route with the given path and handler.
+	PUT(path string, h HttpHandle) RouterNode
+	// ServerFile registers a file server route with the given path and file root.
+	ServerFile(path string, fileroot string) RouterNode
+	// RegisterRoute registers a new route with the given HTTP method, path and handler.
+	RegisterRoute(method, path string, h HttpHandle) RouterNode
+	// SetNotFoundHandle sets a custom 404 handler for this group.
+	SetNotFoundHandle(handler StandardHandle) Group
+}
+
+// xGroup is the implementation of Group interface.
+type xGroup struct {
+	prefix           string
+	middlewares      []Middleware
+	allRouterExpress map[string]struct{}
+	server           *HttpServer
+	notFoundHandler  StandardHandle
+}
 
 func NewGroup(prefix string, server *HttpServer) Group {
 	g := &xGroup{prefix: prefix, server: server, allRouterExpress: make(map[string]struct{})}
@@ -118,4 +134,15 @@ func (g *xGroup) add(method, path string, handler HttpHandle) RouterNode {
 	g.allRouterExpress[method+routerExpressSplit+g.prefix+path] = struct{}{}
 	node.Node().groupMiddlewares = g.middlewares
 	return node
+}
+
+// SetNotFoundHandle sets a custom 404 handler for this group.
+// This handler takes priority over the app-level NotFoundHandler.
+// If a request path starts with the group's prefix but no route matches,
+// this handler will be called instead of the global NotFoundHandler.
+// SetNotFoundHandle sets custom 404 handler for this group.
+// This handler takes priority over the app-level NotFoundHandler.
+func (g *xGroup) SetNotFoundHandle(handler StandardHandle) Group {
+	g.notFoundHandler = handler
+	return g
 }

@@ -30,7 +30,7 @@ type (
 	HttpServer struct {
 		stdServer      *http.Server
 		router         Router
-		groups         []Group
+		groups         []*xGroup
 		Modules        []*HttpModule
 		DotApp         *DotWeb
 		Validator      Validator
