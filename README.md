@@ -175,6 +175,28 @@ test：
 <br>curl http://127.0.0.1/user
 <br>curl http://127.0.0.1/user/profile
 
+#### 5) group SetNotFoundHandle (Since v1.8)
+支持为路由组设置独立的 404 处理器，优先于应用级别的 NotFoundHandler。
+``` go
+    // Create API group
+    apiGroup := server.Group("/api")
+    
+    // Set group-level 404 handler
+    apiGroup.SetNotFoundHandle(func(ctx dotweb.Context) error {
+        ctx.Response().Header().Set("Content-Type", "application/json")
+        return ctx.WriteString(`{"code": 404, "message": "API resource not found"}`)
+    })
+    
+    // Register routes
+    apiGroup.GET("/users", func(ctx dotweb.Context) error {
+        return ctx.WriteString("Users list")
+    })
+```
+Behavior:
+<br>Request to `/api/users` → Returns "Users list"
+<br>Request to `/api/unknown` → Returns JSON 404 response (group handler)
+<br>Request to `/unknown` → Returns global 404 (app handler)
+
 
 ## 6. Binder
 * HttpContext.Bind(interface{})
