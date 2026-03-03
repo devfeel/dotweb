@@ -37,14 +37,15 @@ type (
 
 	// ServerNode dotweb app's httpserver config
 	ServerNode struct {
-		EnabledListDir              bool   `xml:"enabledlistdir,attr"`   // enable listing of directories, only valid for Router.ServerFile, default is false
-		EnabledRequestID            bool   `xml:"enabledrequestid,attr"` // enable uniq request ID, default is false, 32-bit UUID is used if enabled
-		EnabledGzip                 bool   `xml:"enabledgzip,attr"`      // enable gzip
-		EnabledAutoHEAD             bool   `xml:"enabledautohead,attr"`  // ehanble HEAD routing, default is false, will add HEAD routing for all routes except for websocket and HEAD
-		EnabledAutoOPTIONS          bool   // enable OPTIONS routing, default is false, will add OPTIONS routing for all routes except for websocket and OPTIONS
-		EnabledIgnoreFavicon        bool   `xml:"enabledignorefavicon,attr"`  // ignore favicon.ico request, return empty reponse if set
-		EnabledBindUseJsonTag       bool   `xml:"enabledbindusejsontag,attr"` // allow Bind to use JSON tag, default is false, Bind will use json tag automatically and ignore form tag
-		EnabledStaticFileMiddleware bool   // The flag which enabled or disabled middleware for static-file route
+		EnabledListDir               bool   `xml:"enabledlistdir,attr"`         // enable listing of directories, only valid for Router.ServerFile, default is false
+		EnabledRequestID             bool   `xml:"enabledrequestid,attr"`       // enable uniq request ID, default is false, 32-bit UUID is used if enabled
+		EnabledGzip                  bool   `xml:"enabledgzip,attr"`            // enable gzip
+		EnabledAutoHEAD              bool   `xml:"enabledautohead,attr"`        // ehanble HEAD routing, default is false, will add HEAD routing for all routes except for websocket and HEAD
+		EnabledAutoOPTIONS           bool   `xml:"-"`                           // enable OPTIONS routing, default is false, will add OPTIONS routing for all routes except for websocket and OPTIONS
+		EnabledRedirectTrailingSlash bool   `xml:"enabledredirecttrailingslash,attr"` // enable automatic redirection for URLs with trailing slash, default is false to match net/http behavior
+		EnabledIgnoreFavicon         bool   `xml:"enabledignorefavicon,attr"`  // ignore favicon.ico request, return empty reponse if set
+		EnabledBindUseJsonTag        bool   `xml:"enabledbindusejsontag,attr"` // allow Bind to use JSON tag, default is false, Bind will use json tag automatically and ignore form tag
+		EnabledStaticFileMiddleware  bool   `xml:"-"` // The flag which enabled or disabled middleware for static-file route
 		Port                        int    `xml:"port,attr"`                     // port
 		EnabledTLS                  bool   `xml:"enabledtls,attr"`               // enable TLS
 		TLSCertFile                 string `xml:"tlscertfile,attr"`              // certifications file for TLS

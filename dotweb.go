@@ -705,7 +705,14 @@ func DefaultMethodNotAllowedHandler(ctx Context) {
 
 // DefaultAutoOPTIONSHandler default handler for options request
 // if set HttpServer.EnabledAutoOPTIONS, auto bind this handler
+// Sets CORS headers to support cross-origin preflight requests (Issue #250)
 func DefaultAutoOPTIONSHandler(ctx Context) error {
+	// Set CORS headers for preflight requests
+	h := ctx.Response().Header()
+	h.Set("Access-Control-Allow-Origin", "*")
+	h.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	h.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+	h.Set("Access-Control-Max-Age", "86400")
 	return ctx.WriteStringC(http.StatusNoContent, "")
 }
 

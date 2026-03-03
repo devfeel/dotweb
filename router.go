@@ -155,8 +155,16 @@ func (ps Params) ByName(name string) string {
 // New returns a new initialized Router.
 // Path auto-correction, including trailing slashes, is enabled by default.
 func NewRouter(server *HttpServer) *router {
+	// Use ServerConfig.EnabledRedirectTrailingSlash if set, otherwise default to false
+	// to match net/http behavior (Issue #245)
+	// Note: During initialization, ServerConfig may be nil, so we check for that
+	redirectTrailingSlash := false
+	if server != nil && server.DotApp != nil && server.DotApp.Config != nil && server.DotApp.Config.Server != nil {
+		redirectTrailingSlash = server.ServerConfig().EnabledRedirectTrailingSlash
+	}
+	
 	return &router{
-		RedirectTrailingSlash: true,
+		RedirectTrailingSlash: redirectTrailingSlash,
 		RedirectFixedPath:     true,
 		HandleOPTIONS:         true,
 		allRouterExpress:      make(map[string]struct{}),
