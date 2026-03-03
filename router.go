@@ -162,7 +162,7 @@ func NewRouter(server *HttpServer) *router {
 	if server != nil && server.DotApp != nil && server.DotApp.Config != nil && server.DotApp.Config.Server != nil {
 		redirectTrailingSlash = server.ServerConfig().EnabledRedirectTrailingSlash
 	}
-	
+
 	return &router{
 		RedirectTrailingSlash: redirectTrailingSlash,
 		RedirectFixedPath:     true,
@@ -276,8 +276,6 @@ func (r *router) ServeHTTP(ctx Context) {
 	// Use exact prefix match or prefix + "/" to avoid false positives (e.g., /apiv2 matching /api)
 	for _, g := range r.server.groups {
 		if (path == g.prefix || strings.HasPrefix(path, g.prefix+"/")) && g.notFoundHandler != nil {
-	for _, g := range r.server.groups {
-		if strings.HasPrefix(path, g.prefix) && g.notFoundHandler != nil {
 			g.notFoundHandler(ctx)
 			return
 		}
