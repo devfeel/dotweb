@@ -39,29 +39,6 @@ type xGroup struct {
 	server           *HttpServer
 	notFoundHandler  StandardHandle
 }
-type (
-	Group interface {
-		Use(m ...Middleware) Group
-		Group(prefix string, m ...Middleware) Group
-		DELETE(path string, h HttpHandle) RouterNode
-		GET(path string, h HttpHandle) RouterNode
-		HEAD(path string, h HttpHandle) RouterNode
-		OPTIONS(path string, h HttpHandle) RouterNode
-		PATCH(path string, h HttpHandle) RouterNode
-		POST(path string, h HttpHandle) RouterNode
-		PUT(path string, h HttpHandle) RouterNode
-		ServerFile(path string, fileroot string) RouterNode
-		RegisterRoute(method, path string, h HttpHandle) RouterNode
-		SetNotFoundHandle(handler StandardHandle) Group
-	}
-	xGroup struct {
-		prefix           string
-		middlewares      []Middleware
-		allRouterExpress map[string]struct{}
-		server           *HttpServer
-		notFoundHandler  StandardHandle
-	}
-)
 
 func NewGroup(prefix string, server *HttpServer) Group {
 	g := &xGroup{prefix: prefix, server: server, allRouterExpress: make(map[string]struct{})}
