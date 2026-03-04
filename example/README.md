@@ -12,7 +12,7 @@ go run main.go
 
 ## Examples Index
 
-### Getting Started
+### 🚀 Getting Started
 
 | Example | Description | Complexity |
 |---------|-------------|------------|
@@ -20,7 +20,7 @@ go run main.go
 | [routing](./routing) | Route patterns, params, groups | ★★☆ |
 | [group](./group) | Route grouping with 404 handlers | ★★☆ |
 
-### Core Features
+### 🔧 Core Features
 
 | Example | Description | Complexity |
 |---------|-------------|------------|
@@ -28,14 +28,20 @@ go run main.go
 | [session](./session) | Session management | ★★☆ |
 | [bind](./bind) | Data binding (form, JSON) | ★★☆ |
 | [config](./config) | Configuration files | ★★☆ |
+| [router](./router) | Advanced routing | ★★☆ |
 
-### Practical Examples
+### 🌐 Web Features
 
 | Example | Description | Complexity |
 |---------|-------------|------------|
 | [json-api](./json-api) | RESTful API with CRUD | ★★☆ |
 | [file-upload](./file-upload) | File upload/download | ★★☆ |
-| [router](./router) | Advanced routing | ★★☆ |
+| [websocket](./websocket) | WebSocket (echo, chat) | ★★★ |
+
+### 🧪 Testing
+
+| Example | Description | Complexity |
+|---------|-------------|------------|
 | [mock](./mock) | Mock mode for testing | ★★☆ |
 
 ## Feature Examples
@@ -149,7 +155,28 @@ app.HttpServer.POST("/upload", func(ctx dotweb.Context) error {
 })
 ```
 
-### 9. Error Handling
+### 9. WebSocket
+```go
+app.HttpServer.GET("/ws", func(ctx dotweb.Context) error {
+    if !ctx.IsWebSocket() {
+        return ctx.WriteString("Requires WebSocket")
+    }
+    
+    ws := ctx.WebSocket()
+    
+    for {
+        msg, err := ws.ReadMessage()
+        if err != nil {
+            break
+        }
+        ws.SendMessage("Echo: " + msg)
+    }
+    
+    return nil
+})
+```
+
+### 10. Error Handling
 ```go
 app.SetExceptionHandle(func(ctx dotweb.Context, err error) {
     ctx.Response().SetContentType(dotweb.MIMEApplicationJSONCharsetUTF8)
