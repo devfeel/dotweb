@@ -19,6 +19,10 @@ go run main.go
 | [middleware](./middleware) | Logging, auth, CORS | ★★☆ |
 | [session](./session) | Session management | ★★☆ |
 | [group](./group) | Route grouping with 404 handlers | ★★☆ |
+| [bind](./bind) | Data binding (form, JSON) | ★★☆ |
+| [config](./config) | Configuration files | ★★☆ |
+| [router](./router) | Advanced routing | ★★☆ |
+| [mock](./mock) | Mock mode for testing | ★★☆ |
 
 ## Feature Examples
 
@@ -85,11 +89,27 @@ app.HttpServer.GET("/login", func(ctx dotweb.Context) error {
 })
 ```
 
+### 6. Data Binding
+```go
+type User struct {
+    Name string `json:"name" form:"name"`
+    Age  int    `json:"age" form:"age"`
+}
+
+app.HttpServer.POST("/users", func(ctx dotweb.Context) error {
+    user := new(User)
+    if err := ctx.Bind(user); err != nil {
+        return err
+    }
+    return ctx.WriteString(fmt.Sprintf("Created: %s", user.Name))
+})
+```
+
 ## Running Examples
 
 ```bash
 # Run any example
-cd example/group
+cd example/session
 go run main.go
 
 # With hot reload (using air)
