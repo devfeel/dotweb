@@ -5,10 +5,8 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/devfeel/dotweb"
 )
@@ -24,72 +22,49 @@ func main() {
 	// Upload single file
 	app.HttpServer.POST("/upload", func(ctx dotweb.Context) error {
 		// Get uploaded file
-		file, header, err := ctx.Request().FormFile("file")
+		file, err := ctx.Request().FormFile("file")
 		if err != nil {
 			return ctx.WriteString("❌ Error getting file: " + err.Error())
 		}
-		defer file.Close()
 		
 		// Create upload directory
 		uploadDir := "./uploads"
 		os.MkdirAll(uploadDir, 0755)
 		
-		// Create destination file
-		dst := filepath.Join(uploadDir, header.Filename)
-		dstFile, err := os.Create(dst)
-		if err != nil {
-			return ctx.WriteString("❌ Error creating file: " + err.Error())
-		}
-		defer dstFile.Close()
-		
-		// Copy file content
-		written, err := io.Copy(dstFile, file)
+		// Save file using built-in method
+		dst := filepath.Join(uploadDir, file.FileName())
+		size, err := file.SaveFile(dst)
 		if err != nil {
 			return ctx.WriteString("❌ Error saving file: " + err.Error())
 		}
 		
 		return ctx.WriteString(fmt.Sprintf(
 			"✅ File uploaded!\n📁 Name: %s\n📊 Size: %d bytes\n📍 Path: %s",
-			header.Filename, written, dst,
+			file.FileName(), size, dst,
 		))
 	})
 	
 	// Upload multiple files
 	app.HttpServer.POST("/upload/multiple", func(ctx dotweb.Context) error {
-		// Parse multipart form
-		err := ctx.Request().ParseMultipartForm(32 << 20) // 32MB
+		// Get all files
+		files, err := ctx.Request().FormFiles()
 		if err != nil {
 			return ctx.WriteString("❌ Error parsing form: " + err.Error())
 		}
-		
-		// Get all files
-		form := ctx.Request().MultipartForm
-		files := form.File["files"]
 		
 		uploadDir := "./uploads"
 		os.MkdirAll(uploadDir, 0755)
 		
 		var results []string
-		for _, fileHeader := range files {
-			file, err := fileHeader.Open()
+		for name, file := range files {
+			dst := filepath.Join(uploadDir, file.FileName())
+			_, err := file.SaveFile(dst)
 			if err != nil {
-				results = append(results, fmt.Sprintf("❌ %s: failed to open", fileHeader.Filename))
+				results = append(results, fmt.Sprintf("❌ %s: failed to save", name))
 				continue
 			}
 			
-			dst := filepath.Join(uploadDir, fileHeader.Filename)
-			dstFile, err := os.Create(dst)
-			if err != nil {
-				file.Close()
-				results = append(results, fmt.Sprintf("❌ %s: failed to create", fileHeader.Filename))
-				continue
-			}
-			
-			io.Copy(dstFile, file)
-			dstFile.Close()
-			file.Close()
-			
-			results = append(results, fmt.Sprintf("✅ %s", fileHeader.Filename))
+			results = append(results, fmt.Sprintf("✅ %s (%s)", name, file.FileName()))
 		}
 		
 		return ctx.WriteString(fmt.Sprintf("Uploaded %d files:\n%s", len(files), 
@@ -117,7 +92,8 @@ func main() {
 			return ctx.WriteString("❌ Error reading file: " + err.Error())
 		}
 		
-		return ctx.Write(200, data)
+		ctx.Write(200, data)
+		return nil
 	})
 	
 	// List uploaded files
@@ -125,7 +101,8 @@ func main() {
 		uploadDir := "./uploads"
 		files, err := os.ReadDir(uploadDir)
 		if err != nil {
-			return ctx.WriteString("❌ Error reading directory: " + err.Error())
+			ctx.WriteString("❌ Error reading directory: " + err.Error())
+			return nil
 		}
 		
 		var result string
@@ -135,9 +112,11 @@ func main() {
 		}
 		
 		if result == "" {
-			return ctx.WriteString("📂 No files uploaded yet")
+			ctx.WriteString("📂 No files uploaded yet")
+			return nil
 		}
-		return ctx.WriteString("📂 Uploaded files:\n" + result)
+		ctx.WriteString("📂 Uploaded files:\n" + result)
+		return nil
 	})
 	
 	// Delete file
@@ -147,9 +126,11 @@ func main() {
 		filePath := filepath.Join(uploadDir, filename)
 		
 		if err := os.Remove(filePath); err != nil {
-			return ctx.WriteString("❌ Error deleting file: " + err.Error())
+			ctx.WriteString("❌ Error deleting file: " + err.Error())
+			return nil
 		}
-		return ctx.WriteString("✅ File deleted: " + filename)
+		ctx.WriteString("✅ File deleted: " + filename)
+		return nil
 	})
 	
 	fmt.Println("🚀 File upload example running at http://localhost:8080")

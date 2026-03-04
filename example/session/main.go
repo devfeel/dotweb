@@ -21,15 +21,15 @@ func main() {
 	
 	// Login - set session
 	app.HttpServer.GET("/login", func(ctx dotweb.Context) error {
-		ctx.SetSession("user", "Alice")
-		ctx.SetSession("role", "admin")
+		ctx.Session().Set("user", "Alice")
+		ctx.Session().Set("role", "admin")
 		return ctx.WriteString("✅ Logged in as Alice (admin)")
 	})
 	
 	// Get user info from session
 	app.HttpServer.GET("/user", func(ctx dotweb.Context) error {
-		user := ctx.GetSession("user")
-		role := ctx.GetSession("role")
+		user := ctx.Session().Get("user")
+		role := ctx.Session().Get("role")
 		
 		if user == nil {
 			return ctx.WriteString("❌ Not logged in. Visit /login first.")
@@ -49,7 +49,8 @@ func main() {
 	
 	// Check session exists
 	app.HttpServer.GET("/check", func(ctx dotweb.Context) error {
-		if ctx.HasSession("user") {
+		user := ctx.Session().Get("user")
+		if user != nil {
 			return ctx.WriteString("✅ Session exists")
 		}
 		return ctx.WriteString("❌ No session found")

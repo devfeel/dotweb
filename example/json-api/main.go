@@ -26,7 +26,7 @@ type ErrorResponse struct {
 
 // SuccessResponse represents a success response
 type SuccessResponse struct {
-	Message string `json:"message"`
+	Message string      `json:"message"`
 	Data    interface{} `json:"data,omitempty"`
 }
 
@@ -46,12 +46,6 @@ func main() {
 	// Create DotWeb app
 	app := dotweb.New()
 	app.SetDevelopmentMode()
-	
-	// Set JSON content type for all responses
-	app.HttpServer.Use(func(ctx dotweb.Context) error {
-		ctx.Response().Header().Set("Content-Type", "application/json")
-		return ctx.NextHandler()
-	})
 	
 	// Global error handler
 	app.SetExceptionHandle(func(ctx dotweb.Context, err error) {
@@ -87,7 +81,8 @@ func main() {
 	
 	// Health check
 	api.GET("/health", func(ctx dotweb.Context) error {
-		return ctx.WriteJsonC(200, map[string]string{"status": "ok"})
+		ctx.Response().Header().Set("Content-Type", "application/json")
+		return ctx.WriteString(`{"status": "ok"}`)
 	})
 	
 	fmt.Println("🚀 JSON API running at http://localhost:8080")
@@ -114,6 +109,7 @@ func listUsers(ctx dotweb.Context) error {
 		list = append(list, u)
 	}
 	
+	ctx.Response().Header().Set("Content-Type", "application/json")
 	return ctx.WriteJsonC(200, SuccessResponse{
 		Message: "success",
 		Data:    list,
@@ -125,6 +121,7 @@ func getUser(ctx dotweb.Context) error {
 	idStr := ctx.GetRouterName("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		ctx.Response().Header().Set("Content-Type", "application/json")
 		return ctx.WriteJsonC(400, ErrorResponse{Error: "Invalid user ID"})
 	}
 	
@@ -133,9 +130,11 @@ func getUser(ctx dotweb.Context) error {
 	mu.RUnlock()
 	
 	if !ok {
+		ctx.Response().Header().Set("Content-Type", "application/json")
 		return ctx.WriteJsonC(404, ErrorResponse{Error: "User not found"})
 	}
 	
+	ctx.Response().Header().Set("Content-Type", "application/json")
 	return ctx.WriteJsonC(200, SuccessResponse{
 		Message: "success",
 		Data:    user,
@@ -146,10 +145,12 @@ func getUser(ctx dotweb.Context) error {
 func createUser(ctx dotweb.Context) error {
 	var user User
 	if err := json.Unmarshal(ctx.Request().PostBody(), &user); err != nil {
+		ctx.Response().Header().Set("Content-Type", "application/json")
 		return ctx.WriteJsonC(400, ErrorResponse{Error: "Invalid JSON"})
 	}
 	
 	if user.Name == "" || user.Email == "" {
+		ctx.Response().Header().Set("Content-Type", "application/json")
 		return ctx.WriteJsonC(400, ErrorResponse{Error: "Name and email required"})
 	}
 	
@@ -159,6 +160,7 @@ func createUser(ctx dotweb.Context) error {
 	users[user.ID] = &user
 	mu.Unlock()
 	
+	ctx.Response().Header().Set("Content-Type", "application/json")
 	return ctx.WriteJsonC(201, SuccessResponse{
 		Message: "User created",
 		Data:    &user,
@@ -170,6 +172,7 @@ func updateUser(ctx dotweb.Context) error {
 	idStr := ctx.GetRouterName("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		ctx.Response().Header().Set("Content-Type", "application/json")
 		return ctx.WriteJsonC(400, ErrorResponse{Error: "Invalid user ID"})
 	}
 	
@@ -178,11 +181,13 @@ func updateUser(ctx dotweb.Context) error {
 	mu.RUnlock()
 	
 	if !ok {
+		ctx.Response().Header().Set("Content-Type", "application/json")
 		return ctx.WriteJsonC(404, ErrorResponse{Error: "User not found"})
 	}
 	
 	var update User
 	if err := json.Unmarshal(ctx.Request().PostBody(), &update); err != nil {
+		ctx.Response().Header().Set("Content-Type", "application/json")
 		return ctx.WriteJsonC(400, ErrorResponse{Error: "Invalid JSON"})
 	}
 	
@@ -195,6 +200,7 @@ func updateUser(ctx dotweb.Context) error {
 	}
 	mu.Unlock()
 	
+	ctx.Response().Header().Set("Content-Type", "application/json")
 	return ctx.WriteJsonC(200, SuccessResponse{
 		Message: "User updated",
 		Data:    user,
@@ -206,6 +212,7 @@ func deleteUser(ctx dotweb.Context) error {
 	idStr := ctx.GetRouterName("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		ctx.Response().Header().Set("Content-Type", "application/json")
 		return ctx.WriteJsonC(400, ErrorResponse{Error: "Invalid user ID"})
 	}
 	
@@ -213,11 +220,13 @@ func deleteUser(ctx dotweb.Context) error {
 	defer mu.Unlock()
 	
 	if _, ok := users[id]; !ok {
+		ctx.Response().Header().Set("Content-Type", "application/json")
 		return ctx.WriteJsonC(404, ErrorResponse{Error: "User not found"})
 	}
 	
 	delete(users, id)
 	
+	ctx.Response().Header().Set("Content-Type", "application/json")
 	return ctx.WriteJsonC(200, SuccessResponse{
 		Message: "User deleted",
 	})

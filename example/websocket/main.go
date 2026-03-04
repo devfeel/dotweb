@@ -6,7 +6,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/devfeel/dotweb"
 	"golang.org/x/net/websocket"
@@ -66,7 +65,7 @@ func main() {
 		clients[ws.Conn] = true
 		
 		// Get username from query
-		username := ctx.QueryValue("name")
+		username := ctx.Request().QueryString("name")
 		if username == "" {
 			username = "Anonymous"
 		}
