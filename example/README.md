@@ -12,15 +12,29 @@ go run main.go
 
 ## Examples Index
 
+### Getting Started
+
 | Example | Description | Complexity |
 |---------|-------------|------------|
 | [quickstart](./quickstart) | Minimal "Hello World" | ★☆☆ |
 | [routing](./routing) | Route patterns, params, groups | ★★☆ |
+| [group](./group) | Route grouping with 404 handlers | ★★☆ |
+
+### Core Features
+
+| Example | Description | Complexity |
+|---------|-------------|------------|
 | [middleware](./middleware) | Logging, auth, CORS | ★★☆ |
 | [session](./session) | Session management | ★★☆ |
-| [group](./group) | Route grouping with 404 handlers | ★★☆ |
 | [bind](./bind) | Data binding (form, JSON) | ★★☆ |
 | [config](./config) | Configuration files | ★★☆ |
+
+### Practical Examples
+
+| Example | Description | Complexity |
+|---------|-------------|------------|
+| [json-api](./json-api) | RESTful API with CRUD | ★★☆ |
+| [file-upload](./file-upload) | File upload/download | ★★☆ |
 | [router](./router) | Advanced routing | ★★☆ |
 | [mock](./mock) | Mock mode for testing | ★★☆ |
 
@@ -105,6 +119,49 @@ app.HttpServer.POST("/users", func(ctx dotweb.Context) error {
 })
 ```
 
+### 7. JSON API
+```go
+app.HttpServer.GET("/api/users", func(ctx dotweb.Context) error {
+    ctx.Response().Header().Set("Content-Type", "application/json")
+    return ctx.WriteString(`{"users": ["Alice", "Bob"]}`)
+})
+
+// Or use WriteJsonC
+app.HttpServer.GET("/api/user", func(ctx dotweb.Context) error {
+    return ctx.WriteJsonC(200, map[string]string{
+        "name": "Alice",
+        "email": "alice@example.com",
+    })
+})
+```
+
+### 8. File Upload
+```go
+app.HttpServer.POST("/upload", func(ctx dotweb.Context) error {
+    file, header, err := ctx.Request().FormFile("file")
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    // Save file...
+    return ctx.WriteString("Uploaded: " + header.Filename)
+})
+```
+
+### 9. Error Handling
+```go
+app.SetExceptionHandle(func(ctx dotweb.Context, err error) {
+    ctx.Response().SetContentType(dotweb.MIMEApplicationJSONCharsetUTF8)
+    ctx.WriteJsonC(500, map[string]string{"error": err.Error()})
+})
+
+app.SetNotFoundHandle(func(ctx dotweb.Context) {
+    ctx.Response().SetContentType(dotweb.MIMEApplicationJSONCharsetUTF8)
+    ctx.WriteJsonC(404, map[string]string{"error": "Not found"})
+})
+```
+
 ## Running Examples
 
 ```bash
@@ -116,31 +173,25 @@ go run main.go
 air
 ```
 
-## Common Patterns
+## Project Structure
 
-### JSON API
-```go
-app.HttpServer.GET("/api/users", func(ctx dotweb.Context) error {
-    ctx.Response().Header().Set("Content-Type", "application/json")
-    return ctx.WriteString(`{"users": ["Alice", "Bob"]}`)
-})
+For larger projects, consider this structure:
+
 ```
-
-### Error Handling
-```go
-app.SetExceptionHandle(func(ctx dotweb.Context, err error) {
-    ctx.Response().SetContentType(dotweb.MIMEApplicationJSONCharsetUTF8)
-    ctx.WriteJsonC(500, map[string]string{"error": err.Error()})
-})
-```
-
-### File Upload
-```go
-app.HttpServer.POST("/upload", func(ctx dotweb.Context) error {
-    file := ctx.Request().FormFile("file")
-    // Save file...
-    return ctx.WriteString("Uploaded!")
-})
+myapp/
+├── main.go
+├── config/
+│   └── config.yaml
+├── handlers/
+│   ├── user.go
+│   └── auth.go
+├── middleware/
+│   ├── auth.go
+│   └── logger.go
+├── models/
+│   └── user.go
+└── routes/
+    └── routes.go
 ```
 
 ## Testing
