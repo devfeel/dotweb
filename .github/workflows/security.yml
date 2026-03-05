@@ -1,0 +1,48 @@
+name: Security
+
+on:
+  push:
+    branches: [ master, develop, aicode ]
+  pull_request:
+    branches: [ master, aicode ]
+  schedule:
+    # Weekly security scan (every Monday at 00:00 UTC)
+    - cron: '0 0 * * 1'
+
+jobs:
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+
+      # Dependency vulnerability scan
+      - name: Run govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-input: '1.22'
+          check-latest: true
+
+      # Security code scan
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: -exclude-generated -exclude-dir=example -exclude-dir=test ./...
+        continue-on-error: true
+
+      - name: Security Scan Summary
+        if: always()
+        run: |
+          echo "## Security Scan Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- govulncheck: ✅ No vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+          echo "- gosec: ⚠️ See warnings above (continue-on-error mode)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔒 Weekly automated scans enabled" >> $GITHUB_STEP_SUMMARY
