@@ -1,0 +1,58 @@
+# golangci-lint configuration
+# 渐进式配置：初期宽松，逐步收紧
+
+run:
+  timeout: 5m
+  skip-dirs:
+    - examples
+  skip-files:
+    - ".*_test\\.go$"
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - typecheck
+    - gocritic
+    - misspell
+
+linters-settings:
+  errcheck:
+    check-type-assertions: false
+    check-blank: false
+
+  gocritic:
+    disabled-checks:
+      - ifElseChain
+      - singleCaseSwitch
+
+issues:
+  # 初期不阻塞 CI，后续修复后再强制
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  
+  exclude-rules:
+    # 测试文件放宽要求
+    - path: _test\.go
+      linters:
+        - errcheck
+    
+    # examples 目录放宽要求
+    - path: examples/
+      linters:
+        - errcheck
+    
+    # 忽略已知问题的文件
+    - path: "test/.*"
+      linters:
+        - errcheck
+
+output:
+  formats:
+    - format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true

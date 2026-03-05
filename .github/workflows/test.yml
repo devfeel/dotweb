@@ -7,9 +7,29 @@ on:
     branches: [ aicode, master ]
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+        # 渐进式：初期不阻塞 CI，后续修复问题后再强制
+        continue-on-error: true
+
   test:
     name: Test with Go ${{ matrix.go-version }}
     runs-on: ubuntu-latest
+    needs: lint
     strategy:
       matrix:
         go-version: ['1.21', '1.22', '1.23']
