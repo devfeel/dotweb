@@ -5,16 +5,15 @@ import (
 	"log"
 	"strconv"
 	"testing"
-	"time"
 )
 
+// Test package-level variables for backwards compatibility
 var conf *StoreConfig
 var runtime_store *RuntimeStore
 var session_state *SessionState
 var session_states []*SessionState
 
 func init() {
-	//log.Println("初始化")
 	value := make(map[interface{}]interface{})
 	value["foo"] = "bar"
 	value["kak"] = "lal"
@@ -26,7 +25,6 @@ func init() {
 	session_state = NewSessionState(nil, "session_read", value)
 	for i := 0; i < 1000000; i++ {
 		session_states = append(session_states, NewSessionState(nil, "session_read"+strconv.Itoa(i), value))
-		//runtime_store.SessionUpdate(NewSessionState(nil,"session_read"+strconv.FormatInt(time.Now().UnixNano(),10),value))
 	}
 
 	runtime_store.SessionUpdate(session_state)
@@ -34,32 +32,60 @@ func init() {
 }
 
 func TestRuntimeStore_SessionUpdate(t *testing.T) {
-	//log.Println("开始 写测试")
+	// Use a separate store for this test to avoid race conditions
+	testStore := NewRuntimeStore(NewDefaultRuntimeConfig())
+	testValue := make(map[interface{}]interface{})
+	testValue["foo"] = "bar"
+	testValue["kak"] = "lal"
+
+	testState := NewSessionState(testStore, "session_read", testValue)
+	testStore.SessionUpdate(testState)
+
 	fmt.Println("-------------before update session state------------")
-	state, _ := runtime_store.SessionRead("session_read")
-	fmt.Printf("session state session_read:  %+v \n ", state)
-	session_state.values["foo"] = "newbar"
-	runtime_store.SessionUpdate(session_state)
-	state, _ = runtime_store.SessionRead("session_read")
-	fmt.Println("-------------after update session state------------")
+	state, _ := testStore.SessionRead("session_read")
 	fmt.Printf("session state session_read:  %+v \n ", state)
 
-}
-func TestNewRuntimeStore_SessionUpdate_StateNotExist(t *testing.T) {
-	fmt.Println("-------------before update session state------------")
-	state, _ := runtime_store.SessionRead("session_read_2")
+	testState.values["foo"] = "newbar"
+	testStore.SessionUpdate(testState)
+
+	state, _ = testStore.SessionRead("session_read")
+	fmt.Println("-------------after update session state------------")
 	fmt.Printf("session state session_read:  %+v \n ", state)
+}
+
+func TestNewRuntimeStore_SessionUpdate_StateNotExist(t *testing.T) {
+	// Use a separate store for this test
+	testStore := NewRuntimeStore(NewDefaultRuntimeConfig())
+	testValue := make(map[interface{}]interface{})
+	testValue["foo"] = "bar"
+
+	testStore.SessionUpdate(NewSessionState(testStore, "session_read", testValue))
+
+	fmt.Println("-------------before update session state------------")
+	state, _ := testStore.SessionRead("session_read_2")
+	fmt.Printf("session state session_read:  %+v \n ", state)
+
 	state.values["make"] = "new"
-	runtime_store.SessionUpdate(state)
-	state, _ = runtime_store.SessionRead("session_read")
+	testStore.SessionUpdate(state)
+
+	state, _ = testStore.SessionRead("session_read")
 	fmt.Println("-------------after update session state------------")
 	fmt.Printf("session state session_read:  %+v \n ", state)
 }
 
 func TestRuntimeStore_SessionRead(t *testing.T) {
-	//log.Println("开始读测试")
-	fmt.Printf("runtime_store:  %+v \n", *runtime_store)
-	read, _ := runtime_store.SessionRead("session_read")
+	// Use a separate store for this test
+	testStore := NewRuntimeStore(NewDefaultRuntimeConfig())
+	testValue := make(map[interface{}]interface{})
+	testValue["foo"] = "bar"
+	testValue["kak"] = "lal"
+
+	testStore.SessionUpdate(NewSessionState(testStore, "session_read", testValue))
+	testStore.SessionUpdate(NewSessionState(testStore, "session_read_1", testValue))
+	testStore.SessionUpdate(NewSessionState(testStore, "session_read_2", testValue))
+
+	fmt.Printf("runtime_store:  %+v \n", *testStore)
+	read, _ := testStore.SessionRead("session_read")
 	if read == nil {
 		fmt.Println("cannot find sessionId")
 		return
@@ -69,30 +95,43 @@ func TestRuntimeStore_SessionRead(t *testing.T) {
 }
 
 func TestRuntimeStore_SessionExist(t *testing.T) {
-	//log.Println("测试 session 存在")
-	fmt.Println("is session exist: ", runtime_store.SessionExist("session_read"))
+	// Use a separate store for this test
+	testStore := NewRuntimeStore(NewDefaultRuntimeConfig())
+	testValue := make(map[interface{}]interface{})
+	testValue["foo"] = "bar"
 
+	testStore.SessionUpdate(NewSessionState(testStore, "session_read", testValue))
+
+	fmt.Println("is session exist: ", testStore.SessionExist("session_read"))
 }
 
 func TestRuntimeStore_SessionRemove(t *testing.T) {
+	// Use a separate store for this test
+	testStore := NewRuntimeStore(NewDefaultRuntimeConfig())
+	testValue := make(map[interface{}]interface{})
+	testValue["foo"] = "bar"
+	testValue["kak"] = "lal"
+
+	testStore.SessionUpdate(NewSessionState(testStore, "session_read", testValue))
+
 	log.Println("session 删除测试")
 	fmt.Println("------------------------")
 	fmt.Println("before remove : ")
-	read, err := runtime_store.SessionRead("session_read")
+	read, err := testStore.SessionRead("session_read")
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("read : ")
 	fmt.Printf("sessionid : %s ,  values : %v \n", read.SessionID(), read.values)
 
-	err = runtime_store.SessionRemove("session_read")
+	err = testStore.SessionRemove("session_read")
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 
 	fmt.Println("------------------------")
 	fmt.Println("after remove : ")
-	read, err = runtime_store.SessionRead("session_read")
+	read, err = testStore.SessionRead("session_read")
 	if err != nil {
 		panic(err)
 	}
@@ -101,24 +140,48 @@ func TestRuntimeStore_SessionRemove(t *testing.T) {
 }
 
 func TestRuntimeStore_SessionGC(t *testing.T) {
-
+	// GC test - no assertions needed
 }
 
 func TestRuntimeStore_SessionCount(t *testing.T) {
-	fmt.Println(runtime_store.SessionCount())
+	// Use a separate store for this test
+	testStore := NewRuntimeStore(NewDefaultRuntimeConfig())
+	testValue := make(map[interface{}]interface{})
+	testValue["foo"] = "bar"
+
+	testStore.SessionUpdate(NewSessionState(testStore, "session_read", testValue))
+	testStore.SessionUpdate(NewSessionState(testStore, "session_read_1", testValue))
+	testStore.SessionUpdate(NewSessionState(testStore, "session_read_2", testValue))
+
+	fmt.Println(testStore.SessionCount())
 }
 
 func TestRuntimeStore_SessionAccess(t *testing.T) {
-	state, _ := runtime_store.SessionRead("session_read")
-	fmt.Println("------------------")
-	fmt.Println("before session access")
-	fmt.Println(state.timeAccessed.String())
-	fmt.Println("------------------")
-	fmt.Println("after session access")
-	time.Sleep(10 * time.Second)
-	runtime_store.SessionAccess("session_read")
-	fmt.Println(state.timeAccessed.String())
+	// Use a separate store for this test to avoid race conditions
+	testStore := NewRuntimeStore(NewDefaultRuntimeConfig())
+	testValue := make(map[interface{}]interface{})
+	testValue["foo"] = "bar"
 
+	testStore.SessionUpdate(NewSessionState(testStore, "test_access_session", testValue))
+
+	// Get initial state
+	state, _ := testStore.SessionRead("test_access_session")
+	if state == nil {
+		t.Fatal("Failed to read session")
+	}
+
+	// SessionAccess should update timeAccessed
+	// Note: We don't directly access timeAccessed to avoid race conditions
+	// Instead we verify the operation completes without error
+	err := testStore.SessionAccess("test_access_session")
+	if err != nil {
+		t.Errorf("SessionAccess failed: %v", err)
+	}
+
+	// Verify session still exists after access
+	if !testStore.SessionExist("test_access_session") {
+		t.Error("Session should still exist after access")
+	}
 }
 
 /**
@@ -126,19 +189,29 @@ func TestRuntimeStore_SessionAccess(t *testing.T) {
 */
 
 func BenchmarkRuntimeStore_SessionRead_1(b *testing.B) {
+	testStore := NewRuntimeStore(NewDefaultRuntimeConfig())
+	testValue := make(map[interface{}]interface{})
+	testValue["foo"] = "bar"
+	testStore.SessionUpdate(NewSessionState(testStore, "session_read", testValue))
+
 	for i := 0; i < b.N; i++ {
-		runtime_store.SessionRead("session_read")
+		testStore.SessionRead("session_read")
 	}
 	b.ReportAllocs()
 }
+
 func BenchmarkRuntimeStore_SessionRead_Parallel(b *testing.B) {
+	testStore := NewRuntimeStore(NewDefaultRuntimeConfig())
+	testValue := make(map[interface{}]interface{})
+	testValue["foo"] = "bar"
+	testStore.SessionUpdate(NewSessionState(testStore, "session_read", testValue))
+
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			runtime_store.SessionRead("session_read")
+			testStore.SessionRead("session_read")
 		}
 	})
 	b.ReportAllocs()
-
 }
 
 func BenchmarkRuntimeStore_SessionCount_1(b *testing.B) {
@@ -154,26 +227,32 @@ func BenchmarkRuntimeStore_SessionCount_Parallel(b *testing.B) {
 		}
 	})
 	b.ReportAllocs()
-
 }
 
 func BenchmarkRuntimeStore_SessionRemove_1(b *testing.B) {
-
+	// Empty benchmark
 }
 
 func BenchmarkRuntimeStore_SessionUpdate_1(b *testing.B) {
+	testStore := NewRuntimeStore(NewDefaultRuntimeConfig())
 	for i := 0; i < b.N; i++ {
-		runtime_store.SessionUpdate(session_states[i])
+		testStore.SessionUpdate(session_states[i%1000])
 	}
 	b.ReportAllocs()
 }
 
 func BenchmarkRuntimeStore_SessionUpdate_Parallel(b *testing.B) {
+	testStore := NewRuntimeStore(NewDefaultRuntimeConfig())
+	testValue := make(map[interface{}]interface{})
+	testValue["foo"] = "bar"
+	testState := NewSessionState(testStore, "session_read", testValue)
+	testStore.SessionUpdate(testState)
+
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			runtime_store.SessionUpdate(session_state)
+			testStore.SessionUpdate(testState)
 		}
 	})
 	b.ReportAllocs()
-	fmt.Println(len(runtime_store.sessions))
+	fmt.Println(len(testStore.sessions))
 }
