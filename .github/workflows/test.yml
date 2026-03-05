@@ -42,14 +42,14 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
-        if: matrix.go-version == '1.22'
+        if: matrix.go-version == '1.23'
         with:
           files: ./coverage.out
           flags: unittests
           fail_ci_if_error: false
 
       - name: Generate coverage report
-        if: matrix.go-version == '1.22'
+        if: matrix.go-version == '1.23'
         run: |
           go tool cover -func=coverage.out
           echo "## Test Coverage Report" >> $GITHUB_STEP_SUMMARY
