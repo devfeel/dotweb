@@ -1,6 +1,6 @@
 module github.com/devfeel/dotweb
 
-go 1.22
+go 1.24
 
 require (
 	github.com/garyburd/redigo v1.6.0
