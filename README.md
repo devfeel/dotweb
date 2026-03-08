@@ -5,7 +5,12 @@
 # DotWeb
 Simple and easy go web micro framework
 
-Important: Now need go1.9+ version support, and support go mod.
+## Requirements
+
+- **Go 1.24+** (最低版本要求)
+- 支持 go mod
+
+> 注意：Go 1.23 及以下版本存在标准库安全漏洞，建议使用 Go 1.24 或更高版本。
 
 Document: https://www.kancloud.cn/devfeel/dotweb/346608
 
@@ -298,13 +303,31 @@ type NotFoundHandle  func(http.ResponseWriter, *http.Request)
 ```
 
 ## Dependency
-websocket - golang.org/x/net/websocket
-<br>
-redis - github.com/garyburd/redigo
-<br>
-yaml - gopkg.in/yaml.v2
 
-dependency now managed by go mod.
+### Go 版本要求
+
+| Go 版本 | 支持状态 | 说明 |
+|---------|----------|------|
+| 1.26.x | ✅ 推荐使用 | 最新稳定版，CI 测试通过 |
+| 1.25.x | ✅ 支持 | CI 测试通过 |
+| 1.24.x | ✅ 支持 | **最低版本要求**，CI 测试通过 |
+| < 1.24 | ❌ 不支持 | 存在标准库安全漏洞 |
+
+> ⚠️ **安全警告**：Go 1.23 及以下版本存在以下安全漏洞：
+> - GO-2026-4341: net/url 内存耗尽
+> - GO-2026-4340: crypto/tls 握手问题
+> - GO-2025-4012: net/http cookie 解析
+> - 等共 12 个漏洞
+>
+> 详见 [Go Vulnerability Database](https://pkg.go.dev/vuln/)
+
+### 第三方依赖
+
+- websocket - golang.org/x/net/websocket
+- redis - github.com/garyburd/redigo
+- yaml - gopkg.in/yaml.v3
+
+依赖管理使用 go mod。
 
 ## 相关项目
 #### <a href="https://github.com/devfeel/longweb" target="_blank">LongWeb</a>
