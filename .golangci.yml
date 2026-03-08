@@ -1,0 +1,77 @@
+# golangci-lint configuration
+# https://golangci-lint.run/usage/configuration/
+
+run:
+  timeout: 5m
+  skip-dirs:
+    - example
+    - test
+  skip-files:
+    - "_test\\.go$"
+
+linters:
+  disable-all: true
+  enable:
+    # Basic checks
+    - errcheck      # unchecked errors
+    - govet         # go vet
+    - staticcheck   # static analysis
+    - unused        # unused code
+    - ineffassign   # ineffectual assignments
+    - gosimple      # code simplification
+    # Security (gradual enablement)
+    - gosec         # security scanner
+
+linters-settings:
+  errcheck:
+    check-type-assertions: false
+    check-blank: false
+  
+  govet:
+    enable-all: true
+  
+  staticcheck:
+    checks: ["all", "-SA1019"]  # allow deprecated usage
+  
+  gosec:
+    # Exclude framework design decisions
+    excludes:
+      - G104   # errors unhandled (covered by errcheck)
+      - G115   # integer overflow (legacy code, fix gradually)
+      - G301   # directory permissions (framework design)
+      - G302   # file permissions (framework design)
+      - G304   # file path inclusion (framework feature)
+      - G401   # weak crypto md5/sha1 (compatibility)
+      - G405   # weak crypto des (compatibility)
+      - G501   # blocklisted import md5
+      - G502   # blocklisted import des
+      - G505   # blocklisted import sha1
+
+issues:
+  max-issues-per-linter: 50
+  max-same-issues: 10
+  new-from-rev: ""
+  
+  exclude-rules:
+    # Exclude test files from strict checks
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
+    
+    # Exclude example files
+    - path: example/
+      linters:
+        - errcheck
+        - gosec
+    
+    # Exclude generated files
+    - path: mock\.go
+      linters:
+        - gosec
+
+output:
+  formats:
+    - format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
