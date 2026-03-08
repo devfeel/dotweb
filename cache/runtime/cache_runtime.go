@@ -122,6 +122,7 @@ func (ca *RuntimeCache) initValue(key string, value interface{}, ttl int64) erro
 // Incr increase int64 counter in runtime cache.
 func (ca *RuntimeCache) Incr(key string) (int64, error) {
 	ca.Lock()
+	defer ca.Unlock()
 	itemObj, ok := ca.items.Load(key)
 	if !ok {
 		// if not exists, auto set new with 0
@@ -148,8 +149,6 @@ func (ca *RuntimeCache) Incr(key string) (int64, error) {
 		return 0, errors.New("item val is not (u)int (u)int32 (u)int64")
 	}
 
-	ca.Unlock()
-
 	val, _ := strconv.ParseInt(fmt.Sprint(item.value), 10, 64)
 	return val, nil
 }
@@ -157,6 +156,7 @@ func (ca *RuntimeCache) Incr(key string) (int64, error) {
 // Decr decrease counter in runtime cache.
 func (ca *RuntimeCache) Decr(key string) (int64, error) {
 	ca.Lock()
+	defer ca.Unlock()
 	itemObj, ok := ca.items.Load(key)
 	if !ok {
 		// if not exists, auto set new with 0
@@ -194,7 +194,6 @@ func (ca *RuntimeCache) Decr(key string) (int64, error) {
 	default:
 		return 0, errors.New("item val is not int int64 int32")
 	}
-	ca.Unlock()
 
 	val, _ := strconv.ParseInt(fmt.Sprint(item.value), 10, 64)
 	return val, nil
