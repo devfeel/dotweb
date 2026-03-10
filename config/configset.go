@@ -3,7 +3,7 @@ package config
 import (
 	"encoding/xml"
 	"errors"
-	"io/ioutil"
+	"os"
 
 	"github.com/devfeel/dotweb/core"
 )
@@ -39,7 +39,7 @@ func ParseConfigSetYaml(configFile string) (core.ConcurrenceMap, error) {
 }
 
 func parseConfigSetFile(configFile string, confType string) (core.ConcurrenceMap, error) {
-	content, err := ioutil.ReadFile(configFile)
+	content, err := os.ReadFile(configFile)
 	if err != nil {
 		return nil, errors.New("DotWeb:Config:parseConfigSetFile 配置文件[" + configFile + ", " + confType + "]无法解析 - " + err.Error())
 	}
