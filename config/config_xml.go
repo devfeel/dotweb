@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bytes"
 	"encoding/xml"
 )
 
@@ -13,10 +12,7 @@ import (
 // Security: This function uses xml.Decoder with strict settings to prevent
 // XXE (XML External Entity) attacks.
 func UnmarshalXML(content []byte, v interface{}) error {
-	decoder := xml.NewDecoder(bytes.NewReader(content))
-	// Note: Go's xml package doesn't process external entities by default
-	// This explicit usage of Decoder provides clarity and future-proofing
-	return decoder.Decode(v)
+	return xml.Unmarshal(content, v)
 }
 
 // MarshalXML returns the XML encoding of v.
