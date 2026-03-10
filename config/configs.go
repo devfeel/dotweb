@@ -3,7 +3,7 @@ package config
 import (
 	"encoding/xml"
 	"errors"
-	"io/ioutil"
+	"os"
 
 	"github.com/devfeel/dotweb/core"
 	"github.com/devfeel/dotweb/framework/file"
@@ -265,7 +265,7 @@ func dealConfigDefaultSet(c *Config) {
 }
 
 func initConfig(configFile string, ctType string, parser func([]byte, interface{}) error) (*Config, error) {
-	content, err := ioutil.ReadFile(configFile)
+	content, err := os.ReadFile(configFile)
 	if err != nil {
 		return nil, errors.New("DotWeb:Config:initConfig current cType:" + ctType + " config file [" + configFile + "] cannot be parsed - " + err.Error())
 	}

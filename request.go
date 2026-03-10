@@ -1,7 +1,7 @@
 package dotweb
 
 import (
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -162,7 +162,7 @@ func (req *Request) PostBody() []byte {
 				break
 			}
 		}
-		bts, err := ioutil.ReadAll(req.Body)
+		bts, err := io.ReadAll(req.Body)
 		if err != nil {
 			//if err, panic it
 			panic(err)
