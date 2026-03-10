@@ -8,9 +8,6 @@ import (
 // the value pointed to by v, which must be an arbitrary struct,
 // slice, or string. Well-formed data that does not fit into v is
 // discarded.
-//
-// Security: This function uses xml.Decoder with strict settings to prevent
-// XXE (XML External Entity) attacks.
 func UnmarshalXML(content []byte, v interface{}) error {
 	return xml.Unmarshal(content, v)
 }
